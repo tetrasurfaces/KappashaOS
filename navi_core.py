@@ -28,56 +28,64 @@
 # Private Development Note: This repository is temporarily private for xAI development of KappashaOS and Navi. Access is restricted to authorized contributors. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for future integration or licensing adjustments.
 
 import asyncio
-import platform
 import numpy as np
-from ghosthand import GhostHand  # Placeholder for ghosthand module
+from js import document, window  # Emscripten JS interop
+from ghosthand import GhostHand  # Placeholder, will need Wasm port
 
-FPS = 60  # Target 16.67ms per frame
+FPS = 60
 GRID_SIZE = 10
-TENDON_THRESHOLD = 0.2  # 20% of max load
-GAZE_THRESHOLD = 30.0  # 30 seconds max gaze duration
+TENDON_THRESHOLD = 0.2
+GAZE_THRESHOLD = 30.0
 
 async def safety_monitor(hand):
     gaze_duration = 0.0
     tendon_load = 0.0
     while True:
-        # Simulate sensor data (replace with real inputs)
-        tendon_load = np.random.rand() * 0.3  # Random tendon flex (0-0.3)
-        gaze_duration += 1.0 / FPS if np.random.rand() > 0.7 else 0.0  # Accumulate gaze
+        # Mock sensor data (replace with WebGyro/WebSocket later)
+        tendon_load = np.random.rand() * 0.3
+        gaze_duration += 1.0 / FPS if np.random.rand() > 0.7 else 0.0
 
         if tendon_load > TENDON_THRESHOLD:
-            print("Warning: Tendon overload detected. Disengaging.")
-            hand.reset()  # Reset ghost hand position
+            print("Warning: Tendon overload. Disengaging.")
+            hand.reset()
+            window.alert("Tendon safety limit reached. Resetting.")
         if gaze_duration > GAZE_THRESHOLD:
-            print("Warning: Excessive gaze duration. Pausing.")
-            await asyncio.sleep(2.0)  # Pause for 2 seconds
+            print("Warning: Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
             gaze_duration = 0.0
+            window.alert("Gaze pause activated.")
 
         await asyncio.sleep(1.0 / FPS)
 
 async def main():
     grid = np.zeros((GRID_SIZE, GRID_SIZE, GRID_SIZE), dtype=np.uint8)
-    hand = GhostHand(grid)  # Initialize ghost hand with 3D grid
+    hand = GhostHand(grid)
 
-    # Start safety monitor in background
+    # Start safety monitor
     asyncio.create_task(safety_monitor(hand))
 
-    while True:
-        # Simulate EEG twitch (intent detection)
-        twitch = np.random.rand() * 0.3  # Readiness potential (0-0.3)
-        if twitch > 0.2:  # Threshold for action
-            hand.move(twitch)  # Move based on twitch intensity
-            print(f"Navi: Hey! Move by {twitch:.2f}")
+    canvas = document.getElementById("naviCanvas")  # Assume HTML canvas
+    ctx = canvas.getContext("2d")
 
-        # Gyro input (tilt adjustment)
+    while True:
+        # Simulate EEG twitch (intent from user event)
+        twitch = np.random.rand() * 0.3
+        if twitch > 0.2:
+            hand.move(twitch)
+            print(f"Navi: Hey! Move by {twitch:.2f}")
+            ctx.fillText(f"Navi: Move {twitch:.2f}", 10, 20)
+
+        # Gyro input from device orientation (WebGyro API mock)
         gyro_data = np.array([np.random.rand() * 0.2 - 0.1,
                              np.random.rand() * 0.2 - 0.1,
-                             0.0])  # Random x, y tilt, no z
-        hand.adjust_kappa(gyro_data)  # Adjust kappa skew
+                             0.0])
+        hand.adjust_kappa(gyro_data)
         print(f"Navi: Adjusting kappa by {gyro_data}")
+        ctx.fillText(f"Navi: Kappa {gyro_data[0]:.2f}", 10, 40)
 
-        await asyncio.sleep(1.0 / FPS)  # Frame rate control
+        await asyncio.sleep(1.0 / FPS)
 
+# Emscripten-specific entry point
 if platform.system() == "Emscripten":
     asyncio.ensure_future(main())
 else:
