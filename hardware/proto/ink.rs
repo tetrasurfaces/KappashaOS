@@ -1,3 +1,4 @@
+// KappashaOS/proto/ink.rs
 // Dual License:
 // - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 //   This program is free software: you can redistribute it and/or modify
@@ -43,17 +44,20 @@
 //
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 //
-// KappashaOS/hardware/proto/ink.rs
 #![no_std]
+extern crate alloc;
 
 pub const FLEX_MICRON: u128 = 2; // 0.2 micron groove
 pub const PHASE_SHIFT: u128 = 180; // Eye phase
 
-pub fn moto_pixel(gaze: u128, skin_flex: u128) -> u128 {
-    let shift = gaze * FLEX_MICRON;
+pub fn moto_pixel(gaze: u128, skin_flex: u128, keyed: bool) -> u128 {
     if skin_flex > 200 { // Tendon 20%
-        // Flinch, revocable ethics
-        0
+        return 0; // Flinch, revocable
+    }
+    let shift = gaze * FLEX_MICRON;
+    if keyed { // Green postcard
+        // Bone conduction pulse
+        shift % PHASE_SHIFT + 10 // Mock pulse
     } else {
         shift % PHASE_SHIFT
     }
@@ -65,7 +69,7 @@ mod tests {
 
     #[test]
     fn test_moto() {
-        let phase = moto_pixel(10, 150);
-        assert_eq!(phase, 20 % 180);
+        let phase = moto_pixel(10, 150, true);
+        assert_eq!(phase, (20 % 180) + 10); // Green pulse
     }
 }
