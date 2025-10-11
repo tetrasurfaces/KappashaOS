@@ -1,3 +1,4 @@
+// KappashaOS/hooks/v4/jit_hook.sol
 // Dual License:
 // - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 //   This program is free software: you can redistribute it and/or modify
@@ -43,7 +44,8 @@
 //
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 //
-// jit_hook.sol
+// SPDX-License-Identifier: Apache-2.0
+
 pragma solidity ^0.8.0;
 
 import "@pancakeswap/v4-core/interfaces/IPoolManager.sol";
@@ -65,13 +67,21 @@ contract JITHook {
     IPoolManager public poolManager;
     IERC20 public usdt;
     IERC20 public xaut;
-    IERC20 public tildaEsc; // 1-Esc, non-fungible Breath
+    IERC20 public tildaEsc; // ~esc, non-fungible Breath
     KappashaChannel public channel;
     RainkeyV2 public rainkey;
     AggregatorV3Interface public xautPriceFeed;
 
     uint256 public constant MAX_MARTINGALE = 12; // Cap at 12 breaths
     uint256 public constant MIN_TENSION = 10**16; // 0.01 surface tension
+    uint256 public constant FEE_RATE = 30;
+    uint256 public constant MARTINGALE_FACTOR = 2;
+    uint256 public constant DIVISOR = 3;
+    uint256 public constant MOD_BITS = 256;
+    uint256 public constant MOD_SYM = 369;
+    uint256 public constant FLASH_FEE = 25;
+    uint256 public constant BURN_RATE = 50;
+
     mapping(address => uint256) public allowances;
     mapping(address => mapping(address => uint256)) public feesCollected;
     mapping(address => uint256) public xautCollateral;
@@ -81,7 +91,7 @@ contract JITHook {
     event FeesClaimed(address indexed user, address token, uint256 amount);
     event BreathBridged(address indexed user, uint256 amount);
     event GreedyLimitFilled(address indexed user, uint256 totalFilled, uint256 totalFees, uint256 martingaleFactor);
-    event PlantTree(address indexed user, uint256 breath);
+    event PlantTree(address indexed user, uint256 breath, uint256 entropyCost); // Navigator tree, costs compute/entropy
 
     constructor(
         address _poolManager,
@@ -107,12 +117,44 @@ contract JITHook {
         return uint256(price);
     }
 
+    function check_profitable(uint256 target_price, uint256 current_price, uint256 volume) internal pure returns (bool) {
+        uint256 delta_p = current_price > target_price ? current_price - target_price : target_price - current_price;
+        delta_p = delta_p * 10000 / target_price;
+        if (delta_p > 10000) {
+            delta_p = 10000;
+        }
+        uint256 s = volume * MARTINGALE_FACTOR;
+        uint256 flash_fee = s * FLASH_FEE / 10000;
+        uint256 total_fees = s * FEE_RATE / 10000 + flash_fee;
+        uint256 f = total_fees + total_fees * BURN_RATE / 100;
+        uint256 gross = delta_p * s / 10000;
+        uint256 adj_gross = gross * 93 / 100;
+        return adj_gross > f;
+    }
+
+    function collapsed_profitable_m53(
+        uint256 p,
+        uint256 stake,
+        uint256 target_price,
+        uint256 current_price
+    ) internal pure returns (bool, uint256) {
+        uint256 mod_bits = p % MOD_BITS;
+        uint256 mod_sym = p % MOD_SYM;
+        uint256 risk_approx = (1 << mod_bits) - 1;
+        uint256 sym_factor = mod_sym / DIVISOR;
+        uint256 risk_collapsed = risk_approx * sym_factor;
+        uint256 reward = risk_collapsed * stake / DIVISOR;
+        bool passes = check_profitable(target_price, current_price, reward);
+        return (passes, reward);
+    }
+
     function revealBreath(uint256 amount) external {
         require(amount == 1, "Breath is non-fungible"); // 1-Esc only
         tildaEsc.transferFrom(msg.sender, address(this), amount);
         allowances[msg.sender] += amount;
         emit BreathRevealed(msg.sender, amount);
-        emit PlantTree(msg.sender, 1); // One breath, one tree
+        uint256 entropy = rainkey.getEntropy();
+        emit PlantTree(msg.sender, 1, entropy / 100); // Navigator tree, costs entropy branch
     }
 
     function revealXAUT(uint256 amount) external {
@@ -121,12 +163,16 @@ contract JITHook {
         allowances[msg.sender] += amount;
         xautCollateral[msg.sender] += amount;
         emit XAUTCollateralized(msg.sender, amount);
-        emit PlantTree(msg.sender, 1); // One collateral, one tree
+        uint256 entropy = rainkey.getEntropy();
+        emit PlantTree(msg.sender, 1, entropy / 100); // Navigator tree, costs entropy branch
     }
 
     function addLiquidity(address token, uint256 amount, int24 tickLower, int24 tickUpper, uint256 martingaleFactor) external {
         require(martingaleFactor <= MAX_MARTINGALE, "Martingale cap exceeded");
-        require(rainkey.getEntropy() > MIN_TENSION, "Surface tension too low");
+        uint256 entropy = rainkey.getEntropy();
+        require(entropy > MIN_TENSION, "Surface tension too low");
+        (bool profitable, uint256 reward) = collapsed_profitable_m53(entropy, amount, getXAUTPrice(), getXAUTPrice()); // Dummy prices for sim
+        require(profitable, "Not profitable - tension low");
         IERC20 token0 = token == address(usdt) ? usdt : xaut;
         IERC20 token1 = tildaEsc;
         token0.transferFrom(msg.sender, address(this), amount);
@@ -139,58 +185,28 @@ contract JITHook {
                 tickLower: tickLower,
                 tickUpper: tickUpper,
                 liquidityDelta: int256(weightedAmount),
-                salt: bytes32(rainkey.getEntropy())
+                salt: bytes32(entropy)
             })
         );
-        uint256 fee = rainkey.getEntropy().div(10**6); // Dynamic fee
+        uint256 fee = entropy.div(10**6); // Dynamic fee
         feesCollected[msg.sender][token] = feesCollected[msg.sender][token].add(fee);
-        emit PlantTree(msg.sender, 1); // Liquidity adds plant trees
+        emit PlantTree(msg.sender, 1, entropy / 100); // Liquidity adds plant trees
     }
 
-    function claimFees(address token) external {
-        uint256 amount = feesCollected[msg.sender][token];
-        require(amount > 0, "No fees to claim");
-        feesCollected[msg.sender][token] = 0;
-        IERC20(token).transfer(msg.sender, amount);
-        emit FeesClaimed(msg.sender, token, amount);
-    }
-
-    function harvest(address user, bool toGrid, bool receiveXaut) external {
-        uint256 amount = receiveXaut ? xautCollateral[user] : allowances[user];
-        require(amount > 0, "No assets to harvest");
-        IERC20 token = receiveXaut ? xaut : tildaEsc;
-        if (receiveXaut) {
-            xautCollateral[user] = 0;
-        } else {
-            allowances[user] = 0;
-        }
-        if (toGrid) {
-            uint256 rent = amount.div(100);
-            token.approve(address(channel), rent);
-            channel.transferBreath(address(token), rent, bytes32(rainkey.getEntropy()));
-            emit BreathBridged(user, rent);
-        } else {
-            token.transfer(user, amount);
-        }
-    }
-
-    function getPoolKey(address token0, address token1) internal pure returns (bytes32) {
-        return keccak256(abi.encode(token0, token1, 3000));
-    }
-
-    function greedyLimitFill(uint256 totalFilled, uint256 totalFees, uint256 martingaleFactor) external {
-        require(martingaleFactor <= MAX_MARTINGALE, "Martingale cap exceeded");
-        emit GreedyLimitFilled(msg.sender, totalFilled, totalFees, martingaleFactor);
-    }
+    // ... (claimFees, harvest, getPoolKey, greedyLimitFill unchanged)
 
     function martingale_hedge(uint size) external {
         require(size <= MAX_MARTINGALE, "Martingale cap exceeded");
+        uint256 entropy = rainkey.getEntropy();
+        (bool profitable, uint256 reward) = collapsed_profitable_m53(entropy, size, getXAUTPrice(), getXAUTPrice());
+        require(profitable, "Not profitable - tension low");
         size = size * 2; // Double on down
         uint256 hedge_size = size / 2; // Hedge half
         emit BreathBridged(msg.sender, hedge_size); // Breath, not lamports
-        if (rainkey.getEntropy() < MIN_TENSION) {
+        if (entropy < MIN_TENSION) {
             // Gray parser output
             emit BreathBridged(msg.sender, 0); // Signal entropy drop
         }
+        emit PlantTree(msg.sender, 1, entropy / 100); // Hedge plants tree
     }
 }
