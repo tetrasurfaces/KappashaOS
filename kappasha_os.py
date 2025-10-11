@@ -51,7 +51,7 @@ import simpy
 import numpy as np
 import asyncio
 from nav3d import Nav3D
-from factory_sim import FactorySim
+from kappa_sim import KappaSim
 from ghosthand import GhostHand
 from thought_curve import ThoughtCurve
 from arch_utils.render import render
@@ -59,14 +59,14 @@ from dev_utils.lockout import lockout
 from dev_utils.hedge import hedge, multi_hedge
 from dev_utils.grep import grep
 from dev_utils.thought_arb import thought_arb
-from scale import left_weight, right_weight  # New scale module
-import kappasha_os_cython  # Cython-optimized functions
+from scale import left_weight, right_weight
+import kappasha_os_cython
 
 class KappashaOS:
     def __init__(self):
         self.env = simpy.Environment()
         self.nav = Nav3D()
-        self.factory = FactorySim(self.env)
+        self.kappa_sim = KappaSim()  # Replace factory with kappa_sim
         self.hand = GhostHand(kappa=0.2)
         self.curve = ThoughtCurve()
         self.commands = []
@@ -108,7 +108,7 @@ class KappashaOS:
             self.sensor_data.append((self.env.now, gyro, drift))
             if gyro > 10 or drift > 0.05:
                 self.nav.kappa += 0.1
-                self.factory.kappa += 0.1
+                self.kappa_sim.kappa += 0.1  # Update kappa_sim kappa
                 self.hand.kappa += 0.1
                 self.hand.pulse(2)
                 print(f"Sensor alert: Kappa adjusted to {self.nav.kappa:.3f}")
@@ -117,7 +117,7 @@ class KappashaOS:
     def run_command(self, cmd):
         self.commands.append(cmd)
         if cmd == "kappa ls":
-            front, right, top = kappasha_os_cython.project_third_angle(self.nav.kappa.grid, self.nav.kappa.kappa)
+            front, right, top = kappasha_os_cython.project_third_angle(self.kappa_sim.grid, self.kappa_sim.kappa)
             print("FRONT:\n", front[:3, :3])
             print("RIGHT:\n", right[:3, :3])
             print("TOP:\n", top[:3, :3])
@@ -125,7 +125,7 @@ class KappashaOS:
             try:
                 dk = float(cmd.split()[2])
                 self.nav.kappa += dk
-                self.factory.kappa += dk
+                self.kappa_sim.kappa += dk  # Update kappa_sim
                 self.hand.kappa += dk
                 self.hand.pulse(2)
                 print(f"Kappa now {self.nav.kappa:.3f}")
@@ -145,22 +145,22 @@ class KappashaOS:
             try:
                 coord = tuple(map(int, cmd.split()[2].strip("()").split(",")))
                 if self.nav.unlock_edge(coord):
-                    self.factory.register_kappa("edge_unlock")
+                    self.kappa_sim.register_kappa("edge_unlock")  # Use kappa_sim register
             except:
                 print("usage: kappa unlock (7,0,0)")
         elif cmd == "arch_utils render":
-            filename = render(self.nav.kappa.grid, self.nav.kappa.kappa)
+            filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)  # Use kappa_sim grid
             print(f"arch_utils: Rendered to {filename}")
         elif cmd.startswith("dev_utils lockout"):
             try:
                 target = cmd.split()[2]
-                lockout(self.factory, target)
+                lockout(self.kappa_sim, target)  # Use kappa_sim for lockout
             except:
                 print("usage: dev_utils lockout gas_line")
         elif cmd.startswith("kappa grep"):
             try:
                 pattern = cmd.split(maxsplit=2)[2]
-                matches = grep(self.factory.history, pattern)
+                matches = grep(self.kappa_sim.history, pattern)  # Use kappa_sim history
                 if matches:
                     self.hand.pulse(len(matches))
                     print(f"Grep found {len(matches)} matches:")
@@ -185,20 +185,21 @@ class KappashaOS:
         elif cmd.startswith("kappa decide"):
             try:
                 intent = cmd.split()[2]
-                action = kappasha_os_cython.thought_arb_cython(self.curve, self.factory.history, intent)
+                action = kappasha_os_cython.thought_arb_cython(self.curve, self.kappa_sim.history, intent)  # Use kappa_sim history
                 self.decisions.append((self.env.now, intent, action))
                 self.hand.pulse(2 if action == "unwind" else 1)
                 print(f"Decision: {intent} - {action}")
                 if action == "unwind":
                     self.nav.kappa += 0.05
+                    self.kappa_sim.kappa += 0.05  # Update kappa_sim
                     print(f"Kappa adjusted to {self.nav.kappa:.3f}")
             except:
                 print("usage: kappa decide weld")
         elif cmd == "kappa program":
             try:
                 func_str = cmd.split(maxsplit=1)[1]
-                gait = "normal"  # Mock gait
-                exponent = 1  # Default exponent
+                gait = "normal"
+                exponent = 1
                 program = self.create_program_from_string(func_str, gait, exponent)
                 print(f"Program created: {program}")
             except:
@@ -208,7 +209,7 @@ class KappashaOS:
 
     def move_skewed_volume(self, theta: float, gait: str):
         """Move volume with skewed rhombus voxels and golden spiral."""
-        angle = theta * 137.5  # Golden spiral increment
+        angle = theta * 137.5
         shear_matrix = np.array([[np.cos(np.radians(angle)), np.sin(np.radians(angle))],
                                 [-np.sin(np.radians(angle)), np.cos(np.radians(angle))]])
         self.nav.kappa.grid = np.tensordot(self.nav.kappa.grid, shear_matrix, axes=0)
@@ -223,38 +224,37 @@ class KappashaOS:
         """Create program from function string using exponents and diagonals."""
         funcs = func_str.split(';')
         scaled_exp = left_weight(exponent) if exponent >= 0 else right_weight(exponent)
-        program = lambda x: x  # Identity by default
+        program = lambda x: x
         for i, func in enumerate(funcs):
-            angle = i * 137.5  # Golden spiral step
-            if self.entropy > 0.7 or (exponent < 0 and self.entropy > 0.5):  # Seraph unlock
+            angle = i * 137.5
+            if self.entropy > 0.7 or (exponent < 0 and self.entropy > 0.5):
                 if func == "ramp":
                     program = lambda x: self.ramp.encode(x, int(angle / 137.5))
                 elif func == "weave":
                     program = lambda x: self.loom.navi_weave(self.ramp.pin, x, (5, 5, 5))
                 elif func == "walk":
                     program = lambda x: self.nav.navi_navigate("test.txt", (5, 5, 5), "cone")
-                # Add more functions as needed
         return program
 
     def run_day(self):
-        print(f"Day start - Situational Kappa = {self.factory.get_situational_kappa():.3f}")
+        print(f"Day start - Situational Kappa = {self.kappa_sim.get_situational_kappa():.3f}")
         self.env.process(self.poll_sensor())
         asyncio.run(self.navi_listen())
         yield self.env.timeout(20)
-        self.factory.trigger_emergency("gas_rupture")
-        self.factory.register_kappa("gas_rupture")
+        self.kappa_sim.trigger_emergency("gas_rupture")
+        self.kappa_sim.register_kappa("gas_rupture")
         self.run_command("kappa cd weld")
         self.run_command("kappa unlock (7,0,0)")
         self.run_command("kappa grep /gas_rupture/")
         self.run_command("kappa sensor")
         self.run_command("kappa hedge multi [gate,weld]")
         self.run_command("kappa decide weld")
-        self.move_skewed_volume(1.0, "normal")  # Move volume with theta=1
+        self.move_skewed_volume(1.0, "normal")
         self.run_command("kappa program ramp;weave;walk")
-        yield self.env.process(self.factory.auto_rig("gas_line"))
+        yield self.env.process(self.kappa_sim.auto_adjust("gas_line", adjust_time=5))  # Use kappa_sim auto_adjust
         self.run_command("kappa ls")
         self.run_command("arch_utils render")
-        print(f"Day end - Situational Kappa = {self.factory.get_situational_kappa():.3f}")
+        print(f"Day end - Situational Kappa = {self.kappa_sim.get_situational_kappa():.3f}")
         print(f"Decisions made: {self.decisions}")
 
 if __name__ == "__main__":
