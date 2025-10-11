@@ -44,98 +44,93 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# kappa.py - Mirror grid at zero with left/right spirals for KappashaOS.
-# Generates tetrahedral uniformity, Navi-integrated.
+# kappa.py - Kappa grid rasterization with material awareness for KappashaOS.
+# Async, Navi-integrated.
 
 import numpy as np
 import asyncio
-from kappawise import kappa_coord  # Local mock
+from scipy.spatial import Delaunay
+from tetra.solid import mesh  # Mock tetra surfaces
+from master_hand import MasterHand
 
-class KappaGrid:
-    def __init__(self, laps=10000, left_weight=0.7, right_weight=1.3, kappa=0.1):
-        self.laps = laps
-        self.left_weight = left_weight
-        self.right_weight = right_weight
-        self.kappa = kappa
-        self.nodes = []
-        self.deltas = []
+class Kappa:
+    def __init__(self, grid_size=10):
+        self.grid_size = grid_size
+        self.grid = np.zeros((grid_size, grid_size, grid_size))
+        self.material = {"density": 1.0, "type": "steel"}  # Mock material
+        self.hand = MasterHand()
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        self.user_id = 12345  # Mock
-        print("KappaGrid initialized - mirror spirals ready.")
+        print("Kappa initialized - grid rasterization ready.")
 
-    async def navi_weave(self):
-        """Navi weaves the grid with safety checks."""
-        while True:
-            self.generate_spirals()
-            self.find_deltas()
-            await asyncio.sleep(0.001)  # Slow for sim
-            self.tendon_load = np.random.rand() * 0.3
-            self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-            if self.tendon_load > 0.2:
-                print("KappaGrid: Warning - Tendon overload. Resetting.")
-                self.reset()
-            if self.gaze_duration > 30.0:
-                print("KappaGrid: Warning - Excessive gaze. Pausing.")
-                await asyncio.sleep(2.0)
-                self.gaze_duration = 0.0
-            await asyncio.sleep(1.0 / 60)
-
-    def generate_spirals(self):
-        """Generate forward/backward spirals with weights."""
-        self.nodes = []
-        for i in range(self.laps):
-            r = np.sqrt(i)
-            theta = i * self.theta  # Assume self.theta = np.radians(36.9)
-            x = r * np.cos(theta)
-            y = r * np.sin(theta)
-            z = i * np.radians(0.618)  # φ climb
-            self.nodes.append((x, y, z, theta))
-        # Backward with weights
-        for i in range(self.laps):
-            r = np.sqrt(i)
-            theta = -i * self.theta
-            x = r * np.cos(theta) * self.left_weight
-            y = r * np.sin(theta) * self.right_weight
-            z = -i * np.radians(0.618)
-            self.nodes.append((x, y, z, theta))
-
-    def find_deltas(self):
-        """Find intersection deltas."""
-        self.deltas = []
-        for a in range(len(self.nodes)):
-            for b in range(a + 1, len(self.nodes)):
-                x1, y1, z1, _ = self.nodes[a]
-                x2, y2, z2, _ = self.nodes[b]
-                if np.linalg.norm(np.array([x1-x2, y1-y2, z1-z2])) < 0.05:
-                    self.deltas.append((a, b))
-        print(f"Deltas found: {len(self.deltas)}")
-
-    def grow_tetra(self):
-        """Grow tetrahedral lattice from deltas."""
-        for i, j in self.deltas:
-            x1, y1, z1, _ = self.nodes[i]
-            x2, y2, z2, _ = self.nodes[j]
-            dx, dy, dz = x2 - x1, y2 - y1, z2 - z1
-            new_x = x1 + dx * 0.5 + dy * 0.866  # 60° tilt
-            new_y = y1 + dy * 0.5 - dx * 0.866
-            new_z = z1 + dz * np.sqrt(2/3)  # Tetra height
-            self.nodes.append((new_x, new_y, new_z, 0))  # Theta zero
-
-    def reset(self):
-        """Reset grid state and safety counters."""
-        self.nodes = []
-        self.deltas = []
-        self.tendon_load = 0.0
-        self.gaze_duration = 0.0
-
-    def rasterize_kappa(self, points, material):
-        mesh_data = mesh("W21x62")  # Mock solid
+    async def navi_rasterize_kappa(self, points, material):
+        """Rasterize kappa grid with material depth and fractal tetra."""
         for p in points:
-            x, y, z = p
-            self.grid[x, y, z] = material.get("density", 1.0)
+            x, y, z = [int(coord * (self.grid_size - 1)) for coord in p]
+            if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
+                self.grid[x, y, z] = material.get("density", 1.0)
+        # Add Sierpinski triangles in tetrahedral sections
+        tetra_points = []
+        for x in range(0, self.grid_size, 2):
+            for y in range(0, self.grid_size, 2):
+                for z in range(0, self.grid_size, 2):
+                    tetra_points.extend([(x, y, z), (x+1, y, z), (x, y+1, z), (x, y, z+1)])
+        tri = Delaunay(np.array(tetra_points))
+        for simplex in tri.simplices:
+            # Mock Sierpinski recursion (simplify for now)
+            center = np.mean(tetra_points[simplex], axis=0)
+            self.grid[int(center[0]), int(center[1]), int(center[2])] += 0.5
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("Kappa: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Kappa: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+        print(f"Navi: Rasterized kappa grid with {len(points)} points")
         return self.grid
 
+    def flatten_to_delaney(self, grid):
+        """Flatten grid to Delaney surface map."""
+        flat_map = grid.reshape(-1)
+        return flat_map
+
+    async def navi_unflatten_to_stl(self, flat_map):
+        """Unflatten to stereolithography output."""
+        mesh_data = mesh("W21x62")  # Mock solid
+        stl_output = f"solid kappa\nfacet normal 0 0 1\nouter loop\n"
+        for i in range(len(flat_map) - 1):
+            if flat_map[i] > 0 and flat_map[i + 1] > 0:
+                x, y, z = np.unravel_index(i, (self.grid_size, self.grid_size, self.grid_size))
+                stl_output += f"vertex {x} {y} {z}\n"
+        stl_output += "endloop\nendfacet\nendsolid kappa"
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("Kappa: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Kappa: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+        print("Navi: Unflattened to STL")
+        return stl_output
+
+    def reset(self):
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
+
 if __name__ == "__main__":
-    grid = KappaGrid()
-    asyncio.run(grid.navi_weave())
+    async def navi_test():
+        kappa = Kappa()
+        points = np.random.rand(10, 3)
+        grid = await kappa.navi_rasterize_kappa(points, {"density": 2.0})
+        flat_map = kappa.flatten_to_delaney(grid)
+        stl = await kappa.navi_unflatten_to_stl(flat_map)
+        print(f"Navi: STL snippet: {stl[:100]}...")
+
+    asyncio.run(navi_test())
