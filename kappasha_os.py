@@ -1,0 +1,231 @@
+# Dual License:
+# - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# - For hardware/embodiment interfaces (if any): Licensed under the Apache License, Version 2.0
+#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
+#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+#   for details, with the following xAI-specific terms appended.
+#
+# Copyright 2025 xAI
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
+#
+# xAI Amendments for Physical Use:
+# 1. **Physical Embodiment Restrictions**: Use with physical devices (e.g., headsets, watches) is for non-hazardous purposes only. Modifications enabling harm are prohibited, with license revocable by xAI.
+# 2. **Ergonomic Compliance**: Interfaces must follow ISO 9241-5, limiting tendon load to 20% and gaze duration to 30 seconds.
+# 3. **Safety Monitoring**: Real-time checks for tendon/gaze, logged for audit.
+# 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
+# 5. **Export Controls**: Sensor-based devices comply with US EAR Category 5 Part 2.
+# 6. **Open Development**: Hardware docs shared under this License post-private phase.
+#
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted to authorized contributors. Consult Beau Ayres (github.com/tetrasurfaces/issues) post-private phase.
+
+#!/usr/bin/env python3
+# kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, Navi-integrated.
+# CLI-driven, 3D DOS Navigator soul, safety-first for local dev.
+
+import simpy
+import numpy as np
+import asyncio
+from nav3d import RhombusNav
+from factory_sim import FactorySim
+from ghosthand import GhostHand
+from thought_curve import ThoughtCurve
+from arch_utils.render import render
+from dev_utils.lockout import lockout
+from dev_utils.hedge import hedge, multi_hedge
+from dev_utils.grep import grep
+from dev_utils.thought_arb import thought_arb
+import kappasha_os_cython  # Cython-optimized functions
+
+class KappashaOS:
+    def __init__(self):
+        self.env = simpy.Environment()
+        self.nav = RhombusNav(kappa=0.2)
+        self.factory = FactorySim(self.env)
+        self.hand = GhostHand(kappa=0.2)
+        self.curve = ThoughtCurve()
+        self.commands = []
+        self.sensor_data = []
+        self.decisions = []  # Log decision outcomes
+        self.gaze_duration = 0.0
+        self.tendon_load = 0.0
+        print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid ready.")
+
+    async def navi_listen(self):
+        """Navi listens for sensor twitches and adjusts."""
+        while True:
+            # Mock EEG twitch (intent detection)
+            twitch = np.random.rand() * 0.3
+            if twitch > 0.2:
+                self.hand.move(twitch)
+                print(f"Navi: Hey! Move by {twitch:.2f}")
+
+            # Mock gyro input
+            gyro_data = np.array([np.random.rand() * 0.2 - 0.1,
+                                 np.random.rand() * 0.2 - 0.1,
+                                 0.0])
+            self.hand.adjust_kappa(gyro_data)
+            print(f"Navi: Adjusting kappa by {gyro_data}")
+
+            # Safety check
+            self.tendon_load = np.random.rand() * 0.3
+            self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+            if self.tendon_load > 0.2:
+                print("Navi: Warning - Tendon overload. Resetting.")
+                self.hand.reset()
+            if self.gaze_duration > 30.0:
+                print("Navi: Warning - Excessive gaze. Pausing.")
+                await asyncio.sleep(2.0)
+                self.gaze_duration = 0.0
+
+            await asyncio.sleep(1.0 / 60)  # 60 FPS
+
+    def poll_sensor(self):
+        """Legacy sensor poll, now secondary to Navi."""
+        while True:
+            gyro = np.random.uniform(0, 20)
+            drift = np.random.rand() * 0.1
+            self.sensor_data.append((self.env.now, gyro, drift))
+            if gyro > 10 or drift > 0.05:
+                self.nav.kappa += 0.1
+                self.factory.kappa += 0.1
+                self.hand.kappa += 0.1
+                self.hand.pulse(2)
+                print(f"Sensor alert: Kappa adjusted to {self.nav.kappa:.3f}")
+            yield self.env.timeout(5)
+
+    def run_command(self, cmd):
+        """Execute CLI commands with Navi awareness."""
+        self.commands.append(cmd)
+        if cmd == "kappa ls":
+            front, right, top = kappasha_os_cython.project_third_angle(self.nav.grid, self.nav.kappa)
+            print("FRONT:\n", front[:3, :3])
+            print("RIGHT:\n", right[:3, :3])
+            print("TOP:\n", top[:3, :3])
+        elif cmd.startswith("kappa tilt"):
+            try:
+                dk = float(cmd.split()[2])
+                self.nav.kappa += dk
+                self.factory.kappa += dk
+                self.hand.kappa += dk
+                self.hand.pulse(2)
+                print(f"Kappa now {self.nav.kappa:.3f}")
+            except:
+                print("usage: kappa tilt 0.05")
+        elif cmd.startswith("kappa cd"):
+            try:
+                path = cmd.split()[2]
+                self.nav.path.append(path)
+                hedge_action = hedge(self.curve, self.nav.path)
+                if hedge_action == "unwind":
+                    self.hand.pulse(3)
+                print(f"Curved to /{path}")
+            except:
+                print("usage: kappa cd logs")
+        elif cmd.startswith("kappa unlock"):
+            try:
+                coord = tuple(map(int, cmd.split()[2].strip("()").split(",")))
+                if self.nav.unlock_edge(coord):
+                    self.factory.register_kappa("edge_unlock")
+            except:
+                print("usage: kappa unlock (7,0,0)")
+        elif cmd == "arch_utils render":
+            filename = render(self.nav.grid, self.nav.kappa)
+            print(f"arch_utils: Rendered to {filename}")
+        elif cmd.startswith("dev_utils lockout"):
+            try:
+                target = cmd.split()[2]
+                lockout(self.factory, target)
+            except:
+                print("usage: dev_utils lockout gas_line")
+        elif cmd.startswith("kappa grep"):
+            try:
+                pattern = cmd.split(maxsplit=2)[2]
+                matches = grep(self.factory.history, pattern)
+                if matches:
+                    self.hand.pulse(len(matches))
+                    print(f"Grep found {len(matches)} matches:")
+                    for m in matches[:3]:
+                        print(f" - {m}")
+                else:
+                    print("No matches found.")
+            except:
+                print("usage: kappa grep /warp=0.2+/")
+        elif cmd == "kappa sensor":
+            print(f"Sensor data: {self.sensor_data[-1]}")
+        elif cmd.startswith("kappa hedge multi"):
+            try:
+                paths = cmd.split()[2].strip("[]").split(",")
+                paths = [p.strip() for p in paths]
+                hedge_action = multi_hedge(self.curve, [(paths[-2], paths[-1])] if len(paths) > 1 else [(paths[0], paths[0])])
+                if "unwind" in hedge_action:
+                    self.hand.pulse(4)
+                print(f"Multi-path hedge: {hedge_action}")
+            except:
+                print("usage: kappa hedge multi [gate,weld]")
+        elif cmd.startswith("kappa decide"):
+            try:
+                intent = cmd.split()[2]
+                action = kappasha_os_cython.thought_arb_cython(self.curve, self.factory.history, intent)
+                self.decisions.append((self.env.now, intent, action))
+                self.hand.pulse(2 if action == "unwind" else 1)
+                print(f"Decision: {intent} - {action}")
+                if action == "unwind":
+                    self.nav.kappa += 0.05
+                    print(f"Kappa adjusted to {self.nav.kappa:.3f}")
+            except:
+                print("usage: kappa decide weld")
+        elif cmd == "navi listen":
+            asyncio.run(self.navi_listen())
+            print("Navi listening stopped.")
+        else:
+            print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | navi listen")
+
+    def run_day(self):
+        """Simulate a factory day with Navi integration."""
+        print(f"Day start - Situational Kappa = {self.factory.get_situational_kappa():.3f}")
+        self.env.process(self.poll_sensor())
+        asyncio.run(self.navi_listen())  # Start Navi loop
+        yield self.env.timeout(20)
+        self.factory.trigger_emergency("gas_rupture")
+        self.factory.register_kappa("gas_rupture")
+        self.run_command("kappa cd weld")
+        self.run_command("kappa unlock (7,0,0)")
+        self.run_command("kappa grep /gas_rupture/")
+        self.run_command("kappa sensor")
+        self.run_command("kappa hedge multi [gate,weld]")
+        self.run_command("kappa decide weld")
+        yield self.env.process(self.factory.auto_rig("gas_line"))
+        self.run_command("kappa ls")
+        self.run_command("arch_utils render")
+        print(f"Day end - Situational Kappa = {self.factory.get_situational_kappa():.3f}")
+        print(f"Decisions made: {self.decisions}")
+
+if __name__ == "__main__":
+    os = KappashaOS()
+    os.env.process(os.run_day())
+    os.env.run(until=60)
