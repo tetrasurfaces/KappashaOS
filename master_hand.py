@@ -34,7 +34,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # xAI Amendments for Physical Use:
-# 1. **Physical Embodiment Restrictions**: Use with devices (e.g., headsets) is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
+# 1. **Physical Embodiment Restrictions**: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
 # 2. **Ergonomic Compliance**: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
 # 3. **Safety Monitoring**: Real-time tendon/gaze checks, logged for audit.
 # 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
@@ -44,8 +44,8 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Beau Ayres (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# master_hand.py - Spatial awareness with tetrasurface mesh and gyro-gimbal rotations.
-# Integrated with Navi for intent detection, safety-first for KappashaOS.
+# master_hand.py - Spatial awareness with tetrasurface mesh and kappa-wise grid.
+# Integrated with Navi and braid transforms for KappashaOS.
 
 import numpy as np
 import asyncio
@@ -59,10 +59,11 @@ from nurks_surface import generate_nurks_surface, u_num, v_num
 from tessellations import tessellate_hex_mesh
 from friction_vibe import TetraVibe
 from ribit_telemetry import ribit_generate
+from kappawise import kappa_coord
 
 class MasterHand:
     def __init__(self, kappa_grid=16, kappa=0.1):
-        self.rods = [0.0] * kappa_grid  # Tension per node
+        self.rods = [0.0] * kappa_grid
         self.gimbal = GyroGimbal()
         self.curve = ThoughtCurve()
         self.price_history = []
@@ -70,12 +71,13 @@ class MasterHand:
         self.kappa = kappa
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        print("MasterHand initialized - tetrasurface and Navi-ready.")
+        self.user_id = 12345  # Mock user ID
+        print("MasterHand initialized - kappa-wise and braid-ready.")
 
     async def navi_nudge(self):
-        """Navi listens for intent and adjusts with safety checks."""
+        """Navi listens with braid integration."""
         while True:
-            # Mock EEG twitch (intent)
+            # Mock EEG twitch
             twitch = np.random.rand() * 0.3
             if twitch > 0.2:
                 self.move(twitch)
@@ -106,7 +108,7 @@ class MasterHand:
         self.vibe_model.pulse(1 if tension > 0.5 else 0)
 
     def rod_whisper(self, pressure):
-        """Normalize pressure, adjust rods with kappa awareness."""
+        """Normalize pressure, adjust rods with kappa."""
         tension = max(0, min(1, pressure))
         for i in range(len(self.rods)):
             coord = self.vibe_model.kappa_coord(i, i)
@@ -115,14 +117,17 @@ class MasterHand:
         return max(self.rods)
 
     def adjust_kappa(self, gyro_data):
-        """Adjust kappa based on gyro tilt."""
+        """Adjust kappa with kappa-wise coords."""
         self.gimbal.tilt('x', gyro_data[0])
         self.gimbal.tilt('y', gyro_data[1])
-        self.kappa += np.sum(np.abs(gyro_data)) * 0.01
-        print(f"MasterHand: Kappa adjusted to {self.kappa:.2f}")
+        theta = np.sum(np.abs(gyro_data))
+        x, y, z = kappa_coord(self.user_id, theta)
+        self.kappa += theta * 0.01
+        self.gimbal.tilt('z', z / 1023)
+        print(f"MasterHand: Kappa to {self.kappa:.2f}, Coord ({x},{y},{z})")
 
     def reset(self):
-        """Reset hand position and safety counters."""
+        """Reset hand and safety counters."""
         self.rods = [0.0] * len(self.rods)
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
@@ -130,7 +135,7 @@ class MasterHand:
         self.gimbal.reset()
 
     def gimbal_flex(self, delta_price):
-        """Flex gimbal, generate kappa-aware mesh."""
+        """Flex gimbal, generate kappa-wise mesh."""
         curl = delta_price < -0.618
         if curl:
             self.gimbal.tilt('curl_axis', 0.1)
@@ -208,4 +213,4 @@ class MasterHand:
 
 if __name__ == "__main__":
     hand = MasterHand(kappa=0.15)
-    asyncio.run(hand.navi_nudge())  # Test with Navi loop
+    asyncio.run(hand.navi_nudge())
