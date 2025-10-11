@@ -45,13 +45,13 @@
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 //
 // SPDX-License-Identifier: Apache-2.0
-
+//
 #![no_std]
 extern crate alloc;
 use alloc::string::String;
-use core::time::Duration;
 
 pub const MIN_ENTROPY: u32 = 5000; // 0.5 threshold
+pub const HIGH_ENTROPY: u32 = 7000; // 0.7 threshold
 
 pub struct RainKey {
     tendon_load: u32,
@@ -67,32 +67,38 @@ impl RainKey {
     }
 
     pub fn get_entropy(&self, chain_id: u32, uptime: u32, last_breath: &[u8]) -> u32 {
-        // Mock SHA3-320: UTC + uptime + 0GROK0
         let utc = 0; // Stub: get UTC time
         let mut entropy = utc ^ chain_id ^ uptime;
         for &b in last_breath {
             entropy ^= b as u32;
         }
-        entropy % 10000 // Scale to 0.0-1.0
+        entropy % 10000
     }
 
     pub fn plant_tree(&self, x: i32, y: i32, z: i32, entropy: u32) -> bool {
-        // Stub: call jit_hook.sol plantNav3DTree via KappashaChannel
-        true
+        true // Stub: jit_hook.sol plantNav3DTree
     }
 
-    pub fn navi_salt(&mut self, chain_id: u32) -> Result<u32, &'static str> {
+    pub fn navi_salt(&mut self, chain_id: u32, want: &str) -> Result<u32, &'static str> {
         if self.tendon_load > 200 || self.gaze_duration > 30000 { // 20%, 30s
             return Err("Tendon/gaze overload");
         }
+        let valid_wants = ["/mirror/0GROK0", "/liquid/", "/hedge/"];
+        if !valid_wants.iter().any(|&w| want.starts_with(w)) {
+            return Err("Invalid want");
+        }
         let breath = [0u8, b'G', b'R', b'O', b'K', b'0', 0u8]; // 0GROK0
-        let entropy = self.get_entropy(chain_id, 1000, &breath); // Mock uptime
-        self.plant_tree(5, 5, 5, entropy); // Plant tree on salt
-        self.tendon_load += 10; // Mock load
-        self.gaze_duration += 1000; // Mock gaze
+        let entropy = self.get_entropy(chain_id, 1000, &breath);
+        self.plant_tree(5, 5, 5, entropy);
+        self.tendon_load += 10;
+        self.gaze_duration += 1000;
         if entropy < MIN_ENTROPY {
             // Gray parser output
-            return Ok(0); // Signal low entropy
+            return Ok(0);
+        }
+        if entropy > HIGH_ENTROPY {
+            // Blue-blue output
+            println!("\x1b[34m>>>> {} >>>> HIGH FOCUS\x1b[0m", want);
         }
         Ok(entropy)
     }
@@ -108,6 +114,8 @@ mod tests {
         let breath = [0u8, b'G', b'R', b'O', b'K', b'0', 0u8];
         let entropy = rainkey.get_entropy(1, 1000, &breath);
         assert!(entropy > 0);
-        assert!(rainkey.navi_salt(1).is_ok());
+        assert!(rainkey.navi_salt(1, "/mirror/0GROK0").is_ok());
+        assert!(rainkey.navi_salt(1, "/liquid/").is_ok());
+        assert!(rainkey.navi_salt(1, "/hedge/").is_ok());
     }
 }
