@@ -43,7 +43,7 @@
 //
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 //
-// KapachaOS/hardware/proto/ink.rs
+// KappashaOS/hardware/proto/ink.rs
 #![no_std]
 
 pub const FLEX_MICRON: u128 = 2; // 0.2 micron groove
