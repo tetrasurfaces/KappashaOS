@@ -1,3 +1,4 @@
+// KappashaOS/core/buffer/buffer_pulse.rs
 // Dual License:
 // - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 //   This program is free software: you can redistribute it and/or modify
@@ -43,27 +44,27 @@
 //
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 //
-// KappashaOS/core/buffer/buffer_pulse.rs
 #![no_std]
 
-use crate::rainkey_v2::get_entropy; // Assume rainkey_v2.rs exposes
-use crate::lib::MIN_TENSION;
+use crate::rainkey_v2::get_entropy;
 
 pub const MIN_BUFFER: u128 = 3; // Palindrome torrents
 pub const LOAN_BUFFER: u128 = 72; // Flash loans
 pub const MAX_BUFFER: u128 = 144; // Trades
+pub const MAX_SPACING: u128 = 24 + 48 + 24; // 144 enforced
 
 pub fn pulse_buffer(mode: &str) -> u128 {
     let entropy = get_entropy();
-    let tension = if entropy > MIN_TENSION { entropy / 10 } else { 0 };
+    let tension = if entropy > 10_000_000 { entropy / 10 } else { 0 };
     if tension == 0 {
-        // Gray output, plant tree ethics
         return MIN_BUFFER; // Fallback, low entropy
     }
     match mode {
-        "torrent" => MIN_BUFFER,
+        "torrent" => MIN_BUFFER, // 3-hash for torrents
         "loan" => LOAN_BUFFER,
-        "trade" => MAX_BUFFER,
+        "trade" => {
+            if entropy >= MAX_SPACING { MAX_BUFFER } else { LOAN_BUFFER }
+        }
         _ => if entropy > 7000 { MIN_BUFFER } else if entropy < 5000 { MAX_BUFFER } else { LOAN_BUFFER },
     }
 }
@@ -74,7 +75,8 @@ mod tests {
 
     #[test]
     fn test_pulse() {
-        let buffer = pulse_buffer("torrent");
-        assert_eq!(buffer, 3);
+        assert_eq!(pulse_buffer("torrent"), 3);
+        assert_eq!(pulse_buffer("loan"), 72);
+        assert!(pulse_buffer("trade") <= 144);
     }
 }
