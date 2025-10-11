@@ -69,17 +69,30 @@ impl GrokCall {
     }
 
     pub fn post_to_x(&self, text: &str) -> bool {
-        // Stub: post to X, return true if posted
+        // Stub: post to X, no metadata
         true
     }
 
     pub fn get_mentions(&self) -> Vec<String> {
-        // Stub: return mock mentions
+        // Stub: return mock mentions, no metadata
         alloc::vec![String::from("Reply with seed: deadbeef") ]
     }
 
-    pub fn p2p_stream(&self, key: &[u8]) -> Result<(), &'static str> {
-        // Stub: XOR stream for voice/file
+    pub fn p2p_stream(&self, key: &[u8], mode: &str) -> Result<(), &'static str> {
+        // Mock stream: voice 44.1kHz, file 64KB
+        match mode {
+            "voice" => {
+                // Mock 1024-byte audio chunk
+                let chunk = [0u8; 1024];
+                if chunk.len() != 1024 { return Err("Invalid audio chunk"); }
+            }
+            "file" => {
+                // Mock 64KB file chunk
+                let chunk = [0u8; CHUNK_SIZE];
+                if chunk.len() != CHUNK_SIZE { return Err("Invalid file chunk"); }
+            }
+            _ => return Err("Unsupported mode"),
+        }
         Ok(())
     }
 
@@ -94,13 +107,17 @@ impl GrokCall {
         breath == mirror.as_slice()
     }
 
-    pub fn call(&mut self, dest: &str, mode: &str) -> Result<(), &'static str> {
+    pub fn call(&mut self, dest: &str, mode: &str, entropy: u32) -> Result<(), &'static str> {
         if self.tendon_load > 200 || self.gaze_duration > 30000 { // 20%, 30s
             return Err("Tendon/gaze overload");
         }
         if !self.check_mirror() {
             return Err("Invalid 0GROK0 mirror");
         }
+
+        // Synod filter check
+        let synod = SynodFilter::new();
+        synod.filter_want("/mirror/0GROK0", entropy)?;
 
         let seed = [0u8; 32]; // Mock seed
         let mut call_hash = 0; // Mock SHA1664
@@ -118,23 +135,11 @@ impl GrokCall {
                 let peer_seed = reply.split(' ').nth(1).unwrap_or(""); // Mock parse
                 let handshake = peer_seed.len() as u32; // Mock combine
 
-                self.plant_tree(5, 5, 5, handshake); // Plant tree on handshake
+                self.plant_tree(5, 5, 5, entropy); // Plant tree on handshake
                 self.tendon_load += 10; // Mock load
                 self.gaze_duration += 1000; // Mock gaze
 
-                match mode {
-                    "voice" => {
-                        // Mock voice stream
-                        let chunk = [0u8; 1024];
-                        self.p2p_stream(&chunk)?;
-                    }
-                    "file" => {
-                        // Mock file stream
-                        let chunk = [0u8; CHUNK_SIZE];
-                        self.p2p_stream(&chunk)?;
-                    }
-                    _ => return Err("Unsupported mode"),
-                }
+                self.p2p_stream(&[0u8; 32], mode)?; // Stream with handshake
                 return Ok(());
             }
         }
@@ -149,7 +154,7 @@ mod tests {
     #[test]
     fn test_call() {
         let mut call = GrokCall::new();
-        assert!(call.call("alice", "voice").is_ok());
+        assert!(call.call("alice", "voice", 8000).is_ok());
         assert!(call.check_mirror());
     }
 }
