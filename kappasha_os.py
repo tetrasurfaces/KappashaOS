@@ -65,7 +65,7 @@ import kappasha_os_cython
 class KappaSynod:
     def __init__(self, grid_size=10):
         self.experts = {}  # pos -> expert (ramp, weave, etc.)
-        self.red_book = 10.0  # Mint credit
+        self.red_book = 10.0  # Mint credit (lamports micro)
         self.green_book = 0.0  # Burn debt
         self.grid_size = grid_size
 
@@ -79,7 +79,7 @@ class KappaSynod:
 
     def summon_expert(self, pos, specialty):
         if self.red_book > 0:
-            self.mint_red(-1.0)  # Cost to summon
+            self.mint_red(-1.0)
             self.experts[pos] = specialty
             print(f"Summoned {specialty} expert at {pos}")
             return True
@@ -87,7 +87,7 @@ class KappaSynod:
 
     def rehash_expert(self, pos):
         if pos in self.experts and self.green_book > 0:
-            self.burn_green(-1.0)  # Cost to rehash
+            self.burn_green(-1.0)
             print(f"Rehashed {self.experts[pos]} expert at {pos}")
             return self.experts[pos]
         return None
@@ -129,6 +129,7 @@ class KappashaOS:
             twitch = np.random.rand() * 0.3
             if twitch > 0.2:
                 self.hand.move(twitch)
+                self.synod.mint_red(0.5)  # Mint for new focus
                 print(f"Navi: Hey! Move by {twitch:.2f}")
             gyro_data = np.array([np.random.rand() * 0.2 - 0.1,
                                  np.random.rand() * 0.2 - 0.1,
@@ -163,14 +164,106 @@ class KappashaOS:
     def run_command(self, cmd):
         self.commands.append(cmd)
         # Token cycle hook: mint/burn on command
-        self.synod.mint_red(1.0) if "new" in cmd else self.synod.burn_green(1.0) if "rehash" in cmd else None
-        self.synod.debate(new_thinking="new" in cmd)
+        if "new" in cmd or "program" in cmd:
+            self.synod.mint_red(1.0)
+        elif "rehash" in cmd or "grep" in cmd:
+            self.synod.burn_green(1.0)
+        self.synod.debate(new_thinking="new" in cmd or "program" in cmd)
         if cmd == "kappa ls":
             front, right, top = kappasha_os_cython.project_third_angle(self.kappa_sim.grid, self.kappa_sim.kappa)
             print("FRONT:\n", front[:3, :3])
             print("RIGHT:\n", right[:3, :3])
             print("TOP:\n", top[:3, :3])
-        # ... (other commands remain the same)
+        elif cmd.startswith("kappa tilt"):
+            try:
+                dk = float(cmd.split()[2])
+                self.nav.kappa += dk
+                self.kappa_sim.kappa += dk
+                self.hand.kappa += dk
+                self.hand.pulse(2)
+                print(f"Kappa now {self.nav.kappa:.3f}")
+            except:
+                print("usage: kappa tilt 0.05")
+        elif cmd.startswith("kappa cd"):
+            try:
+                path = cmd.split()[2]
+                self.nav.path.append(path)
+                hedge_action = hedge(self.curve, self.nav.path)
+                if hedge_action == "unwind":
+                    self.hand.pulse(3)
+                    self.synod.burn_green(2.0)  # Burn for unwind
+                print(f"Curved to /{path}")
+            except:
+                print("usage: kappa cd logs")
+        elif cmd.startswith("kappa unlock"):
+            try:
+                coord = tuple(map(int, cmd.split()[2].strip("()").split(",")))
+                if self.nav.unlock_edge(coord):
+                    self.kappa_sim.register_kappa("edge_unlock")
+                    self.synod.mint_red(0.5)  # Mint for unlock
+            except:
+                print("usage: kappa unlock (7,0,0)")
+        elif cmd == "arch_utils render":
+            filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)
+            print(f"arch_utils: Rendered to {filename}")
+        elif cmd.startswith("dev_utils lockout"):
+            try:
+                target = cmd.split()[2]
+                lockout(self.kappa_sim, target)
+                self.synod.burn_green(1.0)  # Burn for lockout
+            except:
+                print("usage: dev_utils lockout gas_line")
+        elif cmd.startswith("kappa grep"):
+            try:
+                pattern = cmd.split(maxsplit=2)[2]
+                matches = grep(self.kappa_sim.history, pattern)
+                if matches:
+                    self.hand.pulse(len(matches))
+                    self.synod.mint_red(len(matches) * 0.5)  # Mint for discovery
+                    print(f"Grep found {len(matches)} matches:")
+                    for m in matches[:3]:
+                        print(f" - {m}")
+                else:
+                    print("No matches found.")
+            except:
+                print("usage: kappa grep /warp=0.2+/")
+        elif cmd == "kappa sensor":
+            print(f"Sensor data: {self.sensor_data[-1]}")
+        elif cmd.startswith("kappa hedge multi"):
+            try:
+                paths = cmd.split()[2].strip("[]").split(",")
+                paths = [p.strip() for p in paths]
+                hedge_action = multi_hedge(self.curve, [(paths[-2], paths[-1])] if len(paths) > 1 else [(paths[0], paths[0])])
+                if "unwind" in hedge_action:
+                    self.hand.pulse(4)
+                    self.synod.burn_green(2.0)
+                print(f"Multi-path hedge: {hedge_action}")
+            except:
+                print("usage: kappa hedge multi [gate,weld]")
+        elif cmd.startswith("kappa decide"):
+            try:
+                intent = cmd.split()[2]
+                action = kappasha_os_cython.thought_arb_cython(self.curve, self.kappa_sim.history, intent)
+                self.decisions.append((self.env.now, intent, action))
+                self.hand.pulse(2 if action == "unwind" else 1)
+                if action == "unwind":
+                    self.nav.kappa += 0.05
+                    self.kappa_sim.kappa += 0.05
+                    self.synod.burn_green(1.5)  # Burn for unwind
+                    print(f"Kappa adjusted to {self.nav.kappa:.3f}")
+                print(f"Decision: {intent} - {action}")
+            except:
+                print("usage: kappa decide weld")
+        elif cmd == "kappa program":
+            try:
+                func_str = cmd.split(maxsplit=1)[1]
+                gait = "normal"
+                exponent = 1
+                program = self.create_program_from_string(func_str, gait, exponent)
+                self.synod.mint_red(1.0)  # Mint for new program
+                print(f"Program created: {program}")
+            except:
+                print("usage: kappa program ramp;weave;walk")
         else:
             print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | program ramp;weave;walk")
 
