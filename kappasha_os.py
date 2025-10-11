@@ -50,7 +50,7 @@
 import simpy
 import numpy as np
 import asyncio
-from nav3d import RhombusNav
+from nav3d import Nav3D
 from factory_sim import FactorySim
 from ghosthand import GhostHand
 from thought_curve import ThoughtCurve
@@ -59,39 +59,37 @@ from dev_utils.lockout import lockout
 from dev_utils.hedge import hedge, multi_hedge
 from dev_utils.grep import grep
 from dev_utils.thought_arb import thought_arb
+from scale import left_weight, right_weight  # New scale module
 import kappasha_os_cython  # Cython-optimized functions
 
 class KappashaOS:
     def __init__(self):
         self.env = simpy.Environment()
-        self.nav = RhombusNav(kappa=0.2)
+        self.nav = Nav3D()
         self.factory = FactorySim(self.env)
         self.hand = GhostHand(kappa=0.2)
         self.curve = ThoughtCurve()
         self.commands = []
         self.sensor_data = []
-        self.decisions = []  # Log decision outcomes
+        self.decisions = []
         self.gaze_duration = 0.0
         self.tendon_load = 0.0
+        self.entropy = 0.5  # Initial entropy
         print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid ready.")
 
     async def navi_listen(self):
-        """Navi listens for sensor twitches and adjusts."""
+        """Navi listens for sensor twitches and adjusts with entropy."""
         while True:
-            # Mock EEG twitch (intent detection)
             twitch = np.random.rand() * 0.3
             if twitch > 0.2:
                 self.hand.move(twitch)
                 print(f"Navi: Hey! Move by {twitch:.2f}")
-
-            # Mock gyro input
             gyro_data = np.array([np.random.rand() * 0.2 - 0.1,
                                  np.random.rand() * 0.2 - 0.1,
                                  0.0])
             self.hand.adjust_kappa(gyro_data)
-            print(f"Navi: Adjusting kappa by {gyro_data}")
-
-            # Safety check
+            self.entropy = np.random.uniform(0.4, 0.8)  # Mock Seraph entropy
+            print(f"Navi: Adjusting kappa by {gyro_data}, Entropy: {self.entropy:.2f}")
             self.tendon_load = np.random.rand() * 0.3
             self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
             if self.tendon_load > 0.2:
@@ -101,11 +99,9 @@ class KappashaOS:
                 print("Navi: Warning - Excessive gaze. Pausing.")
                 await asyncio.sleep(2.0)
                 self.gaze_duration = 0.0
-
-            await asyncio.sleep(1.0 / 60)  # 60 FPS
+            await asyncio.sleep(1.0 / 60)
 
     def poll_sensor(self):
-        """Legacy sensor poll, now secondary to Navi."""
         while True:
             gyro = np.random.uniform(0, 20)
             drift = np.random.rand() * 0.1
@@ -119,10 +115,9 @@ class KappashaOS:
             yield self.env.timeout(5)
 
     def run_command(self, cmd):
-        """Execute CLI commands with Navi awareness."""
         self.commands.append(cmd)
         if cmd == "kappa ls":
-            front, right, top = kappasha_os_cython.project_third_angle(self.nav.grid, self.nav.kappa)
+            front, right, top = kappasha_os_cython.project_third_angle(self.nav.kappa.grid, self.nav.kappa.kappa)
             print("FRONT:\n", front[:3, :3])
             print("RIGHT:\n", right[:3, :3])
             print("TOP:\n", top[:3, :3])
@@ -154,7 +149,7 @@ class KappashaOS:
             except:
                 print("usage: kappa unlock (7,0,0)")
         elif cmd == "arch_utils render":
-            filename = render(self.nav.grid, self.nav.kappa)
+            filename = render(self.nav.kappa.grid, self.nav.kappa.kappa)
             print(f"arch_utils: Rendered to {filename}")
         elif cmd.startswith("dev_utils lockout"):
             try:
@@ -199,17 +194,52 @@ class KappashaOS:
                     print(f"Kappa adjusted to {self.nav.kappa:.3f}")
             except:
                 print("usage: kappa decide weld")
-        elif cmd == "navi listen":
-            asyncio.run(self.navi_listen())
-            print("Navi listening stopped.")
+        elif cmd == "kappa program":
+            try:
+                func_str = cmd.split(maxsplit=1)[1]
+                gait = "normal"  # Mock gait
+                exponent = 1  # Default exponent
+                program = self.create_program_from_string(func_str, gait, exponent)
+                print(f"Program created: {program}")
+            except:
+                print("usage: kappa program ramp;weave;walk")
         else:
-            print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | navi listen")
+            print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | program ramp;weave;walk")
+
+    def move_skewed_volume(self, theta: float, gait: str):
+        """Move volume with skewed rhombus voxels and golden spiral."""
+        angle = theta * 137.5  # Golden spiral increment
+        shear_matrix = np.array([[np.cos(np.radians(angle)), np.sin(np.radians(angle))],
+                                [-np.sin(np.radians(angle)), np.cos(np.radians(angle))]])
+        self.nav.kappa.grid = np.tensordot(self.nav.kappa.grid, shear_matrix, axes=0)
+        self.entropy = np.random.uniform(0.4, 0.8)
+        if self.entropy > 0.7:
+            print(f"Navi: Volume moved at {angle:.1f}°, unlocked by entropy {self.entropy:.2f}")
+        else:
+            print(f"Navi: Volume locked - entropy {self.entropy:.2f} too low")
+        self.hand.pulse(1)
+
+    def create_program_from_string(self, func_str: str, gait: str, exponent: int):
+        """Create program from function string using exponents and diagonals."""
+        funcs = func_str.split(';')
+        scaled_exp = left_weight(exponent) if exponent >= 0 else right_weight(exponent)
+        program = lambda x: x  # Identity by default
+        for i, func in enumerate(funcs):
+            angle = i * 137.5  # Golden spiral step
+            if self.entropy > 0.7 or (exponent < 0 and self.entropy > 0.5):  # Seraph unlock
+                if func == "ramp":
+                    program = lambda x: self.ramp.encode(x, int(angle / 137.5))
+                elif func == "weave":
+                    program = lambda x: self.loom.navi_weave(self.ramp.pin, x, (5, 5, 5))
+                elif func == "walk":
+                    program = lambda x: self.nav.navi_navigate("test.txt", (5, 5, 5), "cone")
+                # Add more functions as needed
+        return program
 
     def run_day(self):
-        """Simulate a factory day with Navi integration."""
         print(f"Day start - Situational Kappa = {self.factory.get_situational_kappa():.3f}")
         self.env.process(self.poll_sensor())
-        asyncio.run(self.navi_listen())  # Start Navi loop
+        asyncio.run(self.navi_listen())
         yield self.env.timeout(20)
         self.factory.trigger_emergency("gas_rupture")
         self.factory.register_kappa("gas_rupture")
@@ -219,6 +249,8 @@ class KappashaOS:
         self.run_command("kappa sensor")
         self.run_command("kappa hedge multi [gate,weld]")
         self.run_command("kappa decide weld")
+        self.move_skewed_volume(1.0, "normal")  # Move volume with theta=1
+        self.run_command("kappa program ramp;weave;walk")
         yield self.env.process(self.factory.auto_rig("gas_line"))
         self.run_command("kappa ls")
         self.run_command("arch_utils render")
