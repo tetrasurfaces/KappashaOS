@@ -44,7 +44,7 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# nav3d.py - 3D navigation tool for Blocsym/KappashaOS with ramp and kappa integration.
+# nav3d.py - 3D navigation tool for Blocsym/KappashaOS with ramp and kappa integration, reverse tuple parse.
 # Async, Navi-integrated.
 
 import numpy as np
@@ -87,6 +87,22 @@ class Nav3D:
         await asyncio.sleep(0)
         return placed
 
+    def reverse_parse_tuple(self, pos: Tuple[int, int, int]) -> str:
+        """Reverse parse tuple from kappa wire to decode original hash."""
+        x, y, z = pos
+        encoded = self.kappa_wire.retrieve_from_wire(x, y, z)
+        if not encoded:
+            return None
+        decoded = ''
+        temp_ramp = RampCipher(self.ramp.pin)  # Use same pin for decode
+        index = 0
+        for c in encoded:
+            idx = index % len(temp_ramp.heights)
+            raw = ord(c) - (int(c, 16) + temp_ramp.heights[idx] * 10)
+            decoded += chr(raw % 256)
+            index += 1
+        return decoded
+
     def reset(self):
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
@@ -95,5 +111,7 @@ if __name__ == "__main__":
     async def navi_test():
         nav = Nav3D()
         await nav.navi_navigate("test.txt", (5, 5, 5), "cone")
+        decoded = nav.reverse_parse_tuple((5, 5, 5))
+        print(f"Navi: Decoded from reverse parse: {decoded[:10]}...")
 
     asyncio.run(navi_test())
