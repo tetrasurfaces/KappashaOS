@@ -44,7 +44,7 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# master_hand.py - Spatial awareness with tetra meshes, ribit, and thought curves.
+# master_hand.py - Spatial awareness with tetra meshes, ribit, thought curves, and echo.
 # Integrated with Navi for KappashaOS.
 
 import numpy as np
@@ -61,6 +61,8 @@ from friction_vibe import TetraVibe
 from ribit_telemetry import RibitTelemetry
 from kappasha.secure_hash_two import secure_hash_two
 from arch_utils.render import render
+from ribit import TetraRibit
+from echo import Echo
 
 class MasterHand:
     def __init__(self, kappa_grid=16, kappa=0.1):
@@ -74,15 +76,18 @@ class MasterHand:
         self.gaze_duration = 0.0
         self.user_id = 12345  # Mock user ID
         self.ribit = RibitTelemetry([], [])  # Mock initial ribit
-        print("MasterHand initialized - kappa-wise, ribit, and thought curve-ready.")
+        self.ribit_arms = TetraRibit()  # Add TetraRibit for arm telemetry
+        self.echo = Echo()  # Add echo for motion replay
+        print("MasterHand initialized - kappa-wise, ribit, thought curve, and echo-ready.")
 
     async def navi_nudge(self):
-        """Navi listens with ribit and thought curve integration."""
+        """Navi listens with ribit, thought curve, and echo integration."""
         while True:
             # Mock EEG twitch
             twitch = np.random.rand() * 0.3
             if twitch > 0.2:
                 self.move(twitch)
+                self.echo.record(f"move by {twitch:.2f}")
                 print(f"Navi: Hey! Move by {twitch:.2f}")
 
             # Mock gyro input
@@ -94,14 +99,19 @@ class MasterHand:
             # Ribit telemetry update
             intensity, state, color = self.ribit.generate()
             print(f"Navi: Ribit - Intensity {intensity}, State {state}, Color {color}")
+            await self.ribit_arms.navi_generate_arms()  # Generate arm telemetry
 
             # Thought curve guidance
             if self.curve.current_step < self.curve.max_steps:
                 tangent, _ = self.curve.spiral_tangent(self.price_history[-1] if self.price_history else (0, 0),
-                                                       (gyro_data[0], gyro_data[1]))
+                                                      (gyro_data[0], gyro_data[1]))
                 if tangent:
                     self.vibe_model.pulse(3)
                     print("Navi: Path hedge - unwind detected")
+
+            # Echo replay on command (mock)
+            if np.random.rand() > 0.9:  # Random trigger
+                await self.echo.replay("echo last move")
 
             # Safety monitoring
             self.tendon_load = np.random.rand() * 0.3
@@ -147,9 +157,10 @@ class MasterHand:
         self.gaze_duration = 0.0
         self.kappa = 0.1
         self.gimbal.reset()
+        self.echo.reset()
 
     def gimbal_flex(self, delta_price):
-        """Flex gimbal, generate kappa-aware mesh with ribit and thought curve."""
+        """Flex gimbal, generate kappa-aware mesh with ribit, thought curve, and echo."""
         curl = delta_price < -0.618
         if curl:
             self.gimbal.tilt('curl_axis', 0.1)
@@ -182,6 +193,9 @@ class MasterHand:
             if tangent:
                 self.vibe_model.pulse(3)
                 print("MasterHand: Thought curve hedge - unwind detected")
+            # Echo record of flex
+            self.echo.record(f"flex kappa {self.kappa:.2f}")
+
         return curl
 
     def extend(self, touch_point):
@@ -192,6 +206,7 @@ class MasterHand:
         self.price_history.append(touch_point)
         if action == 'short':
             self.vibe_model.pulse(2)
+        self.echo.record(f"extend {action}")
         return action, tension
 
     def ladder_hedge(self):
