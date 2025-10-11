@@ -47,22 +47,34 @@
 # kappasha_os_cython.pyx
 # cython: language_level=3
 
+# cython: language_level=3
+
 import numpy as cnp
 cimport numpy as cnp
 cimport cython
+from libc.math cimport cos, sin, M_PI
+from cython.parallel cimport prange
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def shear_matrix(cnp.ndarray[cnp.float64_t, ndim=2] grid, double angle):
-    cdef cnp.ndarray[cnp.float64_t, ndim=2] shear = cnp.array([[math.cos(angle), math.sin(angle)],
-                                                                [-math.sin(angle), math.cos(angle)]])
-    return cnp.dot(grid, shear)
+def shear_matrix(cnp.ndarray[cnp.float64_t, ndim=3] grid, double angle):
+    cdef int x, y, z
+    cdef int size = grid.shape[0]
+    cdef cnp.ndarray[cnp.float64_t, ndim=3] sheared = cnp.zeros_like(grid)
+    cdef double c = cos(angle)
+    cdef double s = sin(angle)
+    with nogil:
+        for x in prange(size, schedule='static'):
+            for y in prange(size, schedule='static'):
+                for z in range(size):
+                    sheared[x, y, z] = grid[x, y, z] * c - grid[y, x, z] * s  # Simplified shear
+    return sheared
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def golden_spiral(int num_points=1000):
-    cdef cnp.ndarray[cnp.float64_t, ndim=1] theta = cnp.linspace(0, 10 * math.pi, num_points)
-    cdef cnp.ndarray[cnp.float64_t, ndim=1] r = cnp.exp(theta / ((1 + math.sqrt(5)) / 2))
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] theta = cnp.linspace(0, 10 * M_PI, num_points)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] r = cnp.exp(theta / 1.618033988749895)
     cdef cnp.ndarray[cnp.float64_t, ndim=1] x = r * cnp.cos(theta)
     cdef cnp.ndarray[cnp.float64_t, ndim=1] y = r * cnp.sin(theta)
     return x, y
@@ -70,4 +82,10 @@ def golden_spiral(int num_points=1000):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def entropy_check(cnp.ndarray[cnp.float64_t, ndim=3] grid):
-    return cnp.mean(grid)  # Mock entropy
+    cdef int size = grid.size
+    cdef double total = 0.0
+    cdef int i
+    with nogil:
+        for i in prange(size):
+            total += grid.flat[i]
+    return total / size  # Mean as entropy proxy
