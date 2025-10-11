@@ -44,48 +44,63 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# grokwalk.py - Mock path navigation with kappa grid for KappashaOS.
-# Navi-integrated.
+# grokwalk.py - OS walk with ramp modulation for KappashaOS.
+# Async, Navi-integrated.
 
 import numpy as np
 import asyncio
-from kappa import KappaGrid
-from piwise import PiWise
+from ramp import RampCipher
+from kappa_wire import KappaWire
+from loom_os import LoomOS
+from master_hand import MasterHand
 
 class GrokWalk:
     def __init__(self):
-        self.grid = KappaGrid()
-        self.piwise = PiWise()
+        self.kappa_wire = KappaWire()
+        self.ramp = RampCipher()
+        self.loom = LoomOS()
+        self.hand = MasterHand()
+        self.gait = "normal"  # Mock gait (e.g., 'normal', 'diagonal')
+        self.call_sign = "cone"
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        print("GrokWalk initialized - path navigation ready.")
+        print("GrokWalk initialized - OS walk ready.")
 
-    async def navi_walk(self, target_pos):
-        """Navi navigates to target with kappa indexing."""
-        while True:
-            pos = len(self.grid.nodes) % len(self.grid.nodes) if self.grid.nodes else 0
-            kappa = self.piwise.piwise_kappa(pos)
-            self.grid.kappa = kappa / 2047.0
-            self.grid.generate_spirals()
-            self.grid.find_deltas()
-            x, y, z = self.grid.nodes[pos] if self.grid.nodes else (0, 0, 0)
-            print(f"Navi: Walking to {target_pos} at {x:.2f},{y:.2f},{z:.2f} with kappa {kappa}")
-            self.tendon_load = np.random.rand() * 0.3
-            self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-            if self.tendon_load > 0.2:
-                print("GrokWalk: Warning - Tendon overload. Resetting.")
-                self.reset()
-            if self.gaze_duration > 30.0:
-                print("GrokWalk: Warning - Excessive gaze. Pausing.")
-                await asyncio.sleep(2.0)
-                self.gaze_duration = 0.0
-            await asyncio.sleep(0.01)
+    async def navi_walk(self, file_path: str, target_pos: Tuple[int, int, int], call_sign: str):
+        """Walk file with ramp modulation and call sign gate."""
+        if not self._gate_check(call_sign):
+            print("Navi: Gate denied.")
+            return False
+        with open(file_path, 'r') as f:
+            data = f.read()
+        hash_str = hashlib.sha256(data.encode()).hexdigest()
+        placed = await self.loom.navi_weave(self.ramp.pin, hash_str, target_pos)
+        if placed:
+            self.hand.pulse(1)
+            print(f"Navi: Walked file to {target_pos} with encoded {hash_str[:10]}...")
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("GrokWalk: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("GrokWalk: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+        return placed
+
+    def _gate_check(self, call_sign: str) -> bool:
+        """Check call sign for gate access."""
+        return call_sign == self.call_sign
 
     def reset(self):
-        """Reset walk state and safety counters."""
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
 
 if __name__ == "__main__":
-    walk = GrokWalk()
-    asyncio.run(walk.navi_walk((1, 1, 1)))
+    async def navi_test():
+        grok = GrokWalk()
+        await grok.navi_walk("test.txt", (5, 5, 5), "cone")
+
+    asyncio.run(navi_test())
