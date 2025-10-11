@@ -61,18 +61,25 @@ class HybridGreenText:
         self.user_id = 12345  # Mock user ID
 
     async def pearl_log(self, action: str):
-        """Perl execution checkpoint with braid output."""
+        """Perl execution checkpoint with green parser."""
         try:
-            result = subprocess.run(['perl', self.perl_script, action], capture_output=True, text=True)
+            # Test input with greentext-style command
+            test_input = f"> {action}\n> confirm"
+            result = subprocess.run(['perl', self.perl_script, test_input], capture_output=True, text=True, timeout=2)
             print(f"Pearl: {action} - {result.stdout}")
+        except subprocess.TimeoutExpired:
+            print(f"Pearl: Timeout on {action}")
         except Exception as e:
             print(f"Pearl error: {e}")
 
     def parse_green_perl(self, text: str) -> str:
         """Parse text via Perl script."""
         try:
-            result = subprocess.run(['perl', self.perl_script, text], capture_output=True, text=True)
+            result = subprocess.run(['perl', self.perl_script, text], capture_output=True, text=True, timeout=2)
             return result.stdout
+        except subprocess.TimeoutExpired:
+            print(f"Perl parsing timeout on {text}")
+            return ""
         except Exception as e:
             print(f"Perl parsing error: {e}")
             return ""
@@ -106,7 +113,7 @@ class HybridGreenText:
 
         # Update kappa-wise coords
         x, y, z = kappa_coord(self.user_id, theta)
-        self.hand.kappa = kappa_mean * 0.01  # Adjust based on braid
+        self.hand.kappa = kappa_mean * 0.01
         self.hand.adjust_kappa(np.array([x / 1023, y / 1023, z / 1023]))
         await self.pearl_log(f"braid_kappa_{kappa_mean:.2f}_coord_{x},{y},{z}")
 
