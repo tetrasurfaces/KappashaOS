@@ -44,8 +44,8 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# master_hand.py - Spatial awareness with tetra meshes and ribit telemetry.
-# Integrated with Navi and thought curves for KappashaOS.
+# master_hand.py - Spatial awareness with tetra meshes, ribit, and thought curves.
+# Integrated with Navi for KappashaOS.
 
 import numpy as np
 import asyncio
@@ -59,7 +59,8 @@ from nurks_surface import generate_nurks_surface
 from tessellations import tessellate_hex_mesh
 from friction_vibe import TetraVibe
 from ribit_telemetry import RibitTelemetry
-from kappawise import kappa_coord
+from kappasha.secure_hash_two import secure_hash_two
+from arch_utils.render import render
 
 class MasterHand:
     def __init__(self, kappa_grid=16, kappa=0.1):
@@ -73,10 +74,10 @@ class MasterHand:
         self.gaze_duration = 0.0
         self.user_id = 12345  # Mock user ID
         self.ribit = RibitTelemetry([], [])  # Mock initial ribit
-        print("MasterHand initialized - kappa-wise, ribit-ready.")
+        print("MasterHand initialized - kappa-wise, ribit, and thought curve-ready.")
 
     async def navi_nudge(self):
-        """Navi listens with ribit integration."""
+        """Navi listens with ribit and thought curve integration."""
         while True:
             # Mock EEG twitch
             twitch = np.random.rand() * 0.3
@@ -93,6 +94,14 @@ class MasterHand:
             # Ribit telemetry update
             intensity, state, color = self.ribit.generate()
             print(f"Navi: Ribit - Intensity {intensity}, State {state}, Color {color}")
+
+            # Thought curve guidance
+            if self.curve.current_step < self.curve.max_steps:
+                tangent, _ = self.curve.spiral_tangent(self.price_history[-1] if self.price_history else (0, 0),
+                                                       (gyro_data[0], gyro_data[1]))
+                if tangent:
+                    self.vibe_model.pulse(3)
+                    print("Navi: Path hedge - unwind detected")
 
             # Safety monitoring
             self.tendon_load = np.random.rand() * 0.3
@@ -140,7 +149,7 @@ class MasterHand:
         self.gimbal.reset()
 
     def gimbal_flex(self, delta_price):
-        """Flex gimbal, generate kappa-aware mesh with ribit telemetry."""
+        """Flex gimbal, generate kappa-aware mesh with ribit and thought curve."""
         curl = delta_price < -0.618
         if curl:
             self.gimbal.tilt('curl_axis', 0.1)
@@ -162,11 +171,17 @@ class MasterHand:
             if hedge_action == 'unwind':
                 self.kappa += 0.05
                 print(f"MasterHand: Hedge unwind - Kappa to {self.kappa:.2f}")
-            filename = hashlib.sha256(f"surface_{surface_id}".encode()).hexdigest()[:16] + '.stl'
-            self.export_to_stl(triangles, filename, surface_id)
+            filename = secure_hash_two(f"surface_{surface_id}", "render_salt", "mesh_salt")
+            render(grid, self.kappa, surface_id)
             light_hash = self.raster_to_light(filename)
-            intensity, state, color = self.ribit.generate()  # Use ribit telemetry
+            intensity, state, color = self.ribit.generate()
             print(f"MasterHand: Ribit - Intensity {intensity}, State {state}, Color {color}")
+            # Thought curve hedge check
+            tangent, _ = self.curve.spiral_tangent(self.price_history[-1] if self.price_history else (0, 0),
+                                                  (X.mean(), Y.mean()))
+            if tangent:
+                self.vibe_model.pulse(3)
+                print("MasterHand: Thought curve hedge - unwind detected")
         return curl
 
     def extend(self, touch_point):
