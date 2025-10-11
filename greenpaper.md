@@ -40,7 +40,7 @@ KappashaOS is a mobile-first, privacy-first OS for decentralized focus. Built fo
 - **Ethics**: Trees as compute, cost 1% entropy. ~esc non-fungible. Tendon/gaze <20%/30s, revocable.
 
 ## 3. ~esc Non-Fungible Tokens
-~esc (Tilda Esc) is one Breath, non-divisible, tied to jit_hook.sol. Used for liquidity, hedging, tree planting. One action, one Breath, one tree. No decimals, no MEV.
+~esc (Tilde Esc) is one Breath, non-divisible, tied to jit_hook.sol. Used for liquidity, hedging, tree planting. One action, one Breath, one tree. No decimals, no MEV.
 
 ## 4. Palindromic Hash (0GROK0)
 0GROK0 is a 6-byte palindromic hash (0-G-R-O-K-0), zero-centered for mirror consensus. Scales to 6 billion nodes, subsecond. Used in jit_hook.sol, grokcall.rs, rainkey_v2.rs.  
