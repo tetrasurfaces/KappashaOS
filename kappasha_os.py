@@ -45,7 +45,7 @@
 
 #!/usr/bin/env python3
 # kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, Navi-integrated.
-# CLI-driven, 3D DOS Navigator soul, safety-first for local dev, non-memory I/O.
+# CLI-driven, 3D DOS Navigator soul, safety-first, non-memory I/O with PUF/quantum.
 
 import simpy
 import numpy as np
@@ -62,15 +62,16 @@ from dev_utils.thought_arb import thought_arb
 from scale import left_weight, right_weight
 from phyllotaxis import generate_spiral, navi_check_petal_prompt
 from bloom import BloomFilter
+from puf_grid import generate_kappa_grid, simulate_drift
 import kappasha_os_cython
 
 class KappaSynod:
     def __init__(self, grid_size=10):
         self.experts = {}
-        self.red_book = 10.0  # Mint credit
-        self.green_book = 0.0  # Burn debt
+        self.red_book = 10.0
+        self.green_book = 0.0
         self.grid_size = grid_size
-        self.seraph = BloomFilter(1024, 3)  # In-memory Bloom
+        self.seraph = BloomFilter(1024, 3)
 
     def mint_red(self, amount=1.0):
         self.red_book += amount
@@ -121,13 +122,17 @@ class KappashaOS:
         self.hand = GhostHand(kappa=0.2)
         self.curve = ThoughtCurve()
         self.synod = KappaSynod()
+        self.mesh_nodes = np.zeros((10, 10, 10), dtype=object)  # Topological mesh array
+        self.key = "secure_key"
+        self.call_sign = "cone"
+        self.pin = "35701357"
         self.commands = []
         self.sensor_data = []
         self.decisions = []
         self.gaze_duration = 0.0
         self.tendon_load = 0.0
         self.entropy = 0.5
-        print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid ready, non-memory I/O.")
+        print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid with PUF/quantum ready.")
 
     async def navi_listen(self):
         while True:
@@ -166,8 +171,20 @@ class KappashaOS:
                 print(f"Sensor alert: Kappa adjusted to {self.nav.kappa:.3f}")
             yield self.env.timeout(5)
 
+    def authenticate(self, key, call_sign, pin):
+        """Authenticate with key, call_sign, pin triplet."""
+        if key == self.key and call_sign == self.call_sign and pin == self.pin:
+            self.synod.mint_red(1.0)  # Mint on success
+            print("Navi: Authentication successful")
+            return True
+        self.synod.burn_green(1.0)  # Burn on failure
+        print("Navi: Authentication failed")
+        return False
+
     def run_command(self, cmd):
         self.commands.append(cmd)
+        if not self.authenticate(self.key, self.call_sign, self.pin):
+            return
         if "new" in cmd or "program" in cmd:
             self.synod.mint_red(1.0)
         elif "rehash" in cmd or "grep" in cmd:
@@ -209,9 +226,11 @@ class KappashaOS:
                 print("usage: kappa unlock (7,0,0)")
         elif cmd == "arch_utils render":
             x, y, _ = generate_spiral(100)
-            self.kappa_sim.grid[:len(x), :len(y), 0] = np.stack((x, y), axis=-1)  # In-memory grid update
+            self.kappa_sim.grid[:len(x), :len(y), 0] = np.stack((x, y), axis=-1)
+            drifted_grid, puf_key = simulate_drift(generate_kappa_grid(10, self.kappa_sim.kappa))
+            self.kappa_sim.grid = drifted_grid  # Update with PUF drift
             filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)
-            print(f"arch_utils: Rendered to {filename}")
+            print(f"arch_utils: Rendered to {filename} with PUF key {puf_key[:10]}...")
         elif cmd.startswith("dev_utils lockout"):
             try:
                 target = cmd.split()[2]
