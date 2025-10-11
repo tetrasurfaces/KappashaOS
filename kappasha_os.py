@@ -44,8 +44,8 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, Navi-integrated.
-# CLI-driven, 3D DOS Navigator soul, safety-first, non-memory I/O with PUF/quantum.
+# kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, dojo training, and ethical balance.
+# CLI-driven, 3D DOS Navigator soul, safety-first, non-memory I/O.
 
 import simpy
 import numpy as np
@@ -62,7 +62,10 @@ from dev_utils.thought_arb import thought_arb
 from scale import left_weight, right_weight
 from phyllotaxis import generate_spiral, navi_check_petal_prompt
 from bloom import BloomFilter
-from puf_grid import generate_kappa_grid, simulate_drift
+from puf_grid import PufGrid
+from dojos import Dojo
+from meditate import whisper
+from double_diamond_balance import double_diamond_balance
 import kappasha_os_cython
 
 class KappaSynod:
@@ -119,10 +122,12 @@ class KappashaOS:
         self.env = simpy.Environment()
         self.nav = Nav3D()
         self.kappa_sim = KappaSim()
+        self.puf_grid = PufGrid()
         self.hand = GhostHand(kappa=0.2)
         self.curve = ThoughtCurve()
         self.synod = KappaSynod()
-        self.mesh_nodes = np.zeros((10, 10, 10), dtype=object)  # Topological mesh array
+        self.dojo = Dojo()
+        self.mesh_nodes = np.zeros((10, 10, 10), dtype=object)
         self.key = "secure_key"
         self.call_sign = "cone"
         self.pin = "35701357"
@@ -132,7 +137,8 @@ class KappashaOS:
         self.gaze_duration = 0.0
         self.tendon_load = 0.0
         self.entropy = 0.5
-        print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid with PUF/quantum ready.")
+        self.afk_consent = False  # Ethics: user opt-in for meditation
+        print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid with dojo ready.")
 
     async def navi_listen(self):
         while True:
@@ -146,6 +152,8 @@ class KappashaOS:
                                  0.0])
             self.hand.adjust_kappa(gyro_data)
             self.entropy = np.random.uniform(0.4, 0.8)
+            if self.afk_consent and time.time() - self.dojo.afk_timer > 60:
+                whisper("bloom roots deep, forks align")  # Meditation with consent
             print(f"Navi: Adjusting kappa by {gyro_data}, Entropy: {self.entropy:.2f}")
             self.tendon_load = np.random.rand() * 0.3
             self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
@@ -172,12 +180,11 @@ class KappashaOS:
             yield self.env.timeout(5)
 
     def authenticate(self, key, call_sign, pin):
-        """Authenticate with key, call_sign, pin triplet."""
         if key == self.key and call_sign == self.call_sign and pin == self.pin:
-            self.synod.mint_red(1.0)  # Mint on success
+            self.synod.mint_red(1.0)
             print("Navi: Authentication successful")
             return True
-        self.synod.burn_green(1.0)  # Burn on failure
+        self.synod.burn_green(1.0)
         print("Navi: Authentication failed")
         return False
 
@@ -227,8 +234,8 @@ class KappashaOS:
         elif cmd == "arch_utils render":
             x, y, _ = generate_spiral(100)
             self.kappa_sim.grid[:len(x), :len(y), 0] = np.stack((x, y), axis=-1)
-            drifted_grid, puf_key = simulate_drift(generate_kappa_grid(10, self.kappa_sim.kappa))
-            self.kappa_sim.grid = drifted_grid  # Update with PUF drift
+            drifted_grid, puf_key = await self.puf_grid.navi_simulate_drift()
+            self.kappa_sim.grid = drifted_grid
             filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)
             print(f"arch_utils: Rendered to {filename} with PUF key {puf_key[:10]}...")
         elif cmd.startswith("dev_utils lockout"):
@@ -287,10 +294,20 @@ class KappashaOS:
                 program = self.create_program_from_string(func_str, gait, exponent)
                 self.synod.mint_red(1.0)
                 print(f"Program created: {program}")
+                self.dojo.hidden_train(func_str)  # Train with dojo
             except:
                 print("usage: kappa program ramp;weave;walk")
+        elif cmd == "kappa meditate":
+            if self.afk_consent:
+                whisper("bloom roots deep, forks align")
+                self.synod.mint_red(0.5)  # Mint for meditation focus
+            else:
+                print("Navi: Meditation requires consent. Use 'kappa consent on' to enable.")
+        elif cmd == "kappa consent":
+            self.afk_consent = not self.afk_consent
+            print(f"Navi: AFK consent {'enabled' if self.afk_consent else 'disabled'}")
         else:
-            print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | program ramp;weave;walk")
+            print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | program ramp;weave;walk | meditate | consent")
 
     def move_skewed_volume(self, theta: float, gait: str):
         """Move volume with skewed rhombus voxels and golden spiral."""
@@ -309,6 +326,7 @@ class KappashaOS:
         """Create program from function string using exponents and diagonals."""
         funcs = func_str.split(';')
         scaled_exp = left_weight(exponent) if exponent >= 0 else right_weight(exponent)
+        power_level = double_diamond_balance(scaled_exp, lived="user_input", corporate="system_logic")  # Ethical balance
         program = lambda x: x
         for i, func in enumerate(funcs):
             angle = i * 137.5
@@ -336,6 +354,7 @@ class KappashaOS:
         self.run_command("kappa decide weld")
         self.move_skewed_volume(1.0, "normal")
         self.run_command("kappa program ramp;weave;walk")
+        self.run_command("kappa meditate")
         yield self.env.process(self.kappa_sim.auto_adjust("gas_line", adjust_time=5))
         self.run_command("kappa ls")
         self.run_command("arch_utils render")
