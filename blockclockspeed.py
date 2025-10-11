@@ -44,7 +44,8 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# blockclockspeed.py - Mock multi-sensory block time with kappa/theta/chi.
+# blockclockspeed.py - Multi-sensory block time with kappa grid per channel for KappashaOS.
+# Async, Navi-integrated.
 
 import math
 import time
@@ -52,6 +53,8 @@ import asyncio
 import logging
 import numpy as np
 from kappasha.secure_hash_two import secure_hash_two
+from kappa import Kappa
+from master_hand import MasterHand
 
 logging.basicConfig(level=logging.ERROR, filename='greenpaper.log', filemode='a',
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -79,12 +82,16 @@ async def simulate_single_channel(data, blocks, base_time, m53_exp, channel_id, 
     total_time = 0.0
     stake = 1.0
     scale_factor = 1.0
+    channel_grid = None
     try:
         if config_type == 1:  # Flat
             base_time *= 0.8
             scale_factor = 0.9
-        elif config_type = 2:  # Curved
+        elif config_type == 2:  # Curved
             scale_factor = 0.85 + (channel_id % 3) * 0.1
+        kappa_obj = Kappa(grid_size=10)
+        points = np.random.rand(10, 3)  # Mock points for grid
+        channel_grid = await kappa_obj.navi_rasterize_kappa(points, {"density": scale_factor})
         for i in range(blocks):
             block_time = base_time * (1 + math.sin(time.time() + channel_id * theta) * 0.1) * scale_factor
             _, m53_reward = m53_collapse(m53_exp, stake, 200.0, 201.0, kappa, theta, chi)
@@ -95,38 +102,38 @@ async def simulate_single_channel(data, blocks, base_time, m53_exp, channel_id, 
     except Exception as e:
         logger.error(f"Channel {channel_id} simulation error: {e}")
         return 0.0
-    return total_time / blocks
+    return total_time / blocks, channel_grid  # Return grid for O B E
 
 async def simulate_block_time(data, blocks=100, base_time=0.1, m53_exp=194062501, num_channels=11, config_type=0, pin_count=12, kappa=0.1, theta=36.9, chi=11):
     try:
         hash_queue = generate_hash_queue(data, num_channels, kappa, theta, chi)
         coros = []
         results = []
+        grids = []  # Collect grids for O B E
         start_time = time.time()
         pin_scale = 1.0 - (pin_count - 8) * 0.01 if 8 <= pin_count <= 16 else 1.0
         for channel_id in range(num_channels):
             coro = simulate_single_channel(data, blocks, base_time * pin_scale, m53_exp, channel_id, config_type, kappa, theta, chi)
             coros.append(coro)
-        results = await asyncio.gather(*coros)
+        channel_outputs = await asyncio.gather(*coros)
+        for avg_time, channel_grid in channel_outputs:
+            results.append(avg_time)
+            grids.append(channel_grid)
         end_time = time.time()
         avg_per_channel = sum(results) / len(results) if results else 0.0
         total_sim_time = end_time - start_time
-        return avg_per_channel, total_sim_time, results, hash_queue
+        # O B E: zero block one as entire grid
+        o_b_e_grid = np.mean(grids, axis=0) if grids else np.zeros((10, 10, 10))
+        print(f"Navi: O B E grid mean density: {np.mean(o_b_e_grid):.2f}")
+        return avg_per_channel, total_sim_time, results, hash_queue, o_b_e_grid
     except Exception as e:
         logger.error(f"Block time simulation error: {e}")
-        return 0.0, 0.0, [], []
+        return 0.0, 0.0, [], [], None
 
 if __name__ == "__main__":
-    try:
-        inputs = ["RGB:255,0,0", "440Hz", "1000lux", "23.5C", "1.2g", "haptic:1", "100kPa", "FLIR:300K", "IR:850nm", "UV:350nm", "compute_signal"]
-        for config, config_type, data in [(0, "Standard", inputs[0]), (1, "Flat", inputs[1]), (2, "Curved", inputs[2])]:
-            pin_count = 12 if config_type == "Standard" else 8 if config_type == "Flat" else 16
-            avg_time, sim_duration, channel_avgs, hash_queue = asyncio.run(simulate_block_time(data, config_type=config, pin_count=pin_count, kappa=0.2, theta=36.9, chi=11))
-            print(f"{config_type} Config - Data: {data}, Pins: {pin_count}")
-            print(f"Average Block Time per Channel: {avg_time:.2f} seconds")
-            print(f"Total Simulation Duration: {sim_duration:.2f} seconds")
-            print(f"Per-Channel Averages: {[round(t, 2) for t in channel_avgs]}")
-            print(f"Hash Queue: {hash_queue}\n")
-    except Exception as e:
-        logger.error(f"Main execution error: {e}")
-        print(f"Error running simulation: {e}")
+    async def navi_test():
+        MasterHand().pulse(1)  # Pulse on start
+        avg_time, sim_duration, channel_avgs, hash_queue, o_b_e = await simulate_block_time("RGB:255,0,0")
+        print(f"Navi: Avg Block Time: {avg_time:.2f} s")
+
+    asyncio.run(navi_test())
