@@ -45,7 +45,7 @@
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 //
 // SPDX-License-Identifier: Apache-2.0
-
+//
 #![no_std]
 extern crate alloc;
 use alloc::string::String;
@@ -69,25 +69,20 @@ impl GrokCall {
     }
 
     pub fn post_to_x(&self, text: &str) -> bool {
-        // Stub: post to X, no metadata
-        true
+        true // Stub: post to X, no metadata
     }
 
     pub fn get_mentions(&self) -> Vec<String> {
-        // Stub: return mock mentions, no metadata
-        alloc::vec![String::from("Reply with seed: deadbeef") ]
+        alloc::vec![String::from("Reply with seed: deadbeef") ] // Stub: no metadata
     }
 
     pub fn p2p_stream(&self, key: &[u8], mode: &str) -> Result<(), &'static str> {
-        // Mock stream: voice 44.1kHz, file 64KB
         match mode {
             "voice" => {
-                // Mock 1024-byte audio chunk
                 let chunk = [0u8; 1024];
                 if chunk.len() != 1024 { return Err("Invalid audio chunk"); }
             }
             "file" => {
-                // Mock 64KB file chunk
                 let chunk = [0u8; CHUNK_SIZE];
                 if chunk.len() != CHUNK_SIZE { return Err("Invalid file chunk"); }
             }
@@ -97,14 +92,25 @@ impl GrokCall {
     }
 
     pub fn plant_tree(&self, x: i32, y: i32, z: i32, entropy: u32) -> bool {
-        // Stub: call jit_hook.sol plantNav3DTree via KappashaChannel
-        true
+        true // Stub: jit_hook.sol plantNav3DTree
+    }
+
+    pub fn pulse_ghosthand(&self) {
+        // Stub: pulse ghosthand twice
     }
 
     pub fn check_mirror(&self) -> bool {
         let breath = [0u8, b'G', b'R', b'O', b'K', b'0', 0u8]; // 0GROK0
         let mirror = breath.iter().rev().cloned().collect::<Vec<u8>>();
         breath == mirror.as_slice()
+    }
+
+    pub fn pulse_buffer(&self, mode: &str) -> u128 {
+        // Stub: call buffer_pulse.rs
+        match mode {
+            "torrent" => 3,
+            _ => 72,
+        }
     }
 
     pub fn call(&mut self, dest: &str, mode: &str, entropy: u32) -> Result<(), &'static str> {
@@ -114,8 +120,9 @@ impl GrokCall {
         if !self.check_mirror() {
             return Err("Invalid 0GROK0 mirror");
         }
-
-        // Synod filter check
+        if self.pulse_buffer(mode) == 3 && mode != "torrent" {
+            return Err("Invalid buffer mode");
+        }
         let synod = SynodFilter::new();
         synod.filter_want("/mirror/0GROK0", entropy)?;
 
@@ -129,17 +136,18 @@ impl GrokCall {
             return Err("Failed to post to X");
         }
 
+        self.pulse_ghosthand(); // Pulse on stream start
         let mentions = self.get_mentions();
         for reply in mentions {
             if reply.contains(&call_cid.to_string()) {
                 let peer_seed = reply.split(' ').nth(1).unwrap_or(""); // Mock parse
                 let handshake = peer_seed.len() as u32; // Mock combine
 
-                self.plant_tree(5, 5, 5, entropy); // Plant tree on handshake
-                self.tendon_load += 10; // Mock load
-                self.gaze_duration += 1000; // Mock gaze
+                self.plant_tree(5, 5, 5, entropy); // Plant tree
+                self.tendon_load += 10;
+                self.gaze_duration += 1000;
 
-                self.p2p_stream(&[0u8; 32], mode)?; // Stream with handshake
+                self.p2p_stream(&[0u8; 32], mode)?;
                 return Ok(());
             }
         }
