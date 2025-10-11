@@ -44,7 +44,7 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# nav3d.py - 3D navigation tool for Blocsym/KappashaOS with ramp and kappa integration, reverse tuple parse.
+# nav3d.py - 3D navigation tool for Blocsym/KappashaOS with ramp, kappa raster, and ghost lap.
 # Async, Navi-integrated.
 
 import numpy as np
@@ -53,34 +53,39 @@ from ramp import RampCipher
 from kappa_wire import KappaWire
 from loom_os import LoomOS
 from grokwalk import GrokWalk
+from oracle import Oracle
+from kappa import Kappa
 
 class Nav3D:
     def __init__(self):
-        self.kappa_cache = {}  # Hash -> state snapshot
-    async def navi_navigate(self, ...):
-        state_hash = hashlib.sha256(str(target_pos).encode()).hexdigest()
-        if state_hash in self.kappa_cache:
-            return self.kappa_cache[state_hash]
-            return placed
-            self.kappa_wire = KappaWire()
-            self.ramp = RampCipher()
-            self.loom = LoomOS()
-            self.grok = GrokWalk()
-            self.tendon_load = 0.0
-            self.gaze_duration = 0.0
-            print("Nav3D initialized - 3D navigation for B ready.")
+        self.kappa_wire = KappaWire()
+        self.ramp = RampCipher()
+        self.loom = LoomOS()
+        self.grok = GrokWalk()
+        self.oracle = Oracle()
+        self.kappa = Kappa()
+        self.ghost_cache = {}  # Local cache for \( O(1) \) prophecy
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
+        print("Nav3D initialized - 3D navigation with kappa raster for B ready.")
 
     async def navi_navigate(self, file_path: str, target_pos: Tuple[int, int, int], call_sign: str):
-        """Navigate 3D space with ramp modulation and safety checks."""
+        """Navigate 3D space with ramp modulation, kappa raster, and prophecy."""
         if not self.grok._gate_check(call_sign):
             print("Navi: Gate denied.")
             return False
         with open(file_path, 'r') as f:
             data = f.read()
         hash_str = hashlib.sha256(data.encode()).hexdigest()
+        # Rasterize and modulate
+        points = np.array([[target_pos[0] / self.kappa.grid_size, target_pos[1] / self.kappa.grid_size, target_pos[2] / self.kappa.grid_size]])
+        await self.kappa.navi_rasterize_kappa(points, {"density": 2.0})
         placed = await self.loom.navi_weave(self.ramp.pin, hash_str, target_pos)
         if placed:
             print(f"Navi: Navigated to {target_pos} with hash {hash_str[:10]}...")
+        # Precompute ghost lap
+        await self.oracle.navi_precompute_ghost_lap(file_path, target_pos, self.ramp.pin)
+        self.ghost_cache[hash_str] = await self.oracle.navi_prophecy(hash_str, call_sign)
         self.tendon_load = np.random.rand() * 0.3
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
         if self.tendon_load > 0.2:
@@ -94,13 +99,19 @@ class Nav3D:
         return placed
 
     def reverse_parse_tuple(self, pos: Tuple[int, int, int]) -> str:
-        """Reverse parse tuple from kappa wire to decode original hash."""
+        """Reverse parse tuple from kappa wire with ghost validation."""
         x, y, z = pos
         encoded = self.kappa_wire.retrieve_from_wire(x, y, z)
         if not encoded:
             return None
+        hash_key = hashlib.sha256(str(pos).encode()).hexdigest()
+        if hash_key in self.ghost_cache:
+            expected = self.ghost_cache[hash_key][1]
+            if encoded != expected:
+                print("Navi: Mirror detected - reverting to ghost lap.")
+                return self.ghost_cache[hash_key][1]
         decoded = ''
-        temp_ramp = RampCipher(self.ramp.pin)  # Use same pin for decode
+        temp_ramp = RampCipher(self.ramp.pin)
         index = 0
         for c in encoded:
             idx = index % len(temp_ramp.heights)
@@ -112,7 +123,7 @@ class Nav3D:
     def reset(self):
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-      
+
 if __name__ == "__main__":
     async def navi_test():
         nav = Nav3D()
