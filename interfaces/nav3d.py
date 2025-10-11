@@ -56,13 +56,19 @@ from grokwalk import GrokWalk
 
 class Nav3D:
     def __init__(self):
-        self.kappa_wire = KappaWire()
-        self.ramp = RampCipher()
-        self.loom = LoomOS()
-        self.grok = GrokWalk()
-        self.tendon_load = 0.0
-        self.gaze_duration = 0.0
-        print("Nav3D initialized - 3D navigation for B ready.")
+        self.kappa_cache = {}  # Hash -> state snapshot
+    async def navi_navigate(self, ...):
+        state_hash = hashlib.sha256(str(target_pos).encode()).hexdigest()
+        if state_hash in self.kappa_cache:
+            return self.kappa_cache[state_hash]
+            return placed
+            self.kappa_wire = KappaWire()
+            self.ramp = RampCipher()
+            self.loom = LoomOS()
+            self.grok = GrokWalk()
+            self.tendon_load = 0.0
+            self.gaze_duration = 0.0
+            print("Nav3D initialized - 3D navigation for B ready.")
 
     async def navi_navigate(self, file_path: str, target_pos: Tuple[int, int, int], call_sign: str):
         """Navigate 3D space with ramp modulation and safety checks."""
@@ -106,7 +112,7 @@ class Nav3D:
     def reset(self):
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-
+      
 if __name__ == "__main__":
     async def navi_test():
         nav = Nav3D()
