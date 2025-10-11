@@ -44,34 +44,30 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# kappa_sim.py - Situational awareness simulator with kappa-tilted rasterization.
-# Integrates Navi and MasterHand for real-time mapping.
+# kappa_sim.py - Situational awareness simulator with kappa-tilted rasterization for KappashaOS.
+# Async, Navi-integrated.
 
-import simpy
 import numpy as np
 import asyncio
 import hashlib
 import time
-from master_hand import MasterHand  # Local path
-from wise_transforms import bitwise_transform, hexwise_transform, hashwise_transform  # Local path
+from master_hand import MasterHand
+from dev_utils.wise_transforms import bitwise_transform, hexwise_transform, hashwise_transform
 
 class Sym:
-    """Gyroscopic rig for situational tilt simulation."""
     def __init__(self):
-        self.spin_rate = 0.0
         self.tilt_angle = np.array([0.0, 0.0, 0.0])
-    
+
     def tilt(self, axis, rate):
-        idx = {"x": 0, "y": 1, "z": 2}.get(axis[0].lower(), 0)
+        idx = {"x": 0, "y": 1, "z": 2}.get(axis.lower()[0], 0)
         self.tilt_angle[idx] = rate
-        print(f"Tilting {axis} by {rate} degrees")
-    
+        print(f"Tilted {axis} by {rate} degrees")
+
     def stabilize(self):
         self.tilt_angle = np.where(abs(self.tilt_angle) < 1e-6, 0.0, self.tilt_angle * 0.9)
         print("Stabilizing tilt angles:", self.tilt_angle)
 
 class TetraVibe:
-    """Vibe model for rasterization effects."""
     def friction_vibe(self, pos1, pos2, kappa=0.3):
         dist = np.linalg.norm(pos1 - pos2)
         if dist < 1e-6:
@@ -85,45 +81,39 @@ class TetraVibe:
         return 1.0, np.zeros(3)
 
 class KappaSim:
-    def __init__(self, env):
-        self.env = env
+    def __init__(self):
         self.gate = np.array([0, 0, 0])
-        self.kappa = 0.1  # Baseline situational awareness
-        self.history = []  # Kappa register
-        self.lockouts = set()  # Situational tags
-        self.sensors = []  # Point cloud placeholder
+        self.kappa = 0.1
+        self.history = []
+        self.lockouts = set()
+        self.sensors = []
         self.hand = MasterHand(kappa=self.kappa)
         self.gimbal = Sym()
         self.vibe = TetraVibe()
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        print("KappaSim initialized - situational awareness with rasterization ready.")
+        print("KappaSim initialized - situational awareness ready.")
 
     async def navi_sense(self):
-        """Navi senses situational changes with safety checks."""
+        """Navi senses situational changes."""
         while True:
-            # Mock sensor drift
             drift = np.random.rand() * 0.1
             if drift > 0.05:
                 self.kappa += 0.05
                 self.hand.pulse(2)
-                print(f"Navi: Hey! Kappa adjusted to {self.kappa:.3f} due to drift {drift:.2f}")
-
-            # Safety monitoring
+                print(f"Navi: Kappa adjusted to {self.kappa:.3f} due to drift {drift:.2f}")
             self.tendon_load = np.random.rand() * 0.3
             self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
             if self.tendon_load > 0.2:
                 print("KappaSim: Warning - Tendon overload. Resetting.")
-                self.hand.reset()
+                self.reset()
             if self.gaze_duration > 30.0:
                 print("KappaSim: Warning - Excessive gaze. Pausing.")
                 await asyncio.sleep(2.0)
                 self.gaze_duration = 0.0
-
             await asyncio.sleep(1.0 / 60)
 
     def register_kappa(self, incident=None):
-        """Register situational kappa with hash."""
         now = time.time()
         key = hashlib.sha3_256(f"{now}{self.kappa:.2f}{incident or ''}".encode()).hexdigest()
         self.history.append((now, self.kappa, key))
@@ -132,7 +122,6 @@ class KappaSim:
         return key
 
     def get_situational_kappa(self):
-        """Compute real-time situational kappa."""
         if not self.history:
             return self.kappa
         last_kappa = self.history[-1][1]
@@ -141,23 +130,22 @@ class KappaSim:
             return last_kappa + drift
         return last_kappa
 
-    def trigger_emergency(self, incident):
-        """Respond to situational emergency."""
+    async def trigger_emergency(self, incident):
         self.kappa += 0.2
         self.lockouts.add(incident)
         self.hand.pulse(2)
         print(f"{incident.upper()} - Kappa now {self.kappa:.2f}")
+        await asyncio.sleep(0)
 
-    def auto_adjust(self, target, adjust_time=5):
-        """Auto-adjust situational state."""
-        yield self.env.timeout(adjust_time)
+    async def auto_adjust(self, target, adjust_time=5):
+        await asyncio.sleep(adjust_time)
         print(f"{target} adjusted. Lockout cleared.")
         self.lockouts.discard(target)
         self.kappa -= 0.2
         self.hand.pulse(1)
+        await asyncio.sleep(0)
 
-    def camera_array(self):
-        """Simulate sensor array with rasterized vibe effects."""
+    async def camera_array(self):
         points = np.random.rand(100, 3) * 100
         drift = np.linalg.norm(points[-1] - self.gate)
         if drift > 5:
@@ -166,29 +154,33 @@ class KappaSim:
         vibe, gyro = self.vibe.friction_vibe(self.gate, points[-1], self.kappa)
         self.gimbal.tilt('z', gyro[2] if gyro[2] else 0.1)
         self.gimbal.stabilize()
-        # Rasterize to light
         light_hash = hashlib.sha256(str(points).encode()).hexdigest()[:16]
         bit_str = bitwise_transform(light_hash)
         hex_str = hexwise_transform(light_hash)
         hash_str, entropy = hashwise_transform(light_hash)
         hybrid = f"{bit_str}:{hex_str}:{hash_str}"
-        print(f"Rasterized: {hybrid} (Entropy {entropy})")
+        print(f"Navi: Rasterized: {hybrid} (Entropy {entropy})")
+        await asyncio.sleep(0)
         return points
 
-    def run_day(self):
-        """Simulate a situational awareness day."""
+    async def run_day(self):
         print(f"Day start - Situational Kappa = {self.get_situational_kappa():.3f}")
-        asyncio.run(self.navi_sense())  # Start Navi loop
-        yield self.env.timeout(20)
-        self.trigger_emergency("sensor_drift")
+        asyncio.create_task(self.navi_sense())  # Start Navi loop
+        await asyncio.sleep(20)
+        await self.trigger_emergency("sensor_drift")
         self.register_kappa("sensor_drift")
-        yield self.env.process(self.auto_adjust("sensor_line"))
-        self.camera_array()
+        await self.auto_adjust("sensor_line")
+        await self.camera_array()
         self.register_kappa()
         print(f"Day end - Situational Kappa = {self.get_situational_kappa():.3f}")
 
+    def reset(self):
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
+
 if __name__ == "__main__":
-    env = simpy.Environment()
-    sim = KappaSim(env)
-    env.process(sim.run_day())
-    env.run(until=60)
+    async def navi_run():
+        sim = KappaSim()
+        await sim.run_day()
+
+    asyncio.run(navi_run())
