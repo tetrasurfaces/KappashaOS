@@ -41,7 +41,7 @@
 # 5. **Export Controls**: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. **Open Development**: Hardware docs shared post-private phase.
 #
-# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Beau Ayres (github.com/tetrasurfaces/issues) post-phase.
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 from libc.math cimport sin, cos, exp, log, sqrt, M_PI
 from cython cimport boundscheck, wraparound
