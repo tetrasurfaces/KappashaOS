@@ -129,6 +129,13 @@ class KappaGrid:
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
 
+    def rasterize_kappa(self, points, material):
+        mesh_data = mesh("W21x62")  # Mock solid
+        for p in points:
+            x, y, z = p
+            self.grid[x, y, z] = material.get("density", 1.0)
+        return self.grid
+
 if __name__ == "__main__":
     grid = KappaGrid()
     asyncio.run(grid.navi_weave())
