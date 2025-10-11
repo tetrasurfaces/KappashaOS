@@ -45,7 +45,7 @@
 
 #!/usr/bin/env python3
 # kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, Navi-integrated.
-# CLI-driven, 3D DOS Navigator soul, safety-first for local dev.
+# CLI-driven, 3D DOS Navigator soul, safety-first for local dev, non-memory I/O.
 
 import simpy
 import numpy as np
@@ -60,14 +60,17 @@ from dev_utils.hedge import hedge, multi_hedge
 from dev_utils.grep import grep
 from dev_utils.thought_arb import thought_arb
 from scale import left_weight, right_weight
+from phyllotaxis import generate_spiral, navi_check_petal_prompt
+from bloom import BloomFilter
 import kappasha_os_cython
 
 class KappaSynod:
     def __init__(self, grid_size=10):
-        self.experts = {}  # pos -> expert (ramp, weave, etc.)
-        self.red_book = 10.0  # Mint credit (lamports micro)
+        self.experts = {}
+        self.red_book = 10.0  # Mint credit
         self.green_book = 0.0  # Burn debt
         self.grid_size = grid_size
+        self.seraph = BloomFilter(1024, 3)  # In-memory Bloom
 
     def mint_red(self, amount=1.0):
         self.red_book += amount
@@ -79,10 +82,12 @@ class KappaSynod:
 
     def summon_expert(self, pos, specialty):
         if self.red_book > 0:
-            self.mint_red(-1.0)
-            self.experts[pos] = specialty
-            print(f"Summoned {specialty} expert at {pos}")
-            return True
+            x, y, z = pos
+            if await navi_check_petal_prompt(x, y, z, self.seraph):
+                self.mint_red(-1.0)
+                self.experts[pos] = specialty
+                print(f"Summoned {specialty} expert at {pos}")
+                return True
         return False
 
     def rehash_expert(self, pos):
@@ -122,14 +127,14 @@ class KappashaOS:
         self.gaze_duration = 0.0
         self.tendon_load = 0.0
         self.entropy = 0.5
-        print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid ready.")
+        print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid ready, non-memory I/O.")
 
     async def navi_listen(self):
         while True:
             twitch = np.random.rand() * 0.3
             if twitch > 0.2:
                 self.hand.move(twitch)
-                self.synod.mint_red(0.5)  # Mint for new focus
+                self.synod.mint_red(0.5)
                 print(f"Navi: Hey! Move by {twitch:.2f}")
             gyro_data = np.array([np.random.rand() * 0.2 - 0.1,
                                  np.random.rand() * 0.2 - 0.1,
@@ -163,7 +168,6 @@ class KappashaOS:
 
     def run_command(self, cmd):
         self.commands.append(cmd)
-        # Token cycle hook: mint/burn on command
         if "new" in cmd or "program" in cmd:
             self.synod.mint_red(1.0)
         elif "rehash" in cmd or "grep" in cmd:
@@ -191,7 +195,7 @@ class KappashaOS:
                 hedge_action = hedge(self.curve, self.nav.path)
                 if hedge_action == "unwind":
                     self.hand.pulse(3)
-                    self.synod.burn_green(2.0)  # Burn for unwind
+                    self.synod.burn_green(2.0)
                 print(f"Curved to /{path}")
             except:
                 print("usage: kappa cd logs")
@@ -200,17 +204,19 @@ class KappashaOS:
                 coord = tuple(map(int, cmd.split()[2].strip("()").split(",")))
                 if self.nav.unlock_edge(coord):
                     self.kappa_sim.register_kappa("edge_unlock")
-                    self.synod.mint_red(0.5)  # Mint for unlock
+                    self.synod.mint_red(0.5)
             except:
                 print("usage: kappa unlock (7,0,0)")
         elif cmd == "arch_utils render":
+            x, y, _ = generate_spiral(100)
+            self.kappa_sim.grid[:len(x), :len(y), 0] = np.stack((x, y), axis=-1)  # In-memory grid update
             filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)
             print(f"arch_utils: Rendered to {filename}")
         elif cmd.startswith("dev_utils lockout"):
             try:
                 target = cmd.split()[2]
                 lockout(self.kappa_sim, target)
-                self.synod.burn_green(1.0)  # Burn for lockout
+                self.synod.burn_green(1.0)
             except:
                 print("usage: dev_utils lockout gas_line")
         elif cmd.startswith("kappa grep"):
@@ -219,7 +225,7 @@ class KappashaOS:
                 matches = grep(self.kappa_sim.history, pattern)
                 if matches:
                     self.hand.pulse(len(matches))
-                    self.synod.mint_red(len(matches) * 0.5)  # Mint for discovery
+                    self.synod.mint_red(len(matches) * 0.5)
                     print(f"Grep found {len(matches)} matches:")
                     for m in matches[:3]:
                         print(f" - {m}")
@@ -249,7 +255,7 @@ class KappashaOS:
                 if action == "unwind":
                     self.nav.kappa += 0.05
                     self.kappa_sim.kappa += 0.05
-                    self.synod.burn_green(1.5)  # Burn for unwind
+                    self.synod.burn_green(1.5)
                     print(f"Kappa adjusted to {self.nav.kappa:.3f}")
                 print(f"Decision: {intent} - {action}")
             except:
@@ -260,7 +266,7 @@ class KappashaOS:
                 gait = "normal"
                 exponent = 1
                 program = self.create_program_from_string(func_str, gait, exponent)
-                self.synod.mint_red(1.0)  # Mint for new program
+                self.synod.mint_red(1.0)
                 print(f"Program created: {program}")
             except:
                 print("usage: kappa program ramp;weave;walk")
