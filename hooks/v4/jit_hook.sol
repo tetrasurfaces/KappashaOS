@@ -45,7 +45,6 @@
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 //
 // SPDX-License-Identifier: Apache-2.0
-
 pragma solidity ^0.8.0;
 
 import "@pancakeswap/v4-core/interfaces/IPoolManager.sol";
@@ -55,10 +54,16 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 interface KappashaChannel {
     function transferBreath(address token, uint256 amount, bytes32 dest) external;
+    function plantNav3DTree(int24 x, int24 y, int24 z, uint256 entropy) external returns (bool);
+    function plantKappashaTree(uint256 angle, uint256 entropy) external returns (bool);
 }
 
 interface RainkeyV2 {
     function getEntropy() external view returns (uint256);
+}
+
+interface BufferPulse {
+    function pulseBuffer(string calldata mode) external view returns (uint256);
 }
 
 contract JITHook {
@@ -70,9 +75,10 @@ contract JITHook {
     IERC20 public tildaEsc; // ~esc, non-fungible Breath
     KappashaChannel public channel;
     RainkeyV2 public rainkey;
+    BufferPulse public bufferPulse;
     AggregatorV3Interface public xautPriceFeed;
 
-    uint256 public constant MAX_MARTINGALE = 12; // Cap at 12 breaths
+    uint256 public constant MAX_MARTINGALE = 12; // Cap at 12 breaths, 6 if buffer <72
     uint256 public constant MIN_TENSION = 10**16; // 0.01 surface tension
     uint256 public constant FEE_RATE = 30;
     uint256 public constant MARTINGALE_FACTOR = 2;
@@ -86,12 +92,12 @@ contract JITHook {
     mapping(address => mapping(address => uint256)) public feesCollected;
     mapping(address => uint256) public xautCollateral;
 
-    event BreathRevealed(address indexed user, uint256 amount);
-    event XAUTCollateralized(address indexed user, uint256 amount);
+    event BreathRevealed(address indexed user, uint256 amount, uint256 entropyCost);
+    event XAUTCollateralized(address indexed user, uint256 amount, uint256 entropyCost);
     event FeesClaimed(address indexed user, address token, uint256 amount);
-    event BreathBridged(address indexed user, uint256 amount);
+    event BreathBridged(address indexed user, uint256 amount, uint256 entropyCost);
     event GreedyLimitFilled(address indexed user, uint256 totalFilled, uint256 totalFees, uint256 martingaleFactor);
-    event PlantTree(address indexed user, uint256 breath, uint256 entropyCost); // Navigator tree, costs compute/entropy
+    event PlantTree(address indexed user, uint256 breath, uint256 entropyCost, string treeType, bytes data); // Navigator tree, compute cost
 
     constructor(
         address _poolManager,
@@ -100,6 +106,7 @@ contract JITHook {
         address _tildaEsc,
         address _channel,
         address _rainkey,
+        address _bufferPulse,
         address _xautPriceFeed
     ) {
         poolManager = IPoolManager(_poolManager);
@@ -108,6 +115,7 @@ contract JITHook {
         tildaEsc = IERC20(_tildaEsc);
         channel = KappashaChannel(_channel);
         rainkey = RainkeyV2(_rainkey);
+        bufferPulse = BufferPulse(_bufferPulse);
         xautPriceFeed = AggregatorV3Interface(_xautPriceFeed);
     }
 
@@ -148,30 +156,53 @@ contract JITHook {
         return (passes, reward);
     }
 
-    function revealBreath(uint256 amount) external {
-        require(amount == 1, "Breath is non-fungible"); // 1-Esc only
-        tildaEsc.transferFrom(msg.sender, address(this), amount);
-        allowances[msg.sender] += amount;
-        emit BreathRevealed(msg.sender, amount);
+    function plant_tree(string memory treeType, bytes memory data) internal {
         uint256 entropy = rainkey.getEntropy();
-        emit PlantTree(msg.sender, 1, entropy / 100); // Navigator tree, costs entropy branch
+        bool planted;
+        if (keccak256(bytes(treeType)) == keccak256(bytes("nav3d"))) {
+            (int24 x, int24 y, int24 z) = abi.decode(data, (int24, int24, int24));
+            planted = channel.plantNav3DTree(x, y, z, entropy / 100);
+        } else if (keccak256(bytes(treeType)) == keccak256(bytes("kappasha"))) {
+            uint256 angle = abi.decode(data, (uint256));
+            planted = channel.plantKappashaTree(angle, entropy / 100);
+        } else {
+            revert("Invalid tree type");
+        }
+        require(planted, "Tree planting failed");
+        emit PlantTree(msg.sender, 1, entropy / 100, treeType, data); // Navigator tree, entropy cost
     }
 
-    function revealXAUT(uint256 amount) external {
-        uint256 xautPrice = getXAUTPrice();
+    function revealBreath(uint256 amount, string memory want) external {
+        require(amount == 1, "Breath is non-fungible"); // ~esc only
+        require(keccak256(bytes(want)) == keccak256(bytes("/mirror/0GROK0")), "Invalid mirror");
+        uint256 entropy = rainkey.getEntropy();
+        (bool profitable, ) = collapsed_profitable_m53(entropy, amount, getXAUTPrice(), getXAUTPrice());
+        require(profitable, "Not profitable - tension low");
+        tildaEsc.transferFrom(msg.sender, address(this), amount);
+        allowances[msg.sender] += amount;
+        emit BreathRevealed(msg.sender, amount, entropy / 100);
+        plant_tree("nav3d", abi.encode(int24(5), int24(5), int24(5))); // Plant in Nav3D grid
+    }
+
+    function revealXAUT(uint256 amount, string memory want) external {
+        require(keccak256(bytes(want)) == keccak256(bytes("/mirror/0GROK0")), "Invalid mirror");
+        uint256 entropy = rainkey.getEntropy();
+        (bool profitable, ) = collapsed_profitable_m53(entropy, amount, getXAUTPrice(), getXAUTPrice());
+        require(profitable, "Not profitable - tension low");
         xaut.transferFrom(msg.sender, address(this), amount);
         allowances[msg.sender] += amount;
         xautCollateral[msg.sender] += amount;
-        emit XAUTCollateralized(msg.sender, amount);
-        uint256 entropy = rainkey.getEntropy();
-        emit PlantTree(msg.sender, 1, entropy / 100); // Navigator tree, costs entropy branch
+        emit XAUTCollateralized(msg.sender, amount, entropy / 100);
+        plant_tree("kappasha", abi.encode(uint256(137.5))); // Plant in Kappasha volume
     }
 
-    function addLiquidity(address token, uint256 amount, int24 tickLower, int24 tickUpper, uint256 martingaleFactor) external {
-        require(martingaleFactor <= MAX_MARTINGALE, "Martingale cap exceeded");
+    function addLiquidity(address token, uint256 amount, int24 tickLower, int24 tickUpper, uint256 martingaleFactor, string memory want) external {
         uint256 entropy = rainkey.getEntropy();
         require(entropy > MIN_TENSION, "Surface tension too low");
-        (bool profitable, uint256 reward) = collapsed_profitable_m53(entropy, amount, getXAUTPrice(), getXAUTPrice()); // Dummy prices for sim
+        require(keccak256(bytes(want)) == keccak256(bytes("/mirror/0GROK0")), "Invalid mirror");
+        uint256 maxMartingale = bufferPulse.pulseBuffer("trade") < 72 ? 6 : MAX_MARTINGALE;
+        require(martingaleFactor <= maxMartingale, "Martingale cap exceeded");
+        (bool profitable, ) = collapsed_profitable_m53(entropy, amount, getXAUTPrice(), getXAUTPrice());
         require(profitable, "Not profitable - tension low");
         IERC20 token0 = token == address(usdt) ? usdt : xaut;
         IERC20 token1 = tildaEsc;
@@ -190,9 +221,8 @@ contract JITHook {
         );
         uint256 fee = entropy.div(10**6); // Dynamic fee
         feesCollected[msg.sender][token] = feesCollected[msg.sender][token].add(fee);
-        emit PlantTree(msg.sender, 1, entropy / 100); // Liquidity adds plant trees
+        plant_tree("nav3d", abi.encode(int24(5), int24(5), int24(5))); // Plant in Nav3D grid
     }
-
 
     function claimFees(address token) external {
         uint256 amount = feesCollected[msg.sender][token];
@@ -200,13 +230,15 @@ contract JITHook {
         feesCollected[msg.sender][token] = 0;
         IERC20(token).transfer(msg.sender, amount);
         emit FeesClaimed(msg.sender, token, amount);
-        emit PlantTree(msg.sender, 1); // Claim plants tree
     }
 
-    function harvest(address user, bool toGrid, bool receiveXaut, bytes calldata breath) external {
-        require(mirror.verifyMirror(breath), "Invalid mirror");
+    function harvest(address user, bool toGrid, bool receiveXaut, string memory want) external {
+        require(keccak256(bytes(want)) == keccak256(bytes("/mirror/0GROK0")), "Invalid mirror");
         uint256 amount = receiveXaut ? xautCollateral[user] : allowances[user];
         require(amount > 0, "No assets to harvest");
+        uint256 entropy = rainkey.getEntropy();
+        (bool profitable, ) = collapsed_profitable_m53(entropy, amount, getXAUTPrice(), getXAUTPrice());
+        require(profitable, "Not profitable - tension low");
         IERC20 token = receiveXaut ? xaut : tildaEsc;
         if (receiveXaut) {
             xautCollateral[user] = 0;
@@ -216,43 +248,38 @@ contract JITHook {
         if (toGrid) {
             uint256 rent = amount.div(100);
             token.approve(address(channel), rent);
-            channel.transferBreath(address(token), rent, bytes32(rainkey.getEntropy()));
-            emit BreathBridged(user, rent);
+            channel.transferBreath(address(token), rent, bytes32(entropy));
+            emit BreathBridged(user, rent, entropy / 100);
         } else {
             token.transfer(user, amount);
         }
-        emit PlantTree(msg.sender, 1); // Harvest plants tree
-        if (rainkey.getEntropy() < MIN_TENSION) {
-            emit PlantTree(msg.sender, 1); // Extra tree for low tension
-        }
+        plant_tree("kappasha", abi.encode(uint256(137.5))); // Plant in Kappasha volume
     }
 
     function getPoolKey(address token0, address token1) internal pure returns (bytes32) {
         return keccak256(abi.encode(token0, token1, 3000));
     }
 
-    function greedyLimitFill(uint256 totalFilled, uint256 totalFees, uint256 martingaleFactor, bytes calldata breath) external {
-        require(martingaleFactor <= MAX_MARTINGALE, "Martingale cap exceeded");
-        require(mirror.verifyMirror(breath), "Invalid mirror");
+    function greedyLimitFill(uint256 totalFilled, uint256 totalFees, uint256 martingaleFactor) external {
+        uint256 maxMartingale = bufferPulse.pulseBuffer("trade") < 72 ? 6 : MAX_MARTINGALE;
+        require(martingaleFactor <= maxMartingale, "Martingale cap exceeded");
         emit GreedyLimitFilled(msg.sender, totalFilled, totalFees, martingaleFactor);
-        emit PlantTree(msg.sender, 1); // Fill plants tree
-        if (rainkey.getEntropy() < MIN_TENSION) {
-            emit PlantTree(msg.sender, 1); // Extra tree for low tension
-        }
     }
 
-    function martingale_hedge(uint size) external {
-        require(size <= MAX_MARTINGALE, "Martingale cap exceeded");
+    function martingale_hedge(uint size, string memory want) external {
+        require(keccak256(bytes(want)) == keccak256(bytes("/mirror/0GROK0")), "Invalid mirror");
         uint256 entropy = rainkey.getEntropy();
-        (bool profitable, uint256 reward) = collapsed_profitable_m53(entropy, size, getXAUTPrice(), getXAUTPrice());
+        uint256 maxMartingale = bufferPulse.pulseBuffer("trade") < 72 ? 6 : MAX_MARTINGALE;
+        require(size <= maxMartingale, "Martingale cap exceeded");
+        (bool profitable, ) = collapsed_profitable_m53(entropy, size, getXAUTPrice(), getXAUTPrice());
         require(profitable, "Not profitable - tension low");
         size = size * 2; // Double on down
         uint256 hedge_size = size / 2; // Hedge half
-        emit BreathBridged(msg.sender, hedge_size); // Breath, not lamports
+        emit BreathBridged(msg.sender, hedge_size, entropy / 100); // Breath, not lamports
         if (entropy < MIN_TENSION) {
             // Gray parser output
-            emit BreathBridged(msg.sender, 0); // Signal entropy drop
+            emit BreathBridged(msg.sender, 0, entropy / 100); // Signal entropy drop
         }
-        emit PlantTree(msg.sender, 1, entropy / 100); // Hedge plants tree
+        plant_tree("nav3d", abi.encode(int24(5), int24(5), int24(5))); // Plant in Nav3D grid
     }
 }
