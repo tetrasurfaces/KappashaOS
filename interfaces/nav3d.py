@@ -44,11 +44,12 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# nav3d.py - 3D navigation tool for Blocsym/KappashaOS with ramp, kappa raster, and ghost lap.
-# Async, Navi-integrated.
+# KappashaOS/core/nav3d.py - 3D navigation tool for Blocsym/KappashaOS with ramp, kappa raster, and ghost lap.
+# Async, Navi-integrated, tree planting for jit_hook.sol.
 
 import numpy as np
 import asyncio
+import hashlib
 from ramp import RampCipher
 from kappa_wire import KappaWire
 from loom_os import LoomOS
@@ -65,22 +66,42 @@ class Nav3D:
         self.grok = GrokWalk()
         self.oracle = Oracle()
         self.kappa = Kappa()
-        self.ghost_cache = {}  # Local cache for \( O(1) \)
+        self.ghost_cache = {}  # Local cache for O(1)
         self.o_b_e = np.zeros((10, 10, 10))  # Genesis zero block one earth
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
         self.hand = MasterHand()
+        self.trees = []  # Store planted trees (x,y,z,entropy)
         print("Nav3D initialized - 3D navigation for B ready.")
 
     async def deepen_o_b_e(self):
         """Deepen O B E genesis grid with precomputed ghost lap."""
         data = "genesis"
-        _, _, _, _, self.o_b_e = await simulate_block_time(data)  # Tie to blockclock, get O B E grid
+        _, _, _, _, self.o_b_e = await simulate_block_time(data)  # Tie to blockclock
         await self.oracle.navi_precompute_ghost_lap("genesis.txt", (0, 0, 0), self.ramp.pin)
         self.ghost_cache['genesis'] = await self.oracle.navi_prophecy(hashlib.sha256(b"genesis").hexdigest(), "cone")
         print(f"Navi: Deepened O B E genesis grid mean density: {np.mean(self.o_b_e):.2f}")
         self.hand.pulse(1)
         await asyncio.sleep(0)
+
+    async def plant_tree(self, x: int, y: int, z: int, entropy: float) -> bool:
+        """Plant a navigator-style tree in o_b_e grid, cost 1% entropy."""
+        # Check 0GROK0 mirror
+        mirror_hash = "0GROK0"
+        hash_bytes = np.array([0, ord('G'), ord('R'), ord('O'), ord('K'), ord('0'), 0])
+        if not np.array_equal(hash_bytes, hash_bytes[::-1]):
+            print("Navi: Invalid mirror for tree planting")
+            return False
+        # Validate position
+        if not (0 <= x < 10 and 0 <= y < 10 and 0 <= z < 10):
+            print("Navi: Invalid tree position")
+            return False
+        # Plant tree, cost entropy
+        self.o_b_e[x, y, z] = 1  # Mark tree in grid
+        self.trees.append((x, y, z, entropy * 0.99))  # Drop 1% entropy
+        print(f"Navi: Planted tree at ({x},{y},{z}), entropy cost: {entropy * 0.01:.2f}")
+        self.hand.pulse(2)  # Ghosthand pulse on plant
+        return True
 
     async def interstellar_kappa_signaling(self):
         """Simulate interstellar kappa signaling with Navi safety."""
@@ -89,10 +110,10 @@ class Nav3D:
         self.tendon_load = np.random.rand() * 0.3
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
         if self.tendon_load > 0.2:
-            print("Nav3D: Warning - Tendon overload. Resetting.")
+            print("Navi: Warning - Tendon overload. Resetting.")
             self.reset()
         if self.gaze_duration > 30.0:
-            print("Nav3D: Warning - Excessive gaze. Pausing.")
+            print("Navi: Warning - Excessive gaze. Pausing.")
             await asyncio.sleep(2.0)
             self.gaze_duration = 0.0
         await asyncio.sleep(0)
@@ -108,16 +129,16 @@ class Nav3D:
         self.tendon_load = np.random.rand() * 0.3
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
         if self.tendon_load > 0.2:
-            print("Nav3D: Warning - Tendon overload. Resetting.")
+            print("Navi: Warning - Tendon overload. Resetting.")
             self.reset()
         if self.gaze_duration > 30.0:
-            print("Nav3D: Warning - Excessive gaze. Pausing.")
+            print("Navi: Warning - Excessive gaze. Pausing.")
             await asyncio.sleep(2.0)
             self.gaze_duration = 0.0
         await asyncio.sleep(0)
         print("Navi: Safety added to channels.")
 
-    async def navi_navigate(self, file_path: str, target_pos: Tuple[int, int, int], call_sign: str):
+    async def navi_navigate(self, file_path: str, target_pos: tuple[int, int, int], call_sign: str):
         """Navigate 3D space with ramp modulation, kappa raster, and prophecy."""
         if not self.grok._gate_check(call_sign):
             print("Navi: Gate denied.")
@@ -125,28 +146,27 @@ class Nav3D:
         with open(file_path, 'r') as f:
             data = f.read()
         hash_str = hashlib.sha256(data.encode()).hexdigest()
-        # Rasterize and modulate
         points = np.array([[target_pos[0] / self.kappa.grid_size, target_pos[1] / self.kappa.grid_size, target_pos[2] / self.kappa.grid_size]])
         await self.kappa.navi_rasterize_kappa(points, {"density": 2.0})
         placed = await self.loom.navi_weave(self.ramp.pin, hash_str, target_pos)
         if placed:
             print(f"Navi: Navigated to {target_pos} with hash {hash_str[:10]}...")
-        # Precompute ghost lap
+            await self.plant_tree(target_pos[0], target_pos[1], target_pos[2], 0.5)  # Plant tree on navigate
         await self.oracle.navi_precompute_ghost_lap(file_path, target_pos, self.ramp.pin)
         self.ghost_cache['genesis'] = await self.oracle.navi_prophecy(hash_str, call_sign)
         self.tendon_load = np.random.rand() * 0.3
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
         if self.tendon_load > 0.2:
-            print("Nav3D: Warning - Tendon overload. Resetting.")
+            print("Navi: Warning - Tendon overload. Resetting.")
             self.reset()
         if self.gaze_duration > 30.0:
-            print("Nav3D: Warning - Excessive gaze. Pausing.")
+            print("Navi: Warning - Excessive gaze. Pausing.")
             await asyncio.sleep(2.0)
             self.gaze_duration = 0.0
         await asyncio.sleep(0)
         return placed
 
-    def reverse_parse_tuple(self, pos: Tuple[int, int, int]) -> str:
+    def reverse_parse_tuple(self, pos: tuple[int, int, int]) -> str:
         """Reverse parse tuple from kappa wire with ghost validation."""
         x, y, z = pos
         encoded = self.kappa_wire.retrieve_from_wire(x, y, z)
@@ -179,11 +199,8 @@ if __name__ == "__main__":
         await nav.interstellar_kappa_signaling()
         await nav.add_navi_safety_to_channels("RGB:255,0,0")
         await nav.navi_navigate("test.txt", (5, 5, 5), "cone")
+        await nav.plant_tree(5, 5, 5, 0.5)  # Test tree planting
         decoded = nav.reverse_parse_tuple((5, 5, 5))
         print(f"Navi: Decoded from reverse parse: {decoded[:10]}...")
 
     asyncio.run(navi_test())
-
-</xaiArtifact>
-
-Upgrade logged: Nav3D deepened O B E with precompute ghost, interstellar signal stub, Navi safety in channels. Next thread?
