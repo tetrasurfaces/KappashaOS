@@ -44,8 +44,8 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# master_hand.py - Spatial awareness with tetrasurface mesh and kappa-wise grid.
-# Integrated with Navi and braid transforms for KappashaOS.
+# master_hand.py - Spatial awareness with tetra meshes and ribit telemetry.
+# Integrated with Navi and thought curves for KappashaOS.
 
 import numpy as np
 import asyncio
@@ -54,11 +54,11 @@ import hashlib
 import struct
 from kappasha.thought_curve import ThoughtCurve
 from gyro_gimbal import GyroGimbal
-from tetras import fractal_tetra
-from nurks_surface import generate_nurks_surface, u_num, v_num
+from tetras.fractal_tetra import generate_fractal_tetra
+from nurks_surface import generate_nurks_surface
 from tessellations import tessellate_hex_mesh
 from friction_vibe import TetraVibe
-from ribit_telemetry import ribit_generate
+from ribit_telemetry import RibitTelemetry
 from kappawise import kappa_coord
 
 class MasterHand:
@@ -72,10 +72,11 @@ class MasterHand:
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
         self.user_id = 12345  # Mock user ID
-        print("MasterHand initialized - kappa-wise and braid-ready.")
+        self.ribit = RibitTelemetry([], [])  # Mock initial ribit
+        print("MasterHand initialized - kappa-wise, ribit-ready.")
 
     async def navi_nudge(self):
-        """Navi listens with braid integration."""
+        """Navi listens with ribit integration."""
         while True:
             # Mock EEG twitch
             twitch = np.random.rand() * 0.3
@@ -88,6 +89,10 @@ class MasterHand:
                                  np.random.rand() * 0.2 - 0.1,
                                  0.0])
             self.adjust_kappa(gyro_data)
+
+            # Ribit telemetry update
+            intensity, state, color = self.ribit.generate()
+            print(f"Navi: Ribit - Intensity {intensity}, State {state}, Color {color}")
 
             # Safety monitoring
             self.tendon_load = np.random.rand() * 0.3
@@ -111,8 +116,8 @@ class MasterHand:
         """Normalize pressure, adjust rods with kappa."""
         tension = max(0, min(1, pressure))
         for i in range(len(self.rods)):
-            coord = self.vibe_model.kappa_coord(i, i)
-            thimble_t = np.sin(tension * coord[0] / 1023.0)
+            coord = self.vibe_model.friction_vibe(np.array([0, 0, 0]), np.array([i, 0, 0]), self.kappa)[0]
+            thimble_t = np.sin(tension * coord / 1023.0)
             self.rods[i] += thimble_t * (1 - abs(i - len(self.rods) // 2) / (len(self.rods) // 2)) * self.kappa
         return max(self.rods)
 
@@ -127,7 +132,7 @@ class MasterHand:
         print(f"MasterHand: Kappa to {self.kappa:.2f}, Coord ({x},{y},{z})")
 
     def reset(self):
-        """Reset hand and safety counters."""
+        """Reset hand state and safety counters."""
         self.rods = [0.0] * len(self.rods)
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
@@ -135,22 +140,21 @@ class MasterHand:
         self.gimbal.reset()
 
     def gimbal_flex(self, delta_price):
-        """Flex gimbal, generate kappa-wise mesh."""
+        """Flex gimbal, generate kappa-aware mesh with ribit telemetry."""
         curl = delta_price < -0.618
         if curl:
             self.gimbal.tilt('curl_axis', 0.1)
             self.gimbal.stabilize()
-            X, Y, Z, surface_id, X_cap, Y_cap, Z_cap, param_str = generate_nurks_surface(
+            X, Y, Z, surface_id, X_cap, Y_cap, Z_cap = generate_nurks_surface(
                 ns_diam=1.0, sw_ne_diam=1.0, nw_se_diam=1.0,
                 twist=0.0, amplitude=0.3, radii=1.0, kappa=self.kappa,
                 height=1.0, inflection=0.5, morph=0.0, hex_mode=False
             )
-            tetra_mesh = fractal_tetra(surface_id, self.kappa)
-            triangles_main = tessellate_hex_mesh(X, Y, Z, u_num, v_num, param_str)
-            triangles = triangles_main + tetra_mesh
+            grid, _ = generate_fractal_tetra(grid_size=50, kappa=self.kappa)
+            triangles = tessellate_hex_mesh(X, Y, Z, u_num, v_num, "mock_param")
             for tri in triangles:
                 for p in tri:
-                    vibe, _ = self.vibe_model.friction_vibe(np.array(p), self.gimbal.gimbal)
+                    vibe, _ = self.vibe_model.friction_vibe(np.array([0, 0, 0]), np.array(p), self.kappa)
                     p[2] *= vibe
                     angles = np.array([0.1, 0.2, 0.3])
                     p = self.vibe_model.gyro_gimbal_rotate(np.array([p]), angles)[0]
@@ -161,8 +165,8 @@ class MasterHand:
             filename = hashlib.sha256(f"surface_{surface_id}".encode()).hexdigest()[:16] + '.stl'
             self.export_to_stl(triangles, filename, surface_id)
             light_hash = self.raster_to_light(filename)
-            ribit_int, state, color = ribit_generate(light_hash)
-            print(f"MasterHand: RIBIT {ribit_int}, State {state}, Color {color}")
+            intensity, state, color = self.ribit.generate()  # Use ribit telemetry
+            print(f"MasterHand: Ribit - Intensity {intensity}, State {state}, Color {color}")
         return curl
 
     def extend(self, touch_point):
