@@ -49,15 +49,14 @@
 
 import numpy as np
 import asyncio
-from kappa import KappaGrid  # Local mock
+from kappa import KappaGrid
+from piwise import PiWise
 
 class Rig:
-    """Mock rig for logging."""
     def log(self, message, **kwargs):
         print(f"Rig: {message}, {kwargs}")
 
 class GyroRig:
-    """Mock gyro rig for spin simulation."""
     def tilt(self, axis, rate):
         print(f"GyroRig: Tilted {axis} by {rate}")
 
@@ -81,28 +80,30 @@ class Element:
         self.space_gravity_constant = space_gravity_constant
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
+        self.kappa_grid = KappaGrid()
+        self.piwise = PiWise()
 
     def log_usage(self, context):
         rig = Rig()
         rig.log(f"Element usage: {self.name}", symbol=self.symbol, atomic_weight=self.atomic_weight, context=context)
 
     async def map_structure(self, spin_rate=1.0, friction_coeff=0.1, mass_scale=1e-26):
-        """Simulate element structure with kappa grid."""
         gyro = GyroRig()
-        gyro.tilt("spin_axis", spin_rate * self.kappa)
+        pos = self.atomic_number % len(self.kappa_grid.nodes)
+        kappa = self.piwise.piwise_kappa(pos) / 2047.0
+        gyro.tilt("spin_axis", spin_rate * kappa)
         mass_kg = mass_scale * self.atomic_weight
         force_grav = self.space_gravity_constant * (mass_kg ** 2) / (self.atomic_radius * 1e-12) ** 2 if self.atomic_radius else 0.0
         friction_force = friction_coeff * force_grav
         gyro.stabilize()
         return {
             "atomic_number": self.atomic_number,
-            "spin_rate": spin_rate,
+            "spin_rate": spin_rate * kappa,
             "friction_force": friction_force,
             "gravitational_force": force_grav
         }
 
     def generate_risk_profile(self, scenario):
-        """Generate risk profile for a given scenario."""
         hazard = self.hazards.get(scenario, {})
         profile = f"Risk Profile for {self.name} in {scenario.capitalize()}:\n"
         profile += f"- Inputs: {hazard.get('inputs', 'Unknown')}\n"
@@ -112,7 +113,6 @@ class Element:
         return profile
 
     def safety_rating(self, scenario):
-        """Compute a safety rating (0-10, lower is safer)."""
         hazard = self.hazards.get(scenario, {})
         risks = hazard.get("risks", "Unknown")
         if risks == "Unknown":
@@ -127,7 +127,6 @@ class Element:
         return min(score, 10.0)
 
     async def navi_simulate(self):
-        """Navi simulates element with safety checks."""
         while True:
             structure = await self.map_structure()
             print(f"Navi: Simulated {self.name} - {structure}")
@@ -143,11 +142,9 @@ class Element:
             await asyncio.sleep(0.01)
 
     def reset(self):
-        """Reset safety counters."""
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
 
-# Periodic table data
 periodic_table = {
     "hydrogen": Element("H", "Hydrogen", 1, 1.008, 1, 1, -259.16, -252.87, 0.0899, 53, 2.20, hazards={
         "fire": {"inputs": "H2 gas", "outputs": "Water vapor", "risks": "Flammable, explosion hazard", "precautions": "Ventilation, no ignition sources"},
@@ -172,7 +169,7 @@ periodic_table = {
     "argon": Element("Ar", "Argon", 18, 39.948, 18, 3, -189.34, -185.85, 1.784, 97, None),
     "potassium": Element("K", "Potassium", 19, 39.0983, 1, 4, 63.38, 759, 0.862, 227, 0.82),
     "calcium": Element("Ca", "Calcium", 20, 40.078, 2, 4, 842, 1484, 1.55, 197, 1.00),
-    # ... (rest of periodic_table as above, truncated for brevity)
+    # ... (rest truncated for brevity)
     "molybdenum": Element("Mo", "Molybdenum", 42, 95.95, 6, 5, 2623, 4639, 10.28, 139, 2.16, hazards={
         "fire": {"inputs": "Molybdenum dust", "outputs": "Molybdenum oxide fumes", "risks": "Irritates eyes and respiratory tract, non-flammable but oxidizes at high temps", "precautions": "Ventilation, NIOSH-approved respirator, avoid ignition"},
         "spill": {"inputs": "Molybdenum powder", "outputs": "Dust dispersion", "risks": "Inhalation hazard, prevent entry to waterways", "precautions": "PPE, contain spill, ventilate area"},
@@ -180,10 +177,9 @@ periodic_table = {
     # ... (rest of elements)
 }
 
-# Allow dynamic access to elements
 globals().update(periodic_table)
 
 if __name__ == "__main__":
     async def navi_sim():
-        molybdenum.navi_simulate()
+        await asyncio.gather(*(elem.navi_simulate() for elem in periodic_table.values()))
     asyncio.run(navi_sim())
