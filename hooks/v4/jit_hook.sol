@@ -42,7 +42,8 @@
 // 6. **Open Development**: Hardware docs shared post-private phase.
 //
 // Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
-
+//
+// jit_hook.sol
 pragma solidity ^0.8.0;
 
 import "@pancakeswap/v4-core/interfaces/IPoolManager.sol";
