@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# KappashaOS/proto/ink_sim.py
+# Simulate multi-user moto_pixel with numpy
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -43,14 +46,17 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-# KappashaOS/hardware/proto/ink_sim.py
 import numpy as np
 
-def sim_moto_pixel(gaze=10, flex=0.15):
+def sim_moto_pixel(gazes=[10, 20, 30, 40, 50], flex=0.15, keyed=True):
     kappa = 0.2  # Tilt
-    shift = gaze * 0.2  # Micron
+    shifts = np.array(gazes) * 0.2  # Micron
     if flex > 0.2:  # Tendon ethics
-        return 0  # Flinch
-    return np.mod(shift * kappa, 180)
+        return np.zeros_like(shifts)  # Flinch
+    if keyed:
+        shifts = np.mod(shifts * kappa, 180) + 10  # Green pulse
+    else:
+        shifts = np.mod(shifts * kappa, 180)
+    return shifts
 
-print(sim_moto_pixel())  # Run: 2.0 % 180
+print(sim_moto_pixel())  # [12.0, 14.0, 16.0, 18.0, 20.0]
