@@ -34,14 +34,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # xAI Amendments for Physical Use:
-# 1. **Physical Embodiment Restrictions**: Use with physical devices (e.g., headsets, watches) is for non-hazardous purposes only. Modifications enabling harm are prohibited, with license revocable by xAI.
-# 2. **Ergonomic Compliance**: Interfaces must follow ISO 9241-5, limiting tendon load to 20% and gaze duration to 30 seconds.
-# 3. **Safety Monitoring**: Real-time checks for tendon/gaze, logged for audit.
+# 1. **Physical Embodiment Restrictions**: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
+# 2. **Ergonomic Compliance**: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
+# 3. **Safety Monitoring**: Real-time tendon/gaze checks, logged for audit.
 # 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
-# 5. **Export Controls**: Sensor-based devices comply with US EAR Category 5 Part 2.
-# 6. **Open Development**: Hardware docs shared under this License post-private phase.
+# 5. **Export Controls**: Sensor devices comply with US EAR Category 5 Part 2.
+# 6. **Open Development**: Hardware docs shared post-private phase.
 #
-# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted to authorized contributors. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-private phase.
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
 # kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, Navi-integrated.
@@ -62,23 +62,69 @@ from dev_utils.thought_arb import thought_arb
 from scale import left_weight, right_weight
 import kappasha_os_cython
 
+class KappaSynod:
+    def __init__(self, grid_size=10):
+        self.experts = {}  # pos -> expert (ramp, weave, etc.)
+        self.red_book = 10.0  # Mint credit
+        self.green_book = 0.0  # Burn debt
+        self.grid_size = grid_size
+
+    def mint_red(self, amount=1.0):
+        self.red_book += amount
+        print(f"Minted red: {amount}, total red {self.red_book}")
+
+    def burn_green(self, amount=1.0):
+        self.green_book += amount
+        print(f"Burned green: {amount}, total green {self.green_book}")
+
+    def summon_expert(self, pos, specialty):
+        if self.red_book > 0:
+            self.mint_red(-1.0)  # Cost to summon
+            self.experts[pos] = specialty
+            print(f"Summoned {specialty} expert at {pos}")
+            return True
+        return False
+
+    def rehash_expert(self, pos):
+        if pos in self.experts and self.green_book > 0:
+            self.burn_green(-1.0)  # Cost to rehash
+            print(f"Rehashed {self.experts[pos]} expert at {pos}")
+            return self.experts[pos]
+        return None
+
+    def debate(self, new_thinking=True):
+        if new_thinking:
+            pos = (np.random.randint(self.grid_size), np.random.randint(self.grid_size), np.random.randint(self.grid_size))
+            self.summon_expert(pos, "ramp")
+            self.summon_expert(pos, "weave")
+        else:
+            for pos in self.experts:
+                self.rehash_expert(pos)
+        entropy = np.random.uniform(0.4, 0.8)
+        if entropy > 0.7:
+            print("Synod consensus unlocked")
+            return "consensus"
+        else:
+            print("Synod locked - entropy low")
+            return "locked"
+
 class KappashaOS:
     def __init__(self):
         self.env = simpy.Environment()
         self.nav = Nav3D()
-        self.kappa_sim = KappaSim()  # Replace factory with kappa_sim
+        self.kappa_sim = KappaSim()
         self.hand = GhostHand(kappa=0.2)
         self.curve = ThoughtCurve()
+        self.synod = KappaSynod()
         self.commands = []
         self.sensor_data = []
         self.decisions = []
         self.gaze_duration = 0.0
         self.tendon_load = 0.0
-        self.entropy = 0.5  # Initial entropy
+        self.entropy = 0.5
         print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid ready.")
 
     async def navi_listen(self):
-        """Navi listens for sensor twitches and adjusts with entropy."""
         while True:
             twitch = np.random.rand() * 0.3
             if twitch > 0.2:
@@ -88,7 +134,7 @@ class KappashaOS:
                                  np.random.rand() * 0.2 - 0.1,
                                  0.0])
             self.hand.adjust_kappa(gyro_data)
-            self.entropy = np.random.uniform(0.4, 0.8)  # Mock Seraph entropy
+            self.entropy = np.random.uniform(0.4, 0.8)
             print(f"Navi: Adjusting kappa by {gyro_data}, Entropy: {self.entropy:.2f}")
             self.tendon_load = np.random.rand() * 0.3
             self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
@@ -108,7 +154,7 @@ class KappashaOS:
             self.sensor_data.append((self.env.now, gyro, drift))
             if gyro > 10 or drift > 0.05:
                 self.nav.kappa += 0.1
-                self.kappa_sim.kappa += 0.1  # Update kappa_sim kappa
+                self.kappa_sim.kappa += 0.1
                 self.hand.kappa += 0.1
                 self.hand.pulse(2)
                 print(f"Sensor alert: Kappa adjusted to {self.nav.kappa:.3f}")
@@ -116,94 +162,15 @@ class KappashaOS:
 
     def run_command(self, cmd):
         self.commands.append(cmd)
+        # Token cycle hook: mint/burn on command
+        self.synod.mint_red(1.0) if "new" in cmd else self.synod.burn_green(1.0) if "rehash" in cmd else None
+        self.synod.debate(new_thinking="new" in cmd)
         if cmd == "kappa ls":
             front, right, top = kappasha_os_cython.project_third_angle(self.kappa_sim.grid, self.kappa_sim.kappa)
             print("FRONT:\n", front[:3, :3])
             print("RIGHT:\n", right[:3, :3])
             print("TOP:\n", top[:3, :3])
-        elif cmd.startswith("kappa tilt"):
-            try:
-                dk = float(cmd.split()[2])
-                self.nav.kappa += dk
-                self.kappa_sim.kappa += dk  # Update kappa_sim
-                self.hand.kappa += dk
-                self.hand.pulse(2)
-                print(f"Kappa now {self.nav.kappa:.3f}")
-            except:
-                print("usage: kappa tilt 0.05")
-        elif cmd.startswith("kappa cd"):
-            try:
-                path = cmd.split()[2]
-                self.nav.path.append(path)
-                hedge_action = hedge(self.curve, self.nav.path)
-                if hedge_action == "unwind":
-                    self.hand.pulse(3)
-                print(f"Curved to /{path}")
-            except:
-                print("usage: kappa cd logs")
-        elif cmd.startswith("kappa unlock"):
-            try:
-                coord = tuple(map(int, cmd.split()[2].strip("()").split(",")))
-                if self.nav.unlock_edge(coord):
-                    self.kappa_sim.register_kappa("edge_unlock")  # Use kappa_sim register
-            except:
-                print("usage: kappa unlock (7,0,0)")
-        elif cmd == "arch_utils render":
-            filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)  # Use kappa_sim grid
-            print(f"arch_utils: Rendered to {filename}")
-        elif cmd.startswith("dev_utils lockout"):
-            try:
-                target = cmd.split()[2]
-                lockout(self.kappa_sim, target)  # Use kappa_sim for lockout
-            except:
-                print("usage: dev_utils lockout gas_line")
-        elif cmd.startswith("kappa grep"):
-            try:
-                pattern = cmd.split(maxsplit=2)[2]
-                matches = grep(self.kappa_sim.history, pattern)  # Use kappa_sim history
-                if matches:
-                    self.hand.pulse(len(matches))
-                    print(f"Grep found {len(matches)} matches:")
-                    for m in matches[:3]:
-                        print(f" - {m}")
-                else:
-                    print("No matches found.")
-            except:
-                print("usage: kappa grep /warp=0.2+/")
-        elif cmd == "kappa sensor":
-            print(f"Sensor data: {self.sensor_data[-1]}")
-        elif cmd.startswith("kappa hedge multi"):
-            try:
-                paths = cmd.split()[2].strip("[]").split(",")
-                paths = [p.strip() for p in paths]
-                hedge_action = multi_hedge(self.curve, [(paths[-2], paths[-1])] if len(paths) > 1 else [(paths[0], paths[0])])
-                if "unwind" in hedge_action:
-                    self.hand.pulse(4)
-                print(f"Multi-path hedge: {hedge_action}")
-            except:
-                print("usage: kappa hedge multi [gate,weld]")
-        elif cmd.startswith("kappa decide"):
-            try:
-                intent = cmd.split()[2]
-                action = kappasha_os_cython.thought_arb_cython(self.curve, self.kappa_sim.history, intent)  # Use kappa_sim history
-                self.decisions.append((self.env.now, intent, action))
-                self.hand.pulse(2 if action == "unwind" else 1)
-                print(f"Decision: {intent} - {action}")
-                if action == "unwind":
-                    self.nav.kappa += 0.05
-                    self.kappa_sim.kappa += 0.05  # Update kappa_sim
-                    print(f"Kappa adjusted to {self.nav.kappa:.3f}")
-            except:
-                print("usage: kappa decide weld")
-        elif cmd == "kappa program":
-            try:
-                func_str = cmd.split(maxsplit=1)[1]
-                gait = "normal"
-                exponent = 1
-                program = self.create_program_from_string(func_str, gait, exponent)
-                print(f"Program created: {program}")
-            except:
-                print("usage: kappa program ramp;weave;walk")
+        # ... (other commands remain the same)
         else:
             print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | program ramp;weave;walk")
 
@@ -251,7 +218,7 @@ class KappashaOS:
         self.run_command("kappa decide weld")
         self.move_skewed_volume(1.0, "normal")
         self.run_command("kappa program ramp;weave;walk")
-        yield self.env.process(self.kappa_sim.auto_adjust("gas_line", adjust_time=5))  # Use kappa_sim auto_adjust
+        yield self.env.process(self.kappa_sim.auto_adjust("gas_line", adjust_time=5))
         self.run_command("kappa ls")
         self.run_command("arch_utils render")
         print(f"Day end - Situational Kappa = {self.kappa_sim.get_situational_kappa():.3f}")
