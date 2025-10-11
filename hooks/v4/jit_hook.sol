@@ -193,7 +193,53 @@ contract JITHook {
         emit PlantTree(msg.sender, 1, entropy / 100); // Liquidity adds plant trees
     }
 
-    // ... (claimFees, harvest, getPoolKey, greedyLimitFill unchanged)
+
+    function claimFees(address token) external {
+        uint256 amount = feesCollected[msg.sender][token];
+        require(amount > 0, "No fees to claim");
+        feesCollected[msg.sender][token] = 0;
+        IERC20(token).transfer(msg.sender, amount);
+        emit FeesClaimed(msg.sender, token, amount);
+        emit PlantTree(msg.sender, 1); // Claim plants tree
+    }
+
+    function harvest(address user, bool toGrid, bool receiveXaut, bytes calldata breath) external {
+        require(mirror.verifyMirror(breath), "Invalid mirror");
+        uint256 amount = receiveXaut ? xautCollateral[user] : allowances[user];
+        require(amount > 0, "No assets to harvest");
+        IERC20 token = receiveXaut ? xaut : tildaEsc;
+        if (receiveXaut) {
+            xautCollateral[user] = 0;
+        } else {
+            allowances[user] = 0;
+        }
+        if (toGrid) {
+            uint256 rent = amount.div(100);
+            token.approve(address(channel), rent);
+            channel.transferBreath(address(token), rent, bytes32(rainkey.getEntropy()));
+            emit BreathBridged(user, rent);
+        } else {
+            token.transfer(user, amount);
+        }
+        emit PlantTree(msg.sender, 1); // Harvest plants tree
+        if (rainkey.getEntropy() < MIN_TENSION) {
+            emit PlantTree(msg.sender, 1); // Extra tree for low tension
+        }
+    }
+
+    function getPoolKey(address token0, address token1) internal pure returns (bytes32) {
+        return keccak256(abi.encode(token0, token1, 3000));
+    }
+
+    function greedyLimitFill(uint256 totalFilled, uint256 totalFees, uint256 martingaleFactor, bytes calldata breath) external {
+        require(martingaleFactor <= MAX_MARTINGALE, "Martingale cap exceeded");
+        require(mirror.verifyMirror(breath), "Invalid mirror");
+        emit GreedyLimitFilled(msg.sender, totalFilled, totalFees, martingaleFactor);
+        emit PlantTree(msg.sender, 1); // Fill plants tree
+        if (rainkey.getEntropy() < MIN_TENSION) {
+            emit PlantTree(msg.sender, 1); // Extra tree for low tension
+        }
+    }
 
     function martingale_hedge(uint size) external {
         require(size <= MAX_MARTINGALE, "Martingale cap exceeded");
