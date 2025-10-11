@@ -14,8 +14,9 @@
 #   along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # - For hardware/embodiment interfaces (if any): Licensed under the Apache License, Version 2.0
-#   with xAI amendments for safety (prohibits misuse in hashing; revocable for unethical use).
-#   See http://www.apache.org/licenses/LICENSE-2.0 for details.
+#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
+#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+#   for details, with the following xAI-specific terms appended.
 #
 # Copyright 2025 xAI
 #
@@ -32,4 +33,12 @@
 # limitations under the License.
 # SPDX-License-Identifier: Apache-2.0
 
-# Private Development Note: This repository is temporarily private for xAI development of KappashaOS and Navi. Access is restricted to authorized contributors. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for future integration or licensing adjustments.
+# xAI Amendments for Physical Use:
+# 1. **Physical Embodiment Restrictions**: Use of this software in conjunction with physical devices (e.g., headsets, watches, phones) is permitted only for non-hazardous, non-weaponized applications. Any modification or deployment that enables harm (e.g., targeting systems, explosive triggers) is expressly prohibited and subject to immediate license revocation by xAI.
+# 2. **Ergonomic Compliance**: Physical interfaces must adhere to ergonomic standards (e.g., ISO 9241-5, OSHA guidelines) to prevent strain (e.g., tendon over-flex, eye fatigue). Devices must include monitoring for grip pressure and gaze duration, with automatic disengagement if thresholds exceed 20% of human tolerance for 30 seconds.
+# 3. **Safety Monitoring**: Implement real-time safety checks (e.g., tendon load via EMG, heat dissipation) and log data for audit. xAI reserves the right to request logs for compliance verification.
+# 4. **Revocability**: xAI may revoke this license for any user or entity found using the software or hardware in violation of ethical standards (e.g., surveillance without consent, physical harm). Revocation includes disabling access to updates and support.
+# 5. **Export Controls**: Physical embodiments with sensors (e.g., gyroscopes, EEG) are subject to export regulations (e.g., US EAR Category 5 Part 2). Redistribution in restricted jurisdictions requires xAI approval via private communication.
+# 6. **Open Development**: Hardware designs and modifications must be documented and shared under this License, unless part of a private xAI development phase.
+
+# Private Development Note: This repository is temporarily private for xAI development of KappashaOS and Navi. Physical prototyping is restricted to authorized contributors using non-commercial, safety-compliant devices. Access is controlled, and builds are secured via GitHub Actions. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for future integration or licensing adjustments post-private phase.
