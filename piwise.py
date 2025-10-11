@@ -51,44 +51,46 @@ import mpmath
 import asyncio
 from kappa import KappaGrid  # Local mock
 
-mpmath.mp.dps = 100  # High precision for pi
+mpmath.mp.dps = 100
 
-SEED = int(str(mpmath.pi)[2:20])  # First 18 digits after decimal
+SEED = int(str(mpmath.pi)[2:20])
 LAP = 18
 
-class piwise:
+class PiWise:
     def __init__(self):
         self.grid = KappaGrid()
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        print("piwise initialized - pi-wise indexing ready.")
+        print("PiWise initialized - pi-wise indexing ready.")
 
     def piwise_kappa(self, pos):
         """Compute kappa index with pi digits and 18-lap reversals."""
-        s = str(mpmath.pi)[2:2 + LAP * pos]  # Slice pi digits
+        s = str(mpmath.pi)[2:2 + LAP * pos]
         if len(s) > LAP:
             s = s[:LAP]
         reversed_s = ''
         for _ in range(LAP):
             s = s[::-1]
             reversed_s += s
-        k = int(reversed_s) % 2048  # 10-bit clamp
+        k = int(reversed_s) % 2048
         return k
 
     async def navi_index(self):
-        """Navi indexes with pi-wise kappa."""
+        """Navi indexes with pi-wise kappa, seeding deltas."""
         while True:
             pos = len(self.grid.nodes)
             kappa = self.piwise_kappa(pos)
             print(f"Navi: Indexed pos {pos} with kappa {kappa}")
-            self.grid.kappa = kappa / 2047.0  # Normalize to [0,1]
+            self.grid.kappa = kappa / 2047.0
+            self.grid.generate_spirals()  # Seed with kappa
+            self.grid.find_deltas()
             self.tendon_load = np.random.rand() * 0.3
             self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
             if self.tendon_load > 0.2:
-                print("piwise: Warning - Tendon overload. Resetting.")
+                print("PiWise: Warning - Tendon overload. Resetting.")
                 self.reset()
             if self.gaze_duration > 30.0:
-                print("piwise: Warning - Excessive gaze. Pausing.")
+                print("PiWise: Warning - Excessive gaze. Pausing.")
                 await asyncio.sleep(2.0)
                 self.gaze_duration = 0.0
             await asyncio.sleep(0.01)
@@ -99,5 +101,5 @@ class piwise:
         self.gaze_duration = 0.0
 
 if __name__ == "__main__":
-    wise = piwise()
+    wise = PiWise()
     asyncio.run(wise.navi_index())
