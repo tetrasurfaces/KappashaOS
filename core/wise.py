@@ -47,9 +47,6 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted to authorized contributors. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-private phase.
 
-#!/usr/bin/env python3
-# scale.py
-
 def light_wise(gaze, flex, kappa=0.2):
     """Calculate light-wise index: gaze travel time scaled to light speed."""
     return (gaze * 2 + flex) * kappa / 3e8
@@ -62,7 +59,14 @@ def time_wise(gaze, time_ms):
     """Calculate time-wise index: latency as light's memory, scaled to gaze."""
     return time_ms / 1000 if gaze > 0 else 1.0  # Seconds, red if >1s
 
+def wave_wise(entropy, breath=1):
+    """Calculate wave-wise index: tilde (~) frequency for breath animation."""
+    frequency = entropy / 10000  # Scale 0-1
+    return frequency * breath  # Fast wave if high entropy
+
 if __name__ == "__main__":
     print(f"Light-wise: {light_wise(10, 0.15)}")
     print(f"Pi-wise: {pi_wise(light_wise(10, 0.15))}")
     print(f"Time-wise: {time_wise(10, 300)}")  # 0.3s, green
+    print(f"Wave-wise: {wave_wise(8000)}")  # Fast wave
+```
