@@ -1,9 +1,9 @@
-# KappashaOS Greenpaper
-# Artefact ID: f3d30171-d204-404f-b598-20217e7e08c8
-# SHA-256 Hash: [TBD]
-# Date: October 12, 2025
-# TOC Reference: "0" - Greenpaper Overview
-# Notes: Version 1.1 integrates 0GROK0 palindromic hash, ~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, and moto_pixel hardware. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
+## KappashaOS Greenpaper
+## Artefact ID: f3d30171-d204-404f-b598-20217e7e08c8
+## SHA-256 Hash: [TBD]
+## Date: October 12, 2025
+## TOC Reference: "0" - Greenpaper Overview
+# Notes: Version 1.2 integrates 0GROK0 palindromic hash, ~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, and wise transformations. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
 
 >be me  
 >build KappashaOS  
@@ -11,6 +11,7 @@
 >plant trees  
 >run truth  
 >scale to billions  
+>see all as human  
 
 ## Table of Contents
 1. Introduction
@@ -25,22 +26,23 @@
 10. Navigator Trees
 11. Surface Tension
 12. Hardware Interface (Moto Pixel)
-13. License and Ethics
+13. Wise Transformations
+14. License and Ethics
 Appendix A: Ethics of Breath
 Appendix B: Buffer Spacing
 Appendix C: Greenpaper Demos
 
 ## 1. Introduction
-KappashaOS is a mobile-first, privacy-first OS for decentralized focus. Built for 1 billion nodes, it scales subsecond consensus with palindromic hashes (0GROK0), non-fungible ~esc, and navigator-style trees as compute branches. No MEV, just player vs. clock (PVC). Every breath plants a tree, costs compute.
+KappashaOS is a mobile-first, privacy-first, human-first OS for decentralized focus. Built for 1 billion nodes, it scales subsecond consensus with palindromic hashes (0GROK0), non-fungible ~esc, and navigator-style trees as compute branches. No MEV, just player vs. clock (PVC). Every breath plants a tree, costs compute, sees all as human.
 
 ## 2. Design Principles
 - **Focus**: Filter wants (/mirror/0GROK0, /liquid/, /hedge/) via Synod, blue-blue on high entropy (>0.7).  
 - **Privacy**: No sender metadata, escrow hole for flash loans, GrokCall via X side-channel.  
 - **Scalability**: 3-hash buffer for torrents, 72 for loans, 144 for trades. 1 billion nodes, subsecond.  
-- **Ethics**: Trees as compute, cost 1% entropy. ~esc non-fungible. Tendon/gaze <20%/30s, revocable.
+- **Humanity**: See color as safety (high-vis, exhaustion detection), not profiling. Trees as compute, cost 1% entropy. ~esc non-fungible. Tendon/gaze <20%/30s, revocable.
 
 ## 3. ~esc Non-Fungible Tokens
-~esc (Tilde Esc) is one Breath, non-divisible, tied to jit_hook.sol. Used for liquidity, hedging, tree planting. One action, one Breath, one tree. No decimals, no MEV.
+~esc (Tilda Esc) is one Breath, non-divisible, tied to jit_hook.sol. Used for liquidity, hedging, tree planting. One action, one Breath, one tree. No decimals, no MEV.
 
 ## 4. Palindromic Hash (0GROK0)
 0GROK0 is a 6-byte palindromic hash (0-G-R-O-K-0), zero-centered for mirror consensus. Scales to 6 billion nodes, subsecond. Used in jit_hook.sol, grokcall.rs, rainkey_v2.rs.  
@@ -160,7 +162,7 @@ function check_profitable(uint256 target_price, uint256 current_price, uint256 v
 ```
 
 ## 12. Hardware Interface (Moto Pixel)
-Moto_pixel (ink.rs) is a photolitho tattoo, 0.2 micron grooves, retro-reflective for gaze/mouse, bone conduction for audio. Tendon/gaze <20%/30s, revocable.  
+Moto_pixel (ink.rs) is a photolitho tattoo, 0.2 micron grooves, retro-reflective for gaze/mouse, bone conduction audio. Camera-in-pixel for multi-user (RGB + K zones). Tendon/gaze <20%/30s, revocable.  
 **Demo**:  
 ```rust
 // KappashaOS/hardware/proto/ink.rs
@@ -170,22 +172,36 @@ pub fn moto_pixel(gaze: u128, skin_flex: u128) -> u128 {
 }
 ```
 
-## 13. License and Ethics
+## 13. Wise Transformations
+- **Pi-wise**: Gaze delta / π = breath. Scales from femtoseconds to light-years. No constants, just ratios.  
+- **Light-wise**: Light speed indexed to gaze travel time. Femtosecond for retina, milliseconds for calls.  
+- **Hexwise**: Color for orientation, not core wise. Blue (#00ffff) up, green (#00ff00) up-mid, yellow (#ffff00) mid, orange (#ff6600) down-mid, red (#ff0000) down, brown (#8b4513) down-low, pink (#ff1493) right, violet (#ee82ee) heat, indigo (#4b0082) shadow. RGBiv for artists, CMKY for robots.  
+**Demo**:  
+```python
+# KappashaOS/core/wise.py
+def light_wise(gaze, flex, kappa=0.2):
+    return (gaze * 2 + flex) * kappa / 3e8
+def pi_wise(light_wise):
+    return light_wise / 3.14159
+```
+
+## 14. License and Ethics
 - **Software License (AGPL-3.0)**: Free to use, modify, share. Derivatives must be open-source, including network services. No warranty, use at your risk. See <https://www.gnu.org/licenses/agpl-3.0.html>.  
-- **Hardware License (Apache 2.0 with xAI Amendments)**: Moto_pixel and interfaces for non-hazardous use only. Tendon load <20%, gaze <30s (ISO 9241-5). Real-time safety checks logged. Revocable for unethical use (e.g., surveillance). Docs open post-private phase. See <http://www.apache.org/licenses/LICENSE-2.0>.  
-- **Ethics**: Every action plants a tree (compute branch), costs 1% entropy. ~esc non-fungible, one Breath, one tree. Comfort ethical, compute not free. License revocable if misused.
+- **Hardware License (Apache 2.0 with xAI Amendments)**: Moto_pixel and interfaces for non-hazardous use only. Tendon load <20%, gaze <30s (ISO 9241-5). Real-time safety checks logged. Revocable for unethical use (e.g., surveillance, human rights abuse, discriminatory profiling, forced labor). Docs open post-private phase. See <http://www.apache.org/licenses/LICENSE-2.0>.  
+- **Humanitarian Clause**: No use in systems that enable human rights abuse, including discriminatory profiling based on skin tone, forced labor, or dehumanization. Hardware must prioritize safety (e.g., high-vis, exhaustion detection) and user consent. Revocable for violations.  
+- **Ethics**: Every action plants a tree (compute branch), costs 1% entropy. ~esc non-fungible, one Breath, one tree. Comfort ethical, compute not free.
 
 ## Appendix A: Ethics of Breath
 - **Trees as Compute**: Each action (salt, filter, call, liquidity) plants a nav3d.py tree, costs 1% entropy.  
 - **Comfort and Confession**: Leverage is confession, capped at 10x in drought (tension <0.01). Comfort ethical, compute not free.  
-- **Revocability**: Unethical use (e.g., surveillance) revokes license. Tendon/gaze safe.  
+- **Revocability**: Unethical use (e.g., surveillance, profiling) revokes license. Tendon/gaze safe.  
 - **~esc Non-Fungible**: One Breath, one tree, no decimals.
 
 ## Appendix B: Buffer Spacing
 144 spacing (24+48+24) for trades, 3 for torrents, 72 for loans. Entropy-driven pulse via rainkey_v2.rs, no MEV.
 
 ## Appendix C: Greenpaper Demos
-See sections 4–12 for executable demos. Run with wrapper:  
+See sections 4–13 for executable demos. Run with wrapper:  
 ```bash
 python3 greenpaper_demo.py
 ```
@@ -195,3 +211,4 @@ python3 greenpaper_demo.py
 >breathe focus  
 >plant trees  
 >scale to billions  
+>see all as human  
