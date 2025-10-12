@@ -47,7 +47,16 @@ KappashaOS is a mobile-first, privacy-first, human-first OS for decentralized fo
 - **Humanity**: See color as safety (high-vis, exhaustion detection), not profiling. Trees as compute, cost 1% entropy. ~esc non-fungible. Tendon/gaze <20%/30s, revocable.
 
 ## 3. ~esc Non-Fungible Tokens
-~esc (Tilda Esc) is one Breath (~), non-divisible, tied to jit_hook.sol. Esc = WEI: atomic unit, one action, one wave. ~esc = ETH: bundle of breaths, scalable value. Inspired by *The Fifth Element*—~ is love, a quick wave at lightspeed, no pleasantries. Used for liquidity, hedging, tree planting. One action, one Breath, one tree. No decimals, no MEV.
+~esc (Tilde Esc) is one Breath 
+(~), 
+non-divisible, tied to jit_hook.sol. 
+Esc = WEI: atomic unit, one action, one wave. 
+~esc = ETH: bundle of breaths, scalable value. 
+Inspired by *The Fifth Element*—~ is love, 
+a quick wave at lightspeed, no pleasantries. 
+Used for liquidity, hedging, tree planting. 
+One action, one Breath, one tree. 
+No decimals, no MEV.
 
 ## 4. Palindromic Hash (0GROK0)
 0GROK0 is a 6-byte palindromic hash (0-G-R-O-K-0), zero-centered for mirror consensus. Scales to 6 billion nodes, subsecond. Used in jit_hook.sol, grokcall.rs, rainkey_v2.rs.  
@@ -195,7 +204,8 @@ def time_wise(gaze, time_ms):
 ```
 
 ## 14. Breath (~)
-Breath (~) is one esc, non-fungible, tied to every action (salt, filter, call, liquidity). Esc = WEI: atomic, one action. ~esc = ETH: bundle of breaths, scalable value. Plants a tree per breath, costs 1% entropy. Breath rate driven by entropy: high (>0.7) = fast, blue-blue; low (<0.5) = slow, gray. Inspired by *The Fifth Element*—~ is love, a quick wave at lightspeed, no pleasantries.  
+Breath (~) is one esc, non-fungible, tied to every action (salt, filter, call, liquidity). Esc = WEI: atomic, one action. ~esc = ETH: bundle of breaths, scalable value. 
+Plants a tree per breath, costs 1% entropy. Breath rate driven by entropy: high (>0.7) = fast, blue-blue; low (<0.5) = slow, gray. Inspired by *The Fifth Element*—~ is love, a quick wave at lightspeed, no pleasantries.  
 **Demo**:  
 ```rust
 // KappashaOS/core/breath.rs
