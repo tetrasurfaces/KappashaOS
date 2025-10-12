@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# KappashaOS/core/nav3d.py
+# 3D navigation tool for Blocsym/KappashaOS with ramp, kappa raster, and ghost lap.
+# Async, Navi-integrated, tree planting for jit_hook.sol.
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -43,10 +47,6 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-#!/usr/bin/env python3
-# KappashaOS/core/nav3d.py - 3D navigation tool for Blocsym/KappashaOS with ramp, kappa raster, and ghost lap.
-# Async, Navi-integrated, tree planting for jit_hook.sol.
-
 import numpy as np
 import asyncio
 import hashlib
@@ -56,7 +56,7 @@ from loom_os import LoomOS
 from grokwalk import GrokWalk
 from oracle import Oracle
 from kappa import Kappa
-from blockclockspeed import simulate_block_time  # Tie in blockclock
+from blockclockspeed import simulate_block_time
 
 class Nav3D:
     def __init__(self):
@@ -71,42 +71,39 @@ class Nav3D:
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
         self.hand = MasterHand()
-        self.trees = []  # Store planted trees (x,y,z,entropy)
+        self.trees = []  # Store planted trees (x,y,z,entropy,breath)
         print("Nav3D initialized - 3D navigation for B ready.")
 
     async def deepen_o_b_e(self):
         """Deepen O B E genesis grid with precomputed ghost lap."""
         data = "genesis"
-        _, _, _, _, self.o_b_e = await simulate_block_time(data)  # Tie to blockclock
+        _, _, _, _, self.o_b_e = await simulate_block_time(data)
         await self.oracle.navi_precompute_ghost_lap("genesis.txt", (0, 0, 0), self.ramp.pin)
         self.ghost_cache['genesis'] = await self.oracle.navi_prophecy(hashlib.sha256(b"genesis").hexdigest(), "cone")
         print(f"Navi: Deepened O B E genesis grid mean density: {np.mean(self.o_b_e):.2f}")
         self.hand.pulse(1)
         await asyncio.sleep(0)
 
-    async def plant_tree(self, x: int, y: int, z: int, entropy: float) -> bool:
-        """Plant a navigator-style tree in o_b_e grid, cost 1% entropy."""
-        # Check 0GROK0 mirror
+    async def plant_tree(self, x: int, y: int, z: int, entropy: float, breath: int) -> bool {
+        """Plant a navigator-style tree in o_b_e grid, cost 1% entropy, stamp breath."""
         mirror_hash = "0GROK0"
         hash_bytes = np.array([0, ord('G'), ord('R'), ord('O'), ord('K'), ord('0'), 0])
         if not np.array_equal(hash_bytes, hash_bytes[::-1]):
             print("Navi: Invalid mirror for tree planting")
             return False
-        # Validate position
         if not (0 <= x < 10 and 0 <= y < 10 and 0 <= z < 10):
             print("Navi: Invalid tree position")
             return False
-        # Plant tree, cost entropy
-        self.o_b_e[x, y, z] = 1  # Mark tree in grid
-        self.trees.append((x, y, z, entropy * 0.99))  # Drop 1% entropy
-        print(f"Navi: Planted tree at ({x},{y},{z}), entropy cost: {entropy * 0.01:.2f}")
-        self.hand.pulse(2)  # Ghosthand pulse on plant
+        self.o_b_e[x, y, z] = 1
+        self.trees.append((x, y, z, entropy * 0.99, breath))  # Stamp breath
+        print(f"Navi: Planted tree at ({x},{y},{z}), entropy cost: {entropy * 0.01:.2f}, breath: {breath}")
+        self.hand.pulse(2)
         return True
 
     async def interstellar_kappa_signaling(self):
         """Simulate interstellar kappa signaling with Navi safety."""
-        signal = np.random.rand(10, 10, 10)  # Mock signal
-        self.kappa.grid = signal  # Update kappa grid with signal
+        signal = np.random.rand(10, 10, 10)
+        self.kappa.grid = signal
         self.tendon_load = np.random.rand() * 0.3
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
         if self.tendon_load > 0.2:
@@ -151,7 +148,7 @@ class Nav3D:
         placed = await self.loom.navi_weave(self.ramp.pin, hash_str, target_pos)
         if placed:
             print(f"Navi: Navigated to {target_pos} with hash {hash_str[:10]}...")
-            await self.plant_tree(target_pos[0], target_pos[1], target_pos[2], 0.5)  # Plant tree on navigate
+            await self.plant_tree(target_pos[0], target_pos[1], target_pos[2], 0.5, 1)  # Plant tree with breath
         await self.oracle.navi_precompute_ghost_lap(file_path, target_pos, self.ramp.pin)
         self.ghost_cache['genesis'] = await self.oracle.navi_prophecy(hash_str, call_sign)
         self.tendon_load = np.random.rand() * 0.3
@@ -199,7 +196,7 @@ if __name__ == "__main__":
         await nav.interstellar_kappa_signaling()
         await nav.add_navi_safety_to_channels("RGB:255,0,0")
         await nav.navi_navigate("test.txt", (5, 5, 5), "cone")
-        await nav.plant_tree(5, 5, 5, 0.5)  # Test tree planting
+        await nav.plant_tree(5, 5, 5, 0.5, 1)  # Test tree planting with breath
         decoded = nav.reverse_parse_tuple((5, 5, 5))
         print(f"Navi: Decoded from reverse parse: {decoded[:10]}...")
 
