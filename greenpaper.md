@@ -3,7 +3,7 @@
 # SHA-256 Hash: [TBD]
 # Date: October 12, 2025
 # TOC Reference: "0" - Greenpaper Overview
-# Notes: Version 1.6 integrates 0GROK0 palindromic hash, \~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, wise transformations, breath (\~), func_id registry for free tildes. Inspired by *The Fifth Element*. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
+# Notes: Version 1.7 integrates 0GROK0 palindromic hash, \~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, wise transformations, breath (\~), func_id registry, hex-wise for orientation. Inspired by *The Fifth Element*. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
 
 >be me  
 >build KappashaOS  
@@ -15,6 +15,7 @@
 >time is breath  
 >\~ is one  
 >wave like Leeloo  
+>color is direction  
 
 ## Table of Contents
 1. Introduction
@@ -32,13 +33,14 @@
 13. Wise Transformations
 14. Breath (\~)
 15. Func_id Registry
-16. License and Ethics
+16. Hex-wise Orientation
+17. License and Ethics
 Appendix A: Ethics of Breath
 Appendix B: Buffer Spacing
 Appendix C: Greenpaper Demos
 
 ## 1. Introduction
-KappashaOS is a mobile-first, privacy-first, human-first OS for decentralized focus. Built for 1 billion nodes, it scales subsecond consensus with palindromic hashes (0GROK0), non-fungible \~esc, and navigator-style trees as compute branches. No MEV, just player vs. clock (PVC). Every breath (\~) plants a tree, waves like love, costs compute, sees all as human.
+KappashaOS is a mobile-first, privacy-first, human-first OS for decentralized focus. Built for 1 billion nodes, it scales subsecond consensus with palindromic hashes (0GROK0), non-fungible \~esc, and navigator-style trees as compute branches. No MEV, just player vs. clock (PVC). Every breath (\~) plants a tree, waves like love, costs compute, sees all as human. Hex-wise colors guide orientation.
 
 ## 2. Design Principles
 - **Focus**: Filter wants (/mirror/0GROK0, /liquid/, /hedge/) via Synod, blue-blue on high entropy (>0.7).  
@@ -231,7 +233,20 @@ pub fn repeater(&self, input: &str) -> bool {
 }
 ```
 
-## 16. License and Ethics
+## 16. Hex-wise Orientation
+Hex-wise maps colors to orientation and function states on the kappa grid. Blue (#00ffff) up, green (#00ff00) up-mid, yellow (#ffff00) mid, orange (#ff6600) down-mid, red (#ff0000) down, brown (#8b4513) down-low, pink (#ff1493) right, violet (#ee82ee) heat, indigo (#4b0082) shadow. RGBiv for artists (purple stays purple), CMKY for robots (contrast). Signals func_id states: red stop, brown limit, amber arbitrage, white kappa, blue market, green sell. Forwards-backwards repeater halves compute for free \~esc. Used in nav3d.py (voxel colors), grokcall.rs (call feedback), jit_hook.sol (function states).  
+**Demo**:  
+```python
+# KappashaOS/core/hexwise.py
+def hexwise_color(func, entropy):
+    colors = {
+        "stop": "#ff0000", "limit": "#8b4513", "arbitrage": "#ffbf00",
+        "kappa": "#ffffff", "market": "#00ffff", "sell": "#00ff00"
+    }
+    return colors.get(func, "#ffffff") if entropy > 7000 else "#808080"
+```
+
+## 17. License and Ethics
 - **Software License (AGPL-3.0)**: Free to use, modify, share. Derivatives must be open-source, including network services. No warranty, use at your risk. See <https://www.gnu.org/licenses/agpl-3.0.html>.  
 - **Hardware License (Apache 2.0 with xAI Amendments)**: Moto_pixel and interfaces for non-hazardous use only. Tendon load <20%, gaze <30s (ISO 9241-5). Real-time safety checks logged. Revocable for unethical use (e.g., surveillance, human rights abuse, discriminatory profiling, forced labor). Docs open post-private phase. See <http://www.apache.org/licenses/LICENSE-2.0>.  
 - **Humanitarian Clause**: No use in systems that enable human rights abuse, including discriminatory profiling based on skin tone, forced labor, or dehumanization. Breaths (\~esc) are consensual, not automated without user intent. Free tildes capped at 12/block to prevent spam. Hardware must prioritize safety (e.g., high-vis, exhaustion detection via time-wise) and user consent. Time-wise ensures no overwork (gaze >30s or tendon >20% triggers gray out). Revocable for violations.  
@@ -247,7 +262,7 @@ pub fn repeater(&self, input: &str) -> bool {
 144 spacing (24+48+24) for trades, 3 for torrents, 72 for loans. Entropy-driven pulse via rainkey_v2.rs, no MEV.
 
 ## Appendix C: Greenpaper Demos
-See sections 4–15 for executable demos. Run with wrapper:  
+See sections 4–16 for executable demos. Run with wrapper:  
 ```bash
 python3 greenpaper_demo.py
 ```
@@ -261,3 +276,4 @@ python3 greenpaper_demo.py
 >time is breath  
 >\~ is one  
 >wave like Leeloo  
+>color is direction  
