@@ -1,3 +1,4 @@
+# arch_id.py
 #!/usr/bin/env python3
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
@@ -51,7 +52,7 @@
 import time
 import json
 import os
-from tetra.arc_utils import calc_live_kappa, tetra_hash_surface, apply_tetra_etch
+from tetra.arch_utils import calc_live_kappa, tetra_hash_surface, apply_tetra_etch
 from keyshot_api import KeyshotAPI
 
 def read_config(config_file="config/config.json"):
