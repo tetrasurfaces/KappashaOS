@@ -46,69 +46,59 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
-
 #![no_std]
 extern crate alloc;
 use alloc::string::String;
 
-pub const MAX_ID: u32 = 15; // 4-bit, 0-15
-pub const MAX_BREATH: u32 = 12; // Cap breaths/block
-
-pub struct FuncID {
-    tendon_load: u32,
-    gaze_duration: u32,
-    breath_count: u32,
+pub struct FuncId {
+    registry: [String; 16], // 4-bit digits (0-15)
+    colors: [String; 16],  // Hex-wise colors
 }
 
-impl FuncID {
+impl FuncId {
     pub fn new() -> Self {
-        FuncID {
-            tendon_load: 0,
-            gaze_duration: 0,
-            breath_count: 0,
-        }
+        let registry = [
+            String::from("stop"), String::from("limit"), String::from("arbitrage"),
+            String::from("kappa"), String::from("market"), String::from("sell"),
+            String::from(""), String::from(""), String::from(""),
+            String::from(""), String::from(""), String::from(""),
+            String::from(""), String::from(""), String::from(""), String::from("")
+        ];
+        let colors = [
+            String::from("#ff0000"), // stop: red
+            String::from("#8b4513"), // limit: brown
+            String::from("#ffbf00"), // arbitrage: amber
+            String::from("#ffffff"), // kappa: white
+            String::from("#00ffff"), // market: blue
+            String::from("#00ff00"), // sell: green
+            String::from(""), String::from(""), String::from(""),
+            String::from(""), String::from(""), String::from(""),
+            String::from(""), String::from(""), String::from(""), String::from("")
+        ];
+        FuncId { registry, colors }
     }
 
-    pub fn map_op(&self, id: u32, want: &str) -> Result<String, &'static str> {
-        if id > MAX_ID {
-            return Err("Invalid func_id");
-        }
-        if self.tendon_load > 200 || self.gaze_duration > 30000 { // 20%, 30s
-            return Err("Tendon/gaze overload");
-        }
-        let cost = if id < 8 { 0 } else { 1 }; // Free if <8
-        self.breath_count += cost; // Cost breath if not free
-        if self.breath_count > MAX_BREATH {
-            return Err("Breath cap exceeded");
-        }
-        let op = match id {
-            0 => "mint", // green
-            1 => "burn", // red
-            2 => "stop", // red
-            3 => "limit", // brown
-            4 => "arbitrage", // amber
-            5 => "kappa", // white
-            6 => "market", // blue?
-            7 => "sell", // green/go
-            8 => "hold", // amber
-            _ => "unknown",
-        };
-        let mapped = alloc::format!("{} {}", want, op);
-        self.plant_tree(5, 5, 5, id); // Plant tree on map
-        self.tendon_load += 10;
-        self.gaze_duration += 1000;
-        Ok(mapped)
+    pub fn get_func(&self, id: u8) -> Option<&str> {
+        if id < 16 { Some(&self.registry[id as usize]) } else { None }
     }
 
-    pub fn repeater(&self, want: &str) -> Result<String, &'static str> {
-        // Stub: / for call, \ for response, loop for batch
-        let looped = alloc::format!("{} \{} /{}", want, want, want);
-        Ok(looped)
+    pub fn get_color(&self, id: u8) -> Option<&str> {
+        if id < 16 { Some(&self.colors[id as usize]) } else { None }
     }
 
-    pub fn plant_tree(&self, x: i32, y: i32, z: i32, id: u32) -> bool {
-        // Stub: call nav3d.py plant_tree via KappashaChannel
-        true
+    pub fn free_tilde(&self, func: &str, entropy: u32) -> bool {
+        if entropy > 7000 && self.registry.iter().any(|f| f == func) {
+            // Free ~esc for basic functions at high entropy
+            return true;
+        }
+        false
+    }
+
+    pub fn repeater(&self, input: &str) -> bool {
+        // Forwards-backwards palindromic check
+        let forward = input;
+        let backward = input.chars().rev().collect::<String>();
+        forward == backward
     }
 }
 
@@ -117,15 +107,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_map_op() {
-        let mut func = FuncID::new();
-        assert_eq!(func.map_op(0, "/"), Ok(String::from("/ mint")));
-        assert_eq!(func.map_op(7, "/"), Ok(String::from("/ sell")));
-    }
-
-    #[test]
-    fn test_repeater() {
-        let func = FuncID::new();
-        assert_eq!(func.repeater("/mint"), Ok(String::from("/mint \/mint //mint")));
+    fn test_func_id() {
+        let func_id = FuncId::new();
+        assert_eq!(func_id.get_func(0), Some("stop"));
+        assert_eq!(func_id.get_color(5), Some("#00ff00"));
+        assert!(func_id.free_tilde("sell", 8000));
+        assert!(func_id.repeater("deed"));
     }
 }
