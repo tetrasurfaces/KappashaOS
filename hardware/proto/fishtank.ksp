@@ -59,4 +59,4 @@
 # - Output: Live render at 1080x1920, 20 FPS, with dynamic bump map updates.
 
 # Note: Actual .ksp file is binary and generated in Keyshot. This text serves as metadata.
-# Load in Keyshot via arc_id.py, which applies tetra hash and live etching.
+# Load in Keyshot via arch_id.py, which applies tetra hash and live etching.
