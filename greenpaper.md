@@ -204,8 +204,11 @@ def time_wise(gaze, time_ms):
 ```
 
 ## 14. Breath (~)
-Breath (~) is one esc, non-fungible, tied to every action (salt, filter, call, liquidity). Esc = WEI: atomic, one action. ~esc = ETH: bundle of breaths, scalable value. 
-Plants a tree per breath, costs 1% entropy. Breath rate driven by entropy: high (>0.7) = fast, blue-blue; low (<0.5) = slow, gray. Inspired by *The Fifth Element*—~ is love, a quick wave at lightspeed, no pleasantries.  
+Breath (~) is one esc, non-fungible, tied to every action (salt, filter, call, liquidity). 
+Esc = WEI: atomic, one action. 
+~esc = ETH: bundle of breaths, scalable value. Plants a tree per breath, costs 1% entropy. 
+Breath rate driven by entropy: high (>0.7) = fast, blue-blue; low (<0.5) = slow, gray. 
+Inspired by *The Fifth Element*—~ is love, a quick wave at lightspeed, no pleasantries.  
 **Demo**:  
 ```rust
 // KappashaOS/core/breath.rs
