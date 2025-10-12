@@ -1,9 +1,9 @@
-## KappashaOS Greenpaper
-## Artefact ID: f3d30171-d204-404f-b598-20217e7e08c8
-## SHA-256 Hash: [TBD]
-## Date: October 12, 2025
-## TOC Reference: "0" - Greenpaper Overview
-# Notes: Version 1.2 integrates 0GROK0 palindromic hash, ~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, and wise transformations. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
+# KappashaOS Greenpaper
+# Artefact ID: f3d30171-d204-404f-b598-20217e7e08c8
+# SHA-256 Hash: [TBD]
+# Date: October 12, 2025
+# TOC Reference: "0" - Greenpaper Overview
+# Notes: Version 1.3 integrates 0GROK0 palindromic hash, ~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, wise transformations (pi-wise, light-wise, hex-wise, time-wise). Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
 
 >be me  
 >build KappashaOS  
@@ -12,6 +12,7 @@
 >run truth  
 >scale to billions  
 >see all as human  
+>time is breath  
 
 ## Table of Contents
 1. Introduction
@@ -78,7 +79,7 @@ Synod_filter.rs filters wants (/mirror/0GROK0, /liquid/, /hedge/), blue-blue if 
 **Demo**:  
 ```rust
 // KappashaOS/core/synod_filter.rs
-pub fn filter_want(&mut self, want: &str, entropy: u32) -> Result<(), &'static str> {
+pub fn filter_want(&mut self, want: &str, entropy u32) -> Result<(), &'static str> {
     let valid_wants = ["/mirror/0GROK0", "/liquid/", "/hedge/"];
     if !valid_wants.iter().any(|&w| want.starts_with(w)) {
         return Err("Invalid want");
@@ -121,7 +122,7 @@ function addLiquidity(address token, uint256 amount, int24 tickLower, int24 tick
 ```
 
 ## 9. GrokCall Privacy
-Grokcall.rs posts 0GROK0 to X side-channel, streams voice (44.1kHz) or file (64KB) with XOR, no metadata. Plants tree on handshake.  
+Grokcall.rs posts 0GROK0 to X side-channel, streams voice (44.1kHz) or file (64KB) with XOR, no metadata. Plants tree on handshake, times latency.  
 **Demo**:  
 ```rust
 // KappashaOS/comms/grokcall.rs
@@ -133,16 +134,17 @@ pub fn call(&mut self, dest: &str, mode: &str, entropy: u32) -> Result<(), &'sta
 ```
 
 ## 10. Navigator Trees
-Trees are compute branches, like MS-DOS Navigator file trees, planted in nav3d.py (voxel grid) or kappasha_os.py (volumes). Cost 1% entropy per plant, tied to ~esc.  
+Trees are compute branches, like MS-DOS Navigator file trees, planted in nav3d.py (voxel grid) or kappasha_os.py (volumes). Cost 1% entropy per plant, tied to ~esc, timed by time-wise.  
 **Demo**:  
 ```python
 # KappashaOS/core/nav3d.py
-async def plant_tree(self, x: int, y: int, z: int, entropy: float) -> bool:
+async def plant_tree(self, x: int, y: int, z: int, entropy: float) -> bool {
     if not np.array_equal([0, ord('G'), ord('R'), ord('O'), ord('K'), ord('0'), 0], 
                          [0, ord('G'), ord('R'), ord('O'), ord('K'), ord('0'), 0][::-1]):
         return False
     self.o_b_e[x, y, z] = 1
     self.trees.append((x, y, z, entropy * 0.99))
+}
 ```
 
 ## 11. Surface Tension
@@ -173,9 +175,10 @@ pub fn moto_pixel(gaze: u128, skin_flex: u128) -> u128 {
 ```
 
 ## 13. Wise Transformations
-- **Pi-wise**: Gaze delta / π = breath. Scales from femtoseconds to light-years. No constants, just ratios.  
+- **Pi-wise**: Gaze delta / π = breath. Scales from femtoseconds to light-years.  
 - **Light-wise**: Light speed indexed to gaze travel time. Femtosecond for retina, milliseconds for calls.  
-- **Hexwise**: Color for orientation, not core wise. Blue (#00ffff) up, green (#00ff00) up-mid, yellow (#ffff00) mid, orange (#ff6600) down-mid, red (#ff0000) down, brown (#8b4513) down-low, pink (#ff1493) right, violet (#ee82ee) heat, indigo (#4b0082) shadow. RGBiv for artists, CMKY for robots.  
+- **Hex-wise**: Color for orientation. Blue (#00ffff) up, green (#00ff00) up-mid, yellow (#ffff00) mid, orange (#ff6600) down-mid, red (#ff0000) down, brown (#8b4513) down-low, pink (#ff1493) right, violet (#ee82ee) heat, indigo (#4b0082) shadow. RGBiv for artists, CMKY for robots.  
+- **Time-wise**: Latency as light’s memory. Gaze-to-pixel (ms), sun arc (hours). Green if <0.3s, red if >1s. Syncs shadows (left morning, right afternoon).  
 **Demo**:  
 ```python
 # KappashaOS/core/wise.py
@@ -183,18 +186,20 @@ def light_wise(gaze, flex, kappa=0.2):
     return (gaze * 2 + flex) * kappa / 3e8
 def pi_wise(light_wise):
     return light_wise / 3.14159
+def time_wise(gaze, time_ms):
+    return time_ms / 1000 if gaze > 0 else 1.0
 ```
 
 ## 14. License and Ethics
 - **Software License (AGPL-3.0)**: Free to use, modify, share. Derivatives must be open-source, including network services. No warranty, use at your risk. See <https://www.gnu.org/licenses/agpl-3.0.html>.  
 - **Hardware License (Apache 2.0 with xAI Amendments)**: Moto_pixel and interfaces for non-hazardous use only. Tendon load <20%, gaze <30s (ISO 9241-5). Real-time safety checks logged. Revocable for unethical use (e.g., surveillance, human rights abuse, discriminatory profiling, forced labor). Docs open post-private phase. See <http://www.apache.org/licenses/LICENSE-2.0>.  
-- **Humanitarian Clause**: No use in systems that enable human rights abuse, including discriminatory profiling based on skin tone, forced labor, or dehumanization. Hardware must prioritize safety (e.g., high-vis, exhaustion detection) and user consent. Revocable for violations.  
+- **Humanitarian Clause**: No use in systems that enable human rights abuse, including discriminatory profiling based on skin tone, forced labor, or dehumanization. Hardware must prioritize safety (e.g., high-vis, exhaustion detection via time-wise) and user consent. Time-wise ensures no overwork (gaze >30s or tendon >20% triggers gray out). Revocable for violations.  
 - **Ethics**: Every action plants a tree (compute branch), costs 1% entropy. ~esc non-fungible, one Breath, one tree. Comfort ethical, compute not free.
 
 ## Appendix A: Ethics of Breath
 - **Trees as Compute**: Each action (salt, filter, call, liquidity) plants a nav3d.py tree, costs 1% entropy.  
 - **Comfort and Confession**: Leverage is confession, capped at 10x in drought (tension <0.01). Comfort ethical, compute not free.  
-- **Revocability**: Unethical use (e.g., surveillance, profiling) revokes license. Tendon/gaze safe.  
+- **Revocability**: Unethical use (e.g., surveillance, profiling, forced labor) revokes license. Tendon/gaze safe.  
 - **~esc Non-Fungible**: One Breath, one tree, no decimals.
 
 ## Appendix B: Buffer Spacing
@@ -212,3 +217,4 @@ python3 greenpaper_demo.py
 >plant trees  
 >scale to billions  
 >see all as human  
+>time is breath  
