@@ -49,10 +49,11 @@
 #![no_std]
 extern crate alloc;
 use alloc::string::String;
+use alloc::vec::Vec;
 
 pub struct FuncId {
-    registry: [String; 16], // 4-bit digits (0-15)
-    colors: [String; 16],  // Hex-wise colors
+    registry: [String; 16],
+    colors: [String; 16],
 }
 
 impl FuncId {
@@ -65,12 +66,8 @@ impl FuncId {
             String::from(""), String::from(""), String::from(""), String::from("")
         ];
         let colors = [
-            String::from("#ff0000"), // stop: red
-            String::from("#8b4513"), // limit: brown
-            String::from("#ffbf00"), // arbitrage: amber
-            String::from("#ffffff"), // kappa: white
-            String::from("#00ffff"), // market: blue
-            String::from("#00ff00"), // sell: green
+            String::from("#ff0000"), String::from("#8b4513"), String::from("#ffbf00"),
+            String::from("#ffffff"), String::from("#00ffff"), String::from("#00ff00"),
             String::from(""), String::from(""), String::from(""),
             String::from(""), String::from(""), String::from(""),
             String::from(""), String::from(""), String::from(""), String::from("")
@@ -88,17 +85,48 @@ impl FuncId {
 
     pub fn free_tilde(&self, func: &str, entropy: u32) -> bool {
         if entropy > 7000 && self.registry.iter().any(|f| f == func) {
-            // Free ~esc for basic functions at high entropy
             return true;
         }
         false
     }
 
     pub fn repeater(&self, input: &str) -> bool {
-        // Forwards-backwards palindromic check
         let forward = input;
         let backward = input.chars().rev().collect::<String>();
         forward == backward
+    }
+
+    pub fn backslash_encrypt(&self, message: &str, key: &str) -> String {
+        let mut encrypted = String::new();
+        for (i, c) in message.chars().enumerate() {
+            let xor = c as u8 ^ key.as_bytes()[i % key.len()];
+            encrypted.push(xor as char);
+        }
+        encrypted
+    }
+
+    pub fn backslash_parse(&self, data: &str) -> String {
+        let mut parsed = String::new();
+        for c in data.chars() {
+            if c == '/' {
+                parsed.push_str("\\\\/\\\\");
+            } else if c == '\\' {
+                parsed.push_str("\\\\\\\\");
+            } else {
+                parsed.push(c);
+            }
+        }
+        parsed
+    }
+
+    pub fn backwards_greedy(&self, data: &str) -> Vec<&str> {
+        // Backwards GREEDYDATA for lows/first sequences
+        let mut seq = Vec::new();
+        let reversed = data.chars().rev().collect::<String>();
+        for chunk in reversed.split('\\') {
+            seq.push(chunk);
+        }
+        seq
     }
 }
 
@@ -113,5 +141,14 @@ mod tests {
         assert_eq!(func_id.get_color(5), Some("#00ff00"));
         assert!(func_id.free_tilde("sell", 8000));
         assert!(func_id.repeater("deed"));
+    }
+
+    #[test]
+    fn test_backslash() {
+        let func_id = FuncId::new();
+        let encrypted = func_id.backslash_encrypt("test", "\\backslash");
+        let parsed = func_id.backslash_parse("1001/100/001/101");
+        assert_eq!(parsed, "1001\\/\\100\\/\\001\\/\\101");
+        assert_eq!(func_id.backwards_greedy(&parsed), alloc::vec!["101", "001", "100", "1001"]);
     }
 }
