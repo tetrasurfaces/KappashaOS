@@ -1,6 +1,5 @@
+# ink_sim.py
 #!/usr/bin/env python3
-# KappashaOS/proto/ink_sim.py
-# Simulate multi-user moto_pixel with numpy
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -16,7 +15,7 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-# - For hardware/embodiment interfaces (if any): Licensed under the Apache License, Version 2.0
+# - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
 #   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
 #   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
 #   for details, with the following xAI-specific terms appended.
@@ -37,26 +36,109 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # xAI Amendments for Physical Use:
-# 1. **Physical Embodiment Restrictions**: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
-# 2. **Ergonomic Compliance**: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
-# 3. **Safety Monitoring**: Real-time tendon/gaze checks, logged for audit.
-# 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
-# 5. **Export Controls**: Sensor devices comply with US EAR Category 5 Part 2.
-# 6. **Open Development**: Hardware docs shared post-private phase.
+# 1. Physical Embodiment Restrictions: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
+# 2. Ergonomic Compliance: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
+# 3. Safety Monitoring: Real-time tendon/gaze checks, logged for audit.
+# 4. Revocability: xAI may revoke for unethical use (e.g., surveillance).
+# 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
+# 6. Open Development: Hardware docs shared post-private phase.
 #
-# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
+# Intellectual Property Notice: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration.
+#
+# Private Development Note: This repository is private for xAI’s KappashaOS development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for licensing.
+#
+# SPDX-License-Identifier: Apache-2.0
 
 import numpy as np
+import json
+import os
+from datetime import datetime
+from tetra.arch_utils import tetra_hash_surface
 
-def sim_moto_pixel(gazes=[10, 20, 30, 40, 50], flex=0.15, keyed=True):
-    kappa = 0.2  # Tilt
-    shifts = np.array(gazes) * 0.2  # Micron
-    if flex > 0.2:  # Tendon ethics
-        return np.zeros_like(shifts)  # Flinch
-    if keyed:
-        shifts = np.mod(shifts * kappa, 180) + 10  # Green pulse
-    else:
-        shifts = np.mod(shifts * kappa, 180)
-    return shifts
+def read_config(config_file="config/config.json"):
+    """Read intent and commercial use from config file with error handling."""
+    config_dir = os.path.dirname(config_file)
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+    if not os.path.exists(config_file):
+        print(f"Config file {config_file} not found. Creating default.")
+        write_config("none", False, config_file)
+        return None, False
+    try:
+        with open(config_file, "r") as f:
+            config = json.load(f)
+        intent = config.get("intent")
+        commercial_use = config.get("commercial_use", False)
+        if intent not in ["educational", "commercial", "none"]:
+            raise ValueError("Invalid intent in config.")
+        return intent, commercial_use
+    except json.JSONDecodeError:
+        print(f"Error: {config_file} contains invalid JSON. Resetting to default.")
+        write_config("none", False, config_file)
+        return None, False
+    except Exception as e:
+        print(f"Error reading {config_file}: {e}. Resetting to default.")
+        write_config("none", False, config_file)
+        return None, False
 
-print(sim_moto_pixel())  # [12.0, 14.0, 16.0, 18.0, 20.0]
+def write_config(intent, commercial_use, config_file="config/config.json"):
+    """Write intent and commercial use to config file with error handling."""
+    config = {"intent": intent, "commercial_use": commercial_use}
+    config_dir = os.path.dirname(config_file)
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+    try:
+        with open(config_file, "w") as f:
+            json.dump(config, f, indent=4)
+    except Exception as e:
+        print(f"Error writing to {config_file}: {e}")
+
+def log_license_check(result, intent, commercial_use):
+    """Log license check results for audit trail."""
+    try:
+        with open("license_log.txt", "a") as f:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[{timestamp}] License Check: {result}, Intent: {intent}, Commercial: {commercial_use}\n")
+    except Exception as e:
+        print(f"Error logging license check: {e}")
+
+def check_license(commercial_use=False, intent=None):
+    """Ensure license compliance and intent declaration."""
+    if intent not in ["educational", "commercial"]:
+        notice = """
+        NOTICE: You must declare your intent to use this software.
+        - For educational use (e.g., university training), open a GitHub issue at github.com/tetrasurfaces/issues using the Educational License Request template.
+        - For commercial use (e.g., branding, molding), use the Commercial License Request template.
+        See NOTICE.txt for details. Do not share proprietary details in public issues.
+        """
+        log_license_check("Failed: Invalid or missing intent", intent, commercial_use)
+        raise ValueError(f"Invalid or missing intent. {notice}")
+    if commercial_use and intent != "commercial":
+        notice = "Commercial use requires 'commercial' intent and a negotiated license via github.com/tetrasurfaces/issues."
+        log_license_check("Failed: Commercial use without commercial intent", intent, commercial_use)
+        raise ValueError(notice)
+    log_license_check("Passed", intent, commercial_use)
+    return True
+
+def simulate_gaze_tracking(users=5, theta_range=360):
+    """Simulate multi-user gaze tracking with theta spiral."""
+    intent, commercial_use = read_config()
+    check_license(commercial_use, intent)
+    
+    # Placeholder: Generate mock mesh for gaze simulation
+    points = np.zeros((users, 3))  # Mock 3D points for users
+    for i in range(users):
+        theta = i * (theta_range / users) * np.pi / 180
+        points[i] = [np.cos(theta), np.sin(theta), 0]  # Theta spiral
+    
+    # Hash points for tetra integration
+    hash_val = tetra_hash_surface(points)
+    print(f"Gaze simulation hash: {hash_val}")
+    
+    # Mock gaze data: intensity based on angle
+    gaze_data = np.sin(points[:, 0]) * 0.5 + 0.5  # Mock intensity
+    return gaze_data
+
+if __name__ == "__main__":
+    gaze_data = simulate_gaze_tracking(users=5)
+    print(f"Gaze intensities: {gaze_data}")
