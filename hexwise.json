@@ -1,0 +1,36 @@
+{
+  "rgbiv": {
+    "up": {"color": "#00ffff", "meaning": "sky, north"},
+    "up_mid": {"color": "#00ff00", "meaning": "growth, go"},
+    "mid": {"color": "#ffff00", "meaning": "focus, center"},
+    "down_mid": {"color": "#ff6600", "meaning": "warning"},
+    "down": {"color": "#ff0000", "meaning": "stop, loss"},
+    "down_low": {"color": "#8b4513", "meaning": "earth, anchor"},
+    "right": {"color": "#ff1493", "meaning": "east, heat"},
+    "heat": {"color": "#ee82ee", "meaning": "exhaustion"},
+    "shadow": {"color": "#4b0082", "meaning": "fatigue, dusk"},
+    "func_stop": {"color": "#ff0000", "meaning": "stop"},
+    "func_limit": {"color": "#8b4513", "meaning": "limit"},
+    "func_arbitrage": {"color": "#ffbf00", "meaning": "arbitrage"},
+    "func_kappa": {"color": "#ffffff", "meaning": "kappa"},
+    "func_market": {"color": "#00ffff", "meaning": "market"},
+    "func_sell": {"color": "#00ff00", "meaning": "sell, go"}
+  },
+  "cmky": {
+    "up": {"color": "#00cccc", "meaning": "sky, north"},
+    "up_mid": {"color": "#00cc00", "meaning": "growth, go"},
+    "mid": {"color": "#cccc00", "meaning": "focus, center"},
+    "down_mid": {"color": "#cc6600", "meaning": "warning"},
+    "down": {"color": "#cc0000", "meaning": "stop, loss"},
+    "down_low": {"color": "#663300", "meaning": "earth, anchor"},
+    "right": {"color": "#cc0066", "meaning": "east, heat"},
+    "heat": {"color": "#cc00cc", "meaning": "exhaustion"},
+    "shadow": {"color": "#330066", "meaning": "fatigue, dusk"},
+    "func_stop": {"color": "#cc0000", "meaning": "stop"},
+    "func_limit": {"color": "#663300", "meaning": "limit"},
+    "func_arbitrage": {"color": "#cc9900", "meaning": "arbitrage"},
+    "func_kappa": {"color": "#cccccc", "meaning": "kappa"},
+    "func_market": {"color": "#00cccc", "meaning": "market"},
+    "func_sell": {"color": "#00cc00", "meaning": "sell, go"}
+  }
+}
