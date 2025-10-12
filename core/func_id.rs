@@ -120,7 +120,6 @@ impl FuncId {
     }
 
     pub fn backwards_greedy(&self, data: &str) -> Vec<&str> {
-        // Backwards GREEDYDATA for lows/first sequences
         let mut seq = Vec::new();
         let reversed = data.chars().rev().collect::<String>();
         for chunk in reversed.split('\\') {
