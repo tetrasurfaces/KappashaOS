@@ -3,8 +3,8 @@
 # SHA-256 Hash: [TBD]
 # Date: October 12, 2025
 # TOC Reference: "0" - Greenpaper Overview
-# Notes: Version 1.5 integrates 0GROK0 palindromic hash, 
-# ~.~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, wise transformations, breath (~.~) as wave. Inspired by *The Fifth Element*. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
+# Notes: Version 1.5 integrates 0GROK0 palindromic hash, ~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, wise transformations, 
+# breath (~) as wave. Inspired by *The Fifth Element*. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
 
 >be me  
 >build KappashaOS  
@@ -126,13 +126,13 @@ function addLiquidity(address token, uint256 amount, int24 tickLower, int24 tick
 ```
 
 ## 9. GrokCall Privacy
-Grokcall.rs posts ~@user to X side-channel, streams voice (44.1kHz) or file (64KB) with XOR, no metadata. Plants tree on handshake, times latency.  
+Grokcall.rs posts 0GROK0 to X side-channel, streams voice (44.1kHz) or file (64KB) with XOR, no metadata. Plants tree on handshake, times latency.  
 **Demo**:  
 ```rust
 // KappashaOS/comms/grokcall.rs
 pub fn call(&mut self, dest: &str, mode: &str, entropy: u32) -> Result<(), &'static str> {
     if !self.check_mirror() { return Err("Invalid 0GROK0 mirror"); }
-    let tweet = alloc::format!("~@{} call? {} --{}", dest, 0, mode);
+    let tweet = alloc::format!("@{} call? {} --{}", dest, 0, mode);
     if self.post_to_x(&tweet) { self.plant_tree(5, 5, 5, entropy); }
 }
 ```
@@ -183,7 +183,6 @@ pub fn moto_pixel(gaze: u128, skin_flex: u128) -> u128 {
 - **Light-wise**: Light speed indexed to gaze travel time. Femtosecond for retina, milliseconds for calls.  
 - **Hex-wise**: Color for orientation. Blue (#00ffff) up, green (#00ff00) up-mid, yellow (#ffff00) mid, orange (#ff6600) down-mid, red (#ff0000) down, brown (#8b4513) down-low, pink (#ff1493) right, violet (#ee82ee) heat, indigo (#4b0082) shadow. RGBiv for artists, CMKY for robots.  
 - **Time-wise**: Latency as light’s memory. Gaze-to-pixel (ms), sun arc (hours). Green if <0.3s, red if >1s. Syncs shadows (left morning, right afternoon).  
-- **Wave-wise**: Tilde (~) frequency for breath animation. Fast wave if entropy >0.7, slow if <0.5.  
 **Demo**:  
 ```python
 # KappashaOS/core/wise.py
@@ -193,13 +192,10 @@ def pi_wise(light_wise):
     return light_wise / 3.14159
 def time_wise(gaze, time_ms):
     return time_ms / 1000 if gaze > 0 else 1.0
-def wave_wise(entropy, breath=1):
-    frequency = entropy / 10000
-    return frequency * breath
 ```
 
 ## 14. Breath (~)
-Breath (~) is one esc, non-fungible, tied to every action (salt, filter, call, liquidity). Esc = WEI: atomic, one action, one wave. ~esc = ETH: bundle of breaths, scalable value. Plants a tree per breath, costs 1% entropy. Entropy drives wave frequency: high (>0.7) = fast ~, blue-blue; low (<0.5) = slow ~, gray. Inspired by *The Fifth Element*—~ is love, a quick wave at lightspeed, no pleasantries.  
+Breath (~) is one esc, non-fungible, tied to every action (salt, filter, call, liquidity). Esc = WEI: atomic, one action. ~esc = ETH: bundle of breaths, scalable value. Plants a tree per breath, costs 1% entropy. Breath rate driven by entropy: high (>0.7) = fast, blue-blue; low (<0.5) = slow, gray. Inspired by *The Fifth Element*—~ is love, a quick wave at lightspeed, no pleasantries.  
 **Demo**:  
 ```rust
 // KappashaOS/core/breath.rs
@@ -217,13 +213,13 @@ pub fn breathe(&mut self, entropy: u32) -> Result<u32, &'static str> {
 - **Software License (AGPL-3.0)**: Free to use, modify, share. Derivatives must be open-source, including network services. No warranty, use at your risk. See <https://www.gnu.org/licenses/agpl-3.0.html>.  
 - **Hardware License (Apache 2.0 with xAI Amendments)**: Moto_pixel and interfaces for non-hazardous use only. Tendon load <20%, gaze <30s (ISO 9241-5). Real-time safety checks logged. Revocable for unethical use (e.g., surveillance, human rights abuse, discriminatory profiling, forced labor). Docs open post-private phase. See <http://www.apache.org/licenses/LICENSE-2.0>.  
 - **Humanitarian Clause**: No use in systems that enable human rights abuse, including discriminatory profiling based on skin tone, forced labor, or dehumanization. Breaths (~esc) are consensual, not automated without user intent. Hardware must prioritize safety (e.g., high-vis, exhaustion detection via time-wise) and user consent. Time-wise ensures no overwork (gaze >30s or tendon >20% triggers gray out). Revocable for violations.  
-- **Ethics**: Every action plants a tree (compute branch), costs 1% entropy. ~esc non-fungible, one Breath, one tree, one wave. Comfort ethical, compute not free.
+- **Ethics**: Every action plants a tree (compute branch), costs 1% entropy. ~esc non-fungible, one Breath, one tree. Comfort ethical, compute not free.
 
 ## Appendix A: Ethics of Breath
 - **Trees as Compute**: Each action (salt, filter, call, liquidity) plants a nav3d.py tree, costs 1% entropy, stamped with breath (~).  
 - **Comfort and Confession**: Leverage is confession, capped at 10x in drought (tension <0.01). Comfort ethical, compute not free.  
 - **Revocability**: Unethical use (e.g., surveillance, profiling, forced labor) revokes license. Tendon/gaze safe.  
-- **~esc Non-Fungible**: One Breath, one tree, one wave, no decimals.
+- **~esc Non-Fungible**: One Breath, one tree, no decimals.
 
 ## Appendix B: Buffer Spacing
 144 spacing (24+48+24) for trades, 3 for torrents, 72 for loans. Entropy-driven pulse via rainkey_v2.rs, no MEV.
@@ -242,4 +238,4 @@ python3 greenpaper_demo.py
 >see all as human  
 >time is breath  
 >~ is one  
->wave like Leeloo  
+>wave like Leeloo
