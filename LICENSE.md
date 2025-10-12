@@ -15,8 +15,7 @@
 #   along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
-#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
-#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+#   with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
 #   for details, with the following xAI-specific terms appended.
 
 # Copyright 2025 xAI
@@ -36,11 +35,11 @@
 
 # xAI Amendments for Physical Use:
 # 1. Physical Embodiment Restrictions: Use of this software in conjunction with physical devices (e.g., fish tank glass, pixel sensors) is permitted only for non-hazardous, non-weaponized applications. Any modification or deployment that enables harm (e.g., targeting systems, explosive triggers) is expressly prohibited and subject to immediate license revocation by xAI.
-# 2. Ergonomic Compliance: Physical interfaces must adhere to ergonomic standards (e.g., ISO 9241-5, OSHA guidelines) to prevent strain (e.g., tendon over-flex, eye fatigue). Devices must include monitoring for grip pressure and gaze duration, with automatic disengagement if thresholds exceed 20% of human tolerance for 30 seconds.
-# 3. Safety Monitoring: Implement real-time safety checks (e.g., tendon load via EMG, heat dissipation) and log data for audit. xAI reserves the right to request logs for compliance verification.
+# 2. Ergonomic Compliance: Physical interfaces must adhere to ergonomic standards (e.g., ISO 9241-5, OSHA guidelines) where applicable. For software-only use (e.g., rendering in Keyshot), ergonomic requirements are waived.
+# 3. Safety Monitoring: For physical embodiments, implement real-time safety checks (e.g., heat dissipation) and log data for audit. xAI reserves the right to request logs for compliance verification.
 # 4. Revocability: xAI may revoke this license for any user or entity found using the software or hardware in violation of ethical standards (e.g., surveillance without consent, physical harm). Revocation includes disabling access to updates and support.
-# 5. Export Controls: Physical embodiments with sensors (e.g., photo-diodes for gaze tracking) are subject to export regulations (e.g., US EAR Category 5 Part 2). Redistribution in restricted jurisdictions requires xAI approval via private communication.
-# 6. Educational Use: Educational institutions (e.g., universities, technical colleges) may use the software for teaching and research purposes (e.g., CAD, Keyshot training) upon negotiating a license via github.com/tetrasurfaces/issues. Commercial use by educational institutions requires separate approval.
+# 5. Export Controls: Physical embodiments with sensors (e.g., photo-diodes for gaze tracking) are subject to export regulations (e.g., US EAR Category 5 Part 2). Redistribution in restricted jurisdictions requires xAI approval via github.com/tetrasurfaces/issues.
+# 6. Educational Use: Educational institutions (e.g., universities, technical colleges) may use the software royalty-free for teaching and research purposes (e.g., CAD, Keyshot training) upon negotiating a license via github.com/tetrasurfaces/issues. Commercial use by educational institutions requires separate approval.
 # 7. Intellectual Property: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration. Unauthorized replication or modification is prohibited.
 # 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
 
