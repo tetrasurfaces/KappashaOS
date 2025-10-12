@@ -41,7 +41,8 @@ Appendix C: Greenpaper Demos
 KappashaOS is a mobile-first, privacy-first, human-first OS for decentralized focus. 
 Built for 1 billion nodes, it scales subsecond consensus with palindromic hashes (0GROK0), 
 non-fungible ~esc, and navigator-style trees as compute branches. 
-No MEV, just player vs. clock (PVC). Every breath (~) plants a tree, waves like love, costs compute, sees all as human.
+No MEV, just player vs. clock (PVC). 
+Every breath (~) plants a tree, waves like love, costs compute, sees all as human.
 
 ## 2. Design Principles
 - **Focus**: Filter wants (/mirror/0GROK0, /liquid/, /hedge/) via Synod, blue-blue on high entropy (>0.7).  
