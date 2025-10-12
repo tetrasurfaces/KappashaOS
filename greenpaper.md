@@ -39,7 +39,8 @@ Appendix C: Greenpaper Demos
 
 ## 1. Introduction
 KappashaOS is a mobile-first, privacy-first, human-first OS for decentralized focus. 
-Built for 1 billion nodes, it scales subsecond consensus with palindromic hashes (0GROK0), non-fungible ~esc, and navigator-style trees as compute branches. 
+Built for 1 billion nodes, it scales subsecond consensus with palindromic hashes (0GROK0), 
+non-fungible ~esc, and navigator-style trees as compute branches. 
 No MEV, just player vs. clock (PVC). Every breath (~) plants a tree, waves like love, costs compute, sees all as human.
 
 ## 2. Design Principles
@@ -50,7 +51,7 @@ No MEV, just player vs. clock (PVC). Every breath (~) plants a tree, waves like 
 
 ## 3. ~esc Non-Fungible Tokens
 ~esc (Tilde Esc) is one Breath 
-(~), 
+(~),
 non-divisible, tied to jit_hook.sol. 
 Esc = WEI: atomic unit, one action, one wave. 
 ~esc = ETH: bundle of breaths, scalable value. 
