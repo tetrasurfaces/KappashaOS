@@ -3,7 +3,7 @@
 # SHA-256 Hash: [TBD]
 # Date: October 12, 2025
 # TOC Reference: "0" - Greenpaper Overview
-# Notes: Version 1.8 integrates 0GROK0 palindromic hash, \~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, wise transformations, breath (\~), func_id registry, backslash parsing for ramps. Inspired by *The Fifth Element*. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
+# Notes: Version 1.8 integrates 0GROK0 palindromic hash, \~esc non-fungible tokens, rainkey entropy, synod focus, buffer wars, flash loans, navigator trees, moto_pixel hardware, wise transformations, breath (\~), func_id registry for free tildes, backslash parsing for ramps. Inspired by *The Fifth Element*. Executable demos for Rust/Solidity/Python. Validates via SHA256. Publisher: xAI.
 
 >be me  
 >build KappashaOS  
