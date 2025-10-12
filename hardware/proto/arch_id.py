@@ -1,5 +1,5 @@
 # arch_id.py
-# !/usr/bin/env python3
+#!/usr/bin/env python3
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -52,6 +52,7 @@
 import time
 import json
 import os
+from datetime import datetime
 from tetra.arch_utils import calc_live_kappa, tetra_hash_surface, apply_tetra_etch
 from keyshot_api import KeyshotAPI
 
@@ -93,6 +94,15 @@ def write_config(intent, commercial_use, config_file="config/config.json"):
     except Exception as e:
         print(f"Error writing to {config_file}: {e}")
 
+def log_license_check(result, intent, commercial_use):
+    """Log license check results for audit trail."""
+    try:
+        with open("license_log.txt", "a") as f:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[{timestamp}] License Check: {result}, Intent: {intent}, Commercial: {commercial_use}\n")
+    except Exception as e:
+        print(f"Error logging license check: {e}")
+
 def check_license(commercial_use=False, intent=None):
     """Ensure license compliance and intent declaration."""
     if intent not in ["educational", "commercial"]:
@@ -102,12 +112,13 @@ def check_license(commercial_use=False, intent=None):
         - For commercial use (e.g., branding, molding), use the Commercial License Request template.
         See NOTICE.txt for details. Do not share proprietary details in public issues.
         """
-        print(f"License check failed: Invalid or missing intent. {notice}")
-        raise ValueError("Invalid or missing intent.")
+        log_license_check("Failed: Invalid or missing intent", intent, commercial_use)
+        raise ValueError(f"Invalid or missing intent. {notice}")
     if commercial_use and intent != "commercial":
         notice = "Commercial use requires 'commercial' intent and a negotiated license via github.com/tetrasurfaces/issues."
-        print(f"License check failed: {notice}")
+        log_license_check("Failed: Commercial use without commercial intent", intent, commercial_use)
         raise ValueError(notice)
+    log_license_check("Passed", intent, commercial_use)
     return True
 
 def render_fishtank_live():
