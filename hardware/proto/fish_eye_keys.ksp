@@ -1,0 +1,75 @@
+# fish_eye_keys.ksp - Keyshot scene pack for Fish Eye (Concavex v1.0) autonomous pupil prototype
+# Copyright 2025 xAI
+# Dual License:
+# - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
+#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
+#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+#   for details, with the following xAI-specific terms appended.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
+#
+# xAI Amendments for Physical Use:
+# 1. Physical Embodiment Restrictions: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
+# 2. Ergonomic Compliance: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
+# 3. Safety Monitoring: Real-time tendon/gaze checks, logged for audit.
+# 4. Revocability: xAI may revoke for unethical use (e.g., surveillance).
+# 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
+# 6. Open Development: Hardware docs shared post-private phase.
+#
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
+#
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
+
+# Scene Description:
+# Name: Fish Eye - Concavex v1.0
+# Author: xAI
+# Date: 2025-10-12
+# Intent: Educational default, flip to commercial via intent_ui.py or config/config.json
+# Log: license_log.txt integration
+#
+# Geometry: Sphere, 50mm diameter, fused silica, 0.7mm thick, refractive index 1.458
+# Etching: Sierpiński tetrahedron depthmap, 15μm crown, 5μm edge
+# Texture: Procedural kappa_grid.png (10x10x10 grid from kappa.py)
+# Iris: 8 concentric blades, shape-memory polymer (SMP), 150μm thick
+# Animation: Iris dilation snap, 0-100% in 1s, driven by piezo (19kHz ±200Hz)
+# Pupil: Hollow void, 0.2mm radius, air-filled, refractive index 1.0
+# Lighting: Soft point, 5400K, 20% intensity, rear 30° angle
+# Glow: Subtle 5500K, 2% intensity, pulse synced to iris dilation
+# Background: Solid black (#000000), no HDRI
+# Shadows: Off
+# Depth of Field: Off
+# Positions: 36 frames, 10° angular sweep (0° to 360°)
+# Focal Length: 50mm (natural eye match)
+# ISO: 100
+# Shutter: 1/60
+# Resolution: 4096x4096
+# Export: .ksp scene pack, .png sheet (36 frames), .obj + .mtl model, .bvh motion clip
+# Revocation: Device hash checked via fish_eye.py, halts on revocation by xAI
+#
+# Note: Actual .ksp file is binary and generated in Keyshot. This text serves as metadata.
+# Load in Keyshot via fish_eye.py, which applies tetra hash and renders frames.
