@@ -52,6 +52,19 @@ import os
 from datetime import datetime
 from proto.revocation_stub import check_revocation
 
+# Mock data for testing
+TEST_MODE = True
+MOCK_COMMITS = [
+    {"commit": {"author": {"date": "2025-10-01T00:00:00Z", "name": "Developer"}, "message": "Initial commit"}},
+    {"commit": {"author": {"date": "2025-10-05T12:00:00Z", "name": "Contributor"}, "message": "Add fish_eye.py"}},
+    {"commit": {"author": {"date": "2025-10-10T18:00:00Z", "name": "Developer"}, "message": "Update keys.ksp"}},
+]
+MOCK_TREE = [
+    {"type": "blob", "path": "hardware/proto/fish_eye.py"},
+    {"type": "blob", "path": "hardware/proto/fish_eye_keys.ksp"},
+    {"type": "blob", "path": "hardware/proto/repo_audit.py"},
+]
+
 def read_config(config_file="config/config.json"):
     """Read intent and commercial use from config file with error handling."""
     config_dir = os.path.dirname(config_file)
@@ -125,28 +138,31 @@ def get_all_commits(owner, repo, device_hash="repo_audit_001"):
         log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
         raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
     
-    base_url = f"https://api.github.com/repos/{owner}/{repo}/commits?per_page=100"
-    url = base_url
-    commits = []
-    while url:
-        try:
-            response = requests.get(url, headers={"Accept": "application/vnd.github.v3+json"})
-            if response.status_code != 200:
-                raise Exception(f"Failed to fetch commits: {response.status_code} - {response.text}")
-            data = response.json()
-            commits.extend(data)
-            url = None
-            if 'link' in response.headers:
-                links = response.headers['link']
-                for link in links.split(','):
-                    link = link.strip()
-                    if 'rel="next"' in link:
-                        url = link.split(';')[0].strip('<> ')
-                        break
-        except Exception as e:
-            print(f"Error fetching commits: {e}")
-            break  # Fail gracefully, continue with partial data
-    return commits
+    if TEST_MODE:
+        return MOCK_COMMITS.copy()  # Return mock data for testing
+    else:
+        base_url = f"https://api.github.com/repos/{owner}/{repo}/commits?per_page=100"
+        url = base_url
+        commits = []
+        while url:
+            try:
+                response = requests.get(url, headers={"Accept": "application/vnd.github.v3+json"})
+                if response.status_code != 200:
+                    raise Exception(f"Failed to fetch commits: {response.status_code} - {response.text}")
+                data = response.json()
+                commits.extend(data)
+                url = None
+                if 'link' in response.headers:
+                    links = response.headers['link']
+                    for link in links.split(','):
+                        link = link.strip()
+                        if 'rel="next"' in link:
+                            url = link.split(';')[0].strip('<> ')
+                            break
+            except Exception as e:
+                print(f"Error fetching commits: {e}")
+                break  # Fail gracefully, continue with partial data
+        return commits
 
 def format_commit_history(commits):
     """Formats the commit history in chronological order (oldest to newest)."""
@@ -170,15 +186,18 @@ def get_repo_tree(owner, repo, branch, device_hash="repo_audit_001"):
         log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
         raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
     
-    tree_url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
-    try:
-        response = requests.get(tree_url, headers={"Accept": "application/vnd.github.v3+json"})
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch tree: {response.status_code} - {response.text}")
-        return response.json()['tree']
-    except Exception as e:
-        print(f"Error fetching repo tree: {e}")
-        return []  # Fail gracefully
+    if TEST_MODE:
+        return MOCK_TREE.copy()  # Return mock data for testing
+    else:
+        tree_url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
+        try:
+            response = requests.get(tree_url, headers={"Accept": "application/vnd.github.v3+json"})
+            if response.status_code != 200:
+                raise Exception(f"Failed to fetch tree: {response.status_code} - {response.text}")
+            return response.json()['tree']
+        except Exception as e:
+            print(f"Error fetching repo tree: {e}")
+            return []  # Fail gracefully
 
 def fetch_file_contents(owner, repo, branch, tree, device_hash="repo_audit_001"):
     """Fetches contents of all blob (file) items in the tree, skipping failures."""
@@ -188,23 +207,32 @@ def fetch_file_contents(owner, repo, branch, tree, device_hash="repo_audit_001")
         log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
         raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
     
-    contents = []
-    for item in tree:
-        if item['type'] == 'blob':
-            path = item['path']
-            raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}"
-            try:
-                response = requests.get(raw_url)
-                if response.status_code == 200:
-                    content = response.text
-                    contents.append(f"----- {path} -----\n{content}\n----- END {path} -----\n")
-                else:
-                    print(f"Skipping {path} due to fetch failure: {response.status_code}")
-            except Exception as e:
-                print(f"Failed to fetch {path}: {e}")
-    # Sort contents alphabetically by path for consistent order
-    contents.sort(key=lambda x: x.split('\n')[0])  # Sort by the ----- path ----- header
-    return "\n".join(contents)
+    if TEST_MODE:
+        contents = []
+        for item in MOCK_TREE:
+            if item['type'] == 'blob':
+                path = item['path']
+                content = f"Mock content for {path}"
+                contents.append(f"----- {path} -----\n{content}\n----- END {path} -----\n")
+        return "\n".join(contents)
+    else:
+        contents = []
+        for item in tree:
+            if item['type'] == 'blob':
+                path = item['path']
+                raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}"
+                try:
+                    response = requests.get(raw_url)
+                    if response.status_code == 200:
+                        content = response.text
+                        contents.append(f"----- {path} -----\n{content}\n----- END {path} -----\n")
+                    else:
+                        print(f"Skipping {path} due to fetch failure: {response.status_code}")
+                except Exception as e:
+                    print(f"Failed to fetch {path}: {e}")
+        # Sort contents alphabetically by path for consistent order
+        contents.sort(key=lambda x: x.split('\n')[0])  # Sort by the ----- path ----- header
+        return "\n".join(contents)
 
 def main(device_hash="repo_audit_001"):
     """Compile repo data into a single file with intent and revocation checks."""
