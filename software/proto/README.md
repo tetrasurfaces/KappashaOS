@@ -3,7 +3,7 @@
 Early prototype. Not for real skin. Yet.
 
 ## Overview
-The `software/proto/` folder contains experimental software components for KappashaOS, pushing the boundaries of gaze-reactive interfaces and fractal surface integration. These components—`ink_sim.py`, `corneal_etch.py`, `automaton_pie.py`, `kappa.py`, `kappa_endian.py`, `clipboard.py`, `clipboard_undo_redo.cpp`, `clipboard_undo_redo.c`, `revocation_stub.py`—extend the iPhone-shaped fish tank (`arch_id.py`, `fishtank.ksp`) with gaze-tracking pixel arrays and tetra-based etching (Sierpiński triangles/tetrahedrons). They integrate with the open `tetrasurfaces/tetra` repo for construction site curvature monitoring (`site_kappa.py`) and CAD integration (SolidWorks, Rhino, Keyshot). The `kappa.py` module provides situational curvature awareness with Delaunay triangulation, while `kappa_endian.py` handles reverse toggle and big-endian scaling for grid transformations.
+The `software/proto/` folder contains experimental software components for KappashaOS, pushing the boundaries of gaze-reactive interfaces and fractal surface integration. These components—`ink_sim.py`, `corneal_etch.py`, `automaton_pie.py`, `kappa.py`, `kappa_endian.py`, `clipboard.py`, `clipboard_undo_redo.cpp`, `clipboard_undo_redo.c`, `revocation_stub.py`, `intent_ui.py`—extend the iPhone-shaped fish tank (`arch_id.py`, `fishtank.ksp`) with gaze-tracking pixel arrays and tetra-based etching (Sierpiński triangles/tetrahedrons). They integrate with the open `tetrasurfaces/tetra` repo for construction site curvature monitoring (`site_kappa.py`) and CAD integration (SolidWorks, Rhino, Keyshot). The `kappa.py` module provides situational curvature awareness with Delaunay triangulation, `kappa_endian.py` handles reverse toggle and big-endian scaling, and `intent_ui.py` offers a PySide UI for intent setting.
 
 This repository is private, with a planned public release. Access and licensing require a GitHub issue at github.com/tetrasurfaces/issues.
 
@@ -17,10 +17,14 @@ This repository is private, with a planned public release. Access and licensing 
 - **`clipboard_undo_redo.cpp`**: C++ implementation of clipboard with undo/redo, aligned with intent tracking.  
 - **`clipboard_undo_redo.c`**: C implementation of clipboard with undo/redo, aligned with intent tracking.  
 - **`revocation_stub.py`**: Stub for checking device revocation via xAI-signed certificate, ensuring ethical use.  
+- **`intent_ui.py`**: PySide UI for setting intent in `config/config.json`, checking revocation status, and displaying license logs.  
 
 ## Usage
 Run demos in a controlled environment:
 ```bash
+# Run intent UI
+python3 software/proto/intent_ui.py
+
 # Simulate gaze tracking, corneal etch, or piezo interface
 python3 software/proto/ink_sim.py
 python3 software/proto/corneal_etch.py
@@ -40,7 +44,7 @@ gcc software/proto/clipboard_undo_redo.c -o clipboard_c && ./clipboard_c
 open software/proto/index.html
 ```
 
-Before running, set your intent in `config/config.json`:
+Before running, set your intent in `config/config.json` (or use `intent_ui.py`):
 ```json
 {
     "intent": "educational",  // or "commercial"
@@ -66,7 +70,7 @@ This protofolder is licensed under a dual license:
 **Private Development Note**: This repository (`tetrasurfaces/kappashaos`) is private, with a planned public release. Access is restricted. Open a GitHub issue at github.com/tetrasurfaces/issues for licensing or access.
 
 ## Ethics
-Every action plants a `nav3d.py` tree, costing 1% entropy. Non-fungible, non-exploitable. Physical interfaces must respect tendon/gaze limits (<20%/30s). Misuse (e.g., harmful applications) triggers license revocation via `revocation_stub.py`. Operators must declare intent in `config/config.json` and request licenses via github.com/tetrasurfaces/issues.
+Every action plants a `nav3d.py` tree, costing 1% entropy. Non-fungible, non-exploitable. Physical interfaces must respect tendon/gaze limits (<20%/30s). Misuse (e.g., harmful applications) triggers license revocation via `revocation_stub.py`. Operators must declare intent in `config/config.json` (or via `intent_ui.py`) and request licenses via github.com/tetrasurfaces/issues.
 
 ## Related Repositories
 - **Open Repo**: `tetrasurfaces/tetra` contains `arch_utils.py`, `site_kappa.py`, and `tetra_surface.py` for fractal surfaces and construction monitoring (xAI copyright).  
