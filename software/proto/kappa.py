@@ -179,8 +179,8 @@ class Kappa:
         print(f"Navi: Rasterized kappa grid with {len(points)} points")
         return self.grid
 
-    def flatten_to_delaney(self, grid):
-        """Flatten grid to Delaney surface map."""
+    def flatten_to_delaunay(self, grid):
+        """Flatten grid to Delaunay surface map."""
         return grid.reshape(-1)
 
     async def navi_unflatten_to_stl(self, flat_map):
@@ -219,7 +219,7 @@ if __name__ == "__main__":
         kappa = Kappa()
         points = np.random.rand(10, 3)
         grid = await kappa.navi_rasterize_kappa(points, {"density": 2.0})
-        flat_map = kappa.flatten_to_delaney(grid)
+        flat_map = kappa.flatten_to_Delaunay(grid)
         stl = await kappa.navi_unflatten_to_stl(flat_map)
         print(f"Navi: STL snippet: {stl[:100]}...")
 
