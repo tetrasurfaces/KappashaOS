@@ -1,5 +1,5 @@
-# arch_id.py
 #!/usr/bin/env python3
+# Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,6 @@
 #   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
 #   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
 #   for details, with the following xAI-specific terms appended.
-#
-# Copyright 2025 xAI
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,7 +45,7 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for licensing.
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
 import time
 import json
@@ -55,6 +53,7 @@ import os
 from datetime import datetime
 from tetra.arch_utils import calc_live_kappa, tetra_hash_surface, apply_tetra_etch
 from keyshot_api import KeyshotAPI
+from proto.revocation_stub import check_revocation
 
 def read_config(config_file="config/config.json"):
     """Read intent and commercial use from config file with error handling."""
@@ -95,7 +94,7 @@ def write_config(intent, commercial_use, config_file="config/config.json"):
         print(f"Error writing to {config_file}: {e}")
 
 def log_license_check(result, intent, commercial_use):
-    """Log license check results for audit trail."""
+    """Log license and revocation check results for audit trail."""
     try:
         with open("license_log.txt", "a") as f:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -121,10 +120,15 @@ def check_license(commercial_use=False, intent=None):
     log_license_check("Passed", intent, commercial_use)
     return True
 
-def render_fishtank_live():
+def render_fishtank_live(device_hash="fishtank_001"):
     """Live etching and rendering for iPhone-shaped fish tank."""
     intent, commercial_use = read_config()
     check_license(commercial_use, intent)
+    
+    if check_revocation(device_hash):
+        log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
+        raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
+    
     keyshot = KeyshotAPI()
     try:
         mesh = keyshot.load_scene("fishtank.ksp")  # OLED+water sim, 0.7mm convex arc
