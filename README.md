@@ -12,7 +12,8 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
   - `ink_sim.py`: NumPy-based gaze tracking simulation for 5 users with theta spiral patterns.  
   - `corneal_etch.py`: Simulates 0.2-micron waveguide etch on fused-silica cornea.  
   - `automaton_pie.py`: Simulates 2mm sapphire piezo-optic interface for nerve coupling.  
-  - `kappa.py`: Core kappasha256 hashing and situational curvature awareness for tetra surfaces.  
+  - `kappa.py`: Core kappasha256 hashing and situational curvature awareness using Delaunay triangulation.  
+  - `kappa_endian.py`: Reverse toggle and big-endian scaling for grid transformations with golden spiral rotation.  
   - `clipboard.py`: Python clipboard with undo/redo, intent tracking via kappasha256.  
   - `clipboard_undo_redo.cpp`: C++ clipboard with undo/redo, intent tracking.  
   - `clipboard_undo_redo.c`: C clipboard with undo/redo, intent tracking.  
@@ -39,6 +40,7 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
    python3 software/proto/corneal_etch.py  # Corneal etching simulation
    python3 software/proto/automaton_pie.py  # Piezo interface simulation
    python3 software/proto/kappa.py  # Kappasha256 hashing and curvature
+   python3 software/proto/kappa_endian.py  # Grid transformations
    python3 software/proto/clipboard.py  # Clipboard demo
    g++ software/proto/clipboard_undo_redo.cpp -o clipboard_cpp && ./clipboard_cpp
    gcc software/proto/clipboard_undo_redo.c -o clipboard_c && ./clipboard_c
