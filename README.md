@@ -54,7 +54,7 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
    ```bash
    python3 hardware/proto/kappa_hash.py
    ```
-   Outputs a kappasha256 hash for `KappashaOS` to verify integrity.  
+   Outputs a kappasha256 hash for `KappashaOS` to verify integrity. Compare with a known hash (e.g., post-upload) to ensure no tampering.  
 6. **Run Proto Demos**:
    ```bash
    python3 software/proto/intent_ui.py  # Intent UI
