@@ -3,7 +3,7 @@
 Early prototype. Not for real skin. Yet.
 
 ## Overview
-The `software/proto/` folder contains experimental software components for KappashaOS, pushing the boundaries of gaze-reactive interfaces and fractal surface integration. These components—`ink_sim.py`, `corneal_etch.py`, `automaton_pie.py`, `kappa.py`, `kappa_endian.py`, `clipboard.py`, `clipboard_undo_redo.cpp`, `clipboard_undo_redo.c`, `revocation_stub.py`, `intent_ui.py`—extend the iPhone-shaped fish tank (`arch_id.py`, `fishtank.ksp`) with gaze-tracking pixel arrays and tetra-based etching (Sierpiński triangles/tetrahedrons). They integrate with the open `tetrasurfaces/tetra` repo for construction site curvature monitoring (`site_kappa.py`) and CAD integration (SolidWorks, Rhino, Keyshot). The `kappa.py` module provides situational curvature awareness with Delaunay triangulation, `kappa_endian.py` handles reverse toggle and big-endian scaling, and `intent_ui.py` offers a PySide UI for intent setting.
+The `software/proto/` folder contains experimental software components for KappashaOS, pushing the boundaries of gaze-reactive interfaces and fractal surface integration. These components—`ink_sim.py`, `corneal_etch.py`, `automaton_pie.py`, `kappa.py`, `kappa_endian.py`, `clipboard.py`, `clipboard_undo_redo.cpp`, `clipboard_undo_redo.c`, `revocation_stub.py`, `intent_ui.py`—extend the iPhone-shaped fish tank (`arch_id.py`, `fishtank.ksp`) and Fish Eye prototype (`hardware/proto/fish_eye.py`, `fish_eye_keys.ksp`) with gaze-tracking pixel arrays and tetra-based etching (Sierpiński triangles/tetrahedrons). They integrate with the open `tetrasurfaces/tetra` repo for construction site curvature monitoring (`site_kappa.py`) and CAD integration (SolidWorks, Rhino, Keyshot). The `kappa.py` module provides situational curvature awareness with Delaunay triangulation, `kappa_endian.py` handles reverse toggle and big-endian scaling, and `intent_ui.py` offers a PySide UI for intent setting.
 
 This repository is private, with a planned public release. Access and licensing require a GitHub issue at github.com/tetrasurfaces/issues.
 
@@ -74,4 +74,4 @@ Every action plants a `nav3d.py` tree, costing 1% entropy. Non-fungible, non-exp
 
 ## Related Repositories
 - **Open Repo**: `tetrasurfaces/tetra` contains `arch_utils.py`, `site_kappa.py`, and `tetra_surface.py` for fractal surfaces and construction monitoring (xAI copyright).  
-- **Private Repo**: `tetrasurfaces/kappashaos` includes `arch_id.py`, `fishtank.ksp`, and `software/proto/` for the fish tank and experimental components, with public release pending.
+- **Private Repo**: `tetrasurfaces/kappashaos` includes `arch_id.py`, `fishtank.ksp`, `hardware/proto/`, and `software/proto/` for the fish tank, Fish Eye, and experimental components, with public release pending.
