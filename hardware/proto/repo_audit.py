@@ -46,7 +46,6 @@
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
 import requests
-import datetime
 import json
 import os
 from datetime import datetime
@@ -174,7 +173,7 @@ def format_commit_history(commits):
         history_entries.append((date_str, f"{date_str} - {author}: {message}"))
     
     # Sort by date (oldest first)
-    history_entries.sort(key=lambda x: datetime.datetime.fromisoformat(x[0]))
+    history_entries.sort(key=lambda x: datetime.fromisoformat(x[0]))
     
     return "\n".join(entry[1] for entry in history_entries)
 
