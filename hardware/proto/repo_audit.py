@@ -49,10 +49,18 @@ import requests
 import json
 import os
 from datetime import datetime
+import time
 from proto.revocation_stub import check_revocation
+import os
+
+# Load GitHub token from environment variable for private repo access
+GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+if not GITHUB_TOKEN and not TEST_MODE:
+    print("Warning: GITHUB_TOKEN not set. Real API calls may fail due to rate limits or access restrictions.")
+    GITHUB_TOKEN = "mock_token"  # Fallback for testing, replace with real token
 
 # Mock data for testing
-TEST_MODE = True
+TEST_MODE = False  # Switch to False for real data
 MOCK_COMMITS = [
     {"commit": {"author": {"date": "2025-10-01T00:00:00Z", "name": "Developer"}, "message": "Initial commit"}},
     {"commit": {"author": {"date": "2025-10-05T12:00:00Z", "name": "Contributor"}, "message": "Add fish_eye.py"}},
@@ -141,11 +149,12 @@ def get_all_commits(owner, repo, device_hash="repo_audit_001"):
         return MOCK_COMMITS.copy()  # Return mock data for testing
     else:
         base_url = f"https://api.github.com/repos/{owner}/{repo}/commits?per_page=100"
+        headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {GITHUB_TOKEN}"}
         url = base_url
         commits = []
         while url:
             try:
-                response = requests.get(url, headers={"Accept": "application/vnd.github.v3+json"})
+                response = requests.get(url, headers=headers)
                 if response.status_code != 200:
                     raise Exception(f"Failed to fetch commits: {response.status_code} - {response.text}")
                 data = response.json()
@@ -158,6 +167,7 @@ def get_all_commits(owner, repo, device_hash="repo_audit_001"):
                         if 'rel="next"' in link:
                             url = link.split(';')[0].strip('<> ')
                             break
+                time.sleep(1)  # Rate limit delay
             except Exception as e:
                 print(f"Error fetching commits: {e}")
                 break  # Fail gracefully, continue with partial data
@@ -189,8 +199,9 @@ def get_repo_tree(owner, repo, branch, device_hash="repo_audit_001"):
         return MOCK_TREE.copy()  # Return mock data for testing
     else:
         tree_url = f"https://api.github.com/repos/{owner}/{repo}/git/trees/{branch}?recursive=1"
+        headers = {"Accept": "application/vnd.github.v3+json", "Authorization": f"token {GITHUB_TOKEN}"}
         try:
-            response = requests.get(tree_url, headers={"Accept": "application/vnd.github.v3+json"})
+            response = requests.get(tree_url, headers=headers)
             if response.status_code != 200:
                 raise Exception(f"Failed to fetch tree: {response.status_code} - {response.text}")
             return response.json()['tree']
@@ -220,8 +231,9 @@ def fetch_file_contents(owner, repo, branch, tree, device_hash="repo_audit_001")
             if item['type'] == 'blob':
                 path = item['path']
                 raw_url = f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{path}"
+                headers = {"Authorization": f"token {GITHUB_TOKEN}"}
                 try:
-                    response = requests.get(raw_url)
+                    response = requests.get(raw_url, headers=headers)
                     if response.status_code == 200:
                         content = response.text
                         contents.append(f"----- {path} -----\n{content}\n----- END {path} -----\n")
@@ -244,7 +256,7 @@ def main(device_hash="repo_audit_001"):
     owner = 'tetrasurfaces'
     repo = 'KappashaOS'
     branch = 'main'
-    output_file = 'KappashaOS.txt'
+    output_file = 'copyright_snapshot.txt'  # Rename for clarity as a snapshot
     
     # Fetch and format history
     commits = get_all_commits(owner, repo, device_hash)
