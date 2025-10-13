@@ -219,7 +219,7 @@ if __name__ == "__main__":
         kappa = Kappa()
         points = np.random.rand(10, 3)
         grid = await kappa.navi_rasterize_kappa(points, {"density": 2.0})
-        flat_map = kappa.flatten_to_Delaunay(grid)
+        flat_map = kappa.flatten_to_delaunay(grid)
         stl = await kappa.navi_unflatten_to_stl(flat_map)
         print(f"Navi: STL snippet: {stl[:100]}...")
 
