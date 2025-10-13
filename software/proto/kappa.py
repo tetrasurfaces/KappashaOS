@@ -48,11 +48,15 @@
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
 import numpy as np
+import asyncio
 import json
 import os
 from datetime import datetime
-from hashlib import sha256
+from scipy.spatial import Delaunay
+from tetra.solid import mesh  # Mock tetra surfaces
+from master_hand import MasterHand
 from proto.revocation_stub import check_revocation
+from tetra.arch_utils import tetra_hash_surface
 
 def read_config(config_file="config/config.json"):
     """Read intent and commercial use from config file with error handling."""
@@ -119,21 +123,106 @@ def check_license(commercial_use=False, intent=None):
     log_license_check("Passed", intent, commercial_use)
     return True
 
-def hash_surface(points, precision=6, device_hash="kappa_001"):
-    """Generate kappasha256 hash for a set of points."""
-    intent, commercial_use = read_config()
-    check_license(commercial_use, intent)
-    if check_revocation(device_hash):
-        log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
-        raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
-    
-    # Flatten and quantize points
-    flat_points = points.flatten()
-    quantized = np.round(flat_points, precision).astype(str)
-    seed = "".join(quantized)
-    return sha256(seed.encode()).hexdigest()[:16]
+class Kappa:
+    def __init__(self, grid_size=10, device_hash="kappa_001"):
+        """Initialize Kappa grid for situational curvature awareness."""
+        intent, commercial_use = read_config()
+        check_license(commercial_use, intent)
+        if check_revocation(device_hash):
+            log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
+            raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
+        
+        self.grid_size = grid_size
+        self.grid = np.zeros((grid_size, grid_size, grid_size))
+        self.material = {"density": 1.0, "type": "steel"}  # Mock material
+        self.hand = MasterHand()
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
+        self.device_hash = device_hash
+        print("Kappa initialized - grid rasterization ready.")
+
+    async def navi_rasterize_kappa(self, points, material):
+        """Rasterize kappa grid with material depth and fractal tetra."""
+        if check_revocation(self.device_hash):
+            log_license_check("Revoked: Device hash invalidated", "unknown", False)
+            raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
+        
+        for p in points:
+            x, y, z = [int(coord * (self.grid_size - 1)) for coord in p]
+            if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
+                self.grid[x, y, z] = material.get("density", 1.0)
+        
+        # Add Sierpiński tetrahedrons for curvature awareness
+        tetra_points = []
+        for x in range(0, self.grid_size, 2):
+            for y in range(0, self.grid_size, 2):
+                for z in range(0, self.grid_size, 2):
+                    tetra_points.extend([(x, y, z), (x+1, y, z), (x, y+1, z), (x, y, z+1)])
+        tri = Delaunay(np.array(tetra_points))
+        for simplex in tri.simplices:
+            center = np.mean([tetra_points[i] for i in simplex], axis=0)
+            x, y, z = [int(c) for c in center]
+            if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
+                self.grid[x, y, z] += 0.5
+                # Hash tetra points for kappasha256 integration
+                hash_val = tetra_hash_surface(np.array([tetra_points[i] for i in simplex]))
+                self.hand.log_hash(hash_val)
+        
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("Kappa: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Kappa: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+        print(f"Navi: Rasterized kappa grid with {len(points)} points")
+        return self.grid
+
+    def flatten_to_delaney(self, grid):
+        """Flatten grid to Delaney surface map."""
+        return grid.reshape(-1)
+
+    async def navi_unflatten_to_stl(self, flat_map):
+        """Unflatten to stereolithography output."""
+        if check_revocation(self.device_hash):
+            log_license_check("Revoked: Device hash invalidated", "unknown", False)
+            raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
+        
+        mesh_data = mesh("W21x62")  # Mock solid
+        stl_output = f"solid kappa\nfacet normal 0 0 1\nouter loop\n"
+        for i in range(len(flat_map) - 1):
+            if flat_map[i] > 0 and flat_map[i + 1] > 0:
+                x, y, z = np.unravel_index(i, (self.grid_size, self.grid_size, self.grid_size))
+                stl_output += f"vertex {x} {y} {z}\n"
+        stl_output += "endloop\nendfacet\nendsolid kappa"
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("Kappa: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Kappa: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+        print("Navi: Unflattened to STL")
+        return stl_output
+
+    def reset(self):
+        """Reset tendon and gaze metrics."""
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
 
 if __name__ == "__main__":
-    points = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
-    hash_val = hash_surface(points)
-    print(f"Kappasha256 hash: {hash_val}")
+    async def navi_test():
+        kappa = Kappa()
+        points = np.random.rand(10, 3)
+        grid = await kappa.navi_rasterize_kappa(points, {"density": 2.0})
+        flat_map = kappa.flatten_to_delaney(grid)
+        stl = await kappa.navi_unflatten_to_stl(flat_map)
+        print(f"Navi: STL snippet: {stl[:100]}...")
+
+    asyncio.run(navi_test())
