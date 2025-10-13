@@ -41,9 +41,7 @@
 # 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. Open Development: Hardware docs shared post-private phase.
 #
-# Intellectual Property Notice: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration.
-#
-# Private Development Note: This repository is private for xAI’s KappashaOS development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for licensing.
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 #
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
