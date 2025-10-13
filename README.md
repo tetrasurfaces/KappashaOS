@@ -3,7 +3,7 @@
 Experimental platform for gaze-reactive interfaces and fractal surface integration, powering the iPhone-shaped fish tank and related prototypes. This repository is private, with a planned public release. It extends the tetra/kappasha workflow (Sierpiński triangles/tetrahedrons, kappasha256 hashing) from the open `tetrasurfaces/tetra` repo, focusing on industrial design (Keyshot rendering, gaze-tracking pixels) and cyberpunk experiments.
 
 ## Overview
-KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with tetra-etched surfaces (15-micron depth at crown, 5-micron at edge), gaze-tracking pixel arrays, and a 60ml water volume with micro-bubble system. The `software/proto/` folder contains experimental software components (e.g., gaze tracking, corneal etching, clipboard functionality, curvature awareness), while `hardware/proto/` will include hardware specifications (e.g., fish tank glass, piezo interfaces). All components integrate with `tetrasurfaces/tetra`’s core utilities for fractal surfaces and construction monitoring.
+KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with tetra-etched surfaces (15-micron depth at crown, 5-micron at edge), gaze-tracking pixel arrays, and a 60ml water volume with micro-bubble system. The `software/proto/` folder contains experimental software components (e.g., gaze tracking, corneal etching, clipboard functionality, curvature awareness, intent UI), while `hardware/proto/` will include hardware specifications (e.g., fish tank glass, piezo interfaces). All components integrate with `tetrasurfaces/tetra`’s core utilities for fractal surfaces and construction monitoring.
 
 ## Components
 - **`arch_id.py`**: Python script for live Keyshot rendering of the fish tank, applying tetra hashes and dynamic bump maps for gaze-reactive etching.  
@@ -18,17 +18,18 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
   - `clipboard_undo_redo.cpp`: C++ clipboard with undo/redo, intent tracking.  
   - `clipboard_undo_redo.c`: C clipboard with undo/redo, intent tracking.  
   - `revocation_stub.py`: Stub for device revocation via xAI-signed certificate.  
+  - `intent_ui.py`: PySide UI for setting intent in `config/config.json`, checking revocation status, and displaying license logs.  
 - **`hardware/proto/`**: Placeholder for hardware specifications (e.g., fish tank glass, piezo interfaces), to be defined post-prototyping.  
 
 ## Usage
-1. **Set Intent**: Edit `config/config.json` to declare intent:
+1. **Set Intent**: Use `intent_ui.py` or edit `config/config.json`:
    ```json
    {
        "intent": "educational",  // or "commercial"
        "commercial_use": false   // true for commercial intent
    }
    ```
-   If missing or invalid, scripts prompt for intent and create a default file. See `tetra/NOTICE.txt`.  
+   If missing or invalid, scripts or UI prompt for intent and create a default file. See `tetra/NOTICE.txt`.  
 2. **Run Fish Tank Rendering**:
    ```bash
    python3 arch_id.py
@@ -36,6 +37,7 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
    Requires Keyshot and `fishtank.ksp`. Outputs live renders at 1080x1920, 20 FPS.  
 3. **Run Proto Demos**:
    ```bash
+   python3 software/proto/intent_ui.py  # Intent UI
    python3 software/proto/ink_sim.py  # Gaze tracking simulation
    python3 software/proto/corneal_etch.py  # Corneal etching simulation
    python3 software/proto/automaton_pie.py  # Piezo interface simulation
@@ -58,7 +60,7 @@ Licensed under a dual AGPL-3.0 (software) and Apache 2.0 with xAI amendments (ha
 - **Export Controls**: Complies with US EAR Category 5 Part 2.
 
 ## Ethics
-Every action plants a `nav3d.py` tree, costing 1% entropy. Non-fungible, non-exploitable. Physical interfaces respect tendon/gaze limits. Misuse triggers license revocation via `revocation_stub.py`. Declare intent in `config/config.json` and request licenses via github.com/tetrasurfaces/issues.
+Every action plants a `nav3d.py` tree, costing 1% entropy. Non-fungible, non-exploitable. Physical interfaces respect tendon/gaze limits. Misuse triggers license revocation via `revocation_stub.py`. Declare intent in `config/config.json` (or via `intent_ui.py`) and request licenses via github.com/tetrasurfaces/issues.
 
 ## Related Repositories
 - **Open Repo**: `tetrasurfaces/tetra` contains `arch_utils.py`, `site_kappa.py`, `tetra_surface.py` for fractal surfaces and construction (xAI copyright).  
