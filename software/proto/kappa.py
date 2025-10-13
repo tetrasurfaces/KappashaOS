@@ -47,43 +47,12 @@
 #
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
-import serial
-import time
-from tetra.arch_utils import calc_live_kappa, tetra_hash_surface, apply_tetra_etch
-from tetra.revocation_stub import check_revocation
-
-def read_sensor_raw(port='/dev/ttyUSB0', baud=9600):
-    """Read live IMU/gyro data from construction site sensors."""
-    try:
-        ser = serial.Serial(port, baud, timeout=1)
-        while True:
-            line = ser.readline().decode('utf-8').strip()
-            yield line  # Format: kappa:0.48,drift:0.02
-    except Exception as e:
-        print(f"Sensor offline: {e}")
-        return
-
-def run_formwork_monitor():
-    """Monitor construction site curvature, sync with CATIA."""
-    intent, commercial_use = read_config()
-    check_license(commercial_use, intent)
-    if check_revocation("site_kappa_001"):
-        log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
-        raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
-    
-    mesh = None  # Loaded from CATIA sync via protobuf
-    sensor = read_sensor_raw()
-    for raw in sensor:
-        if 'kappa:' not in raw:
-            continue
-        kappa_str = raw.split('kappa:')[1].split(',')[0]
-        kappa_val = float(kappa_str)
-        delta = calc_live_kappa(mesh, target=0.5)
-        if abs(delta) > 0.03:
-            print(f"ALERT - curvature drift detected: {delta}, re-tension form!")
-        hash_val = tetra_hash_surface(mesh)
-        apply_tetra_etch(mesh, depth=0.002, hash_val=hash_val)  # Shallow for rebar tag
-        time.sleep(1)
+import numpy as np
+import json
+import os
+from datetime import datetime
+from hashlib import sha256
+from proto.revocation_stub import check_revocation
 
 def read_config(config_file="config/config.json"):
     """Read intent and commercial use from config file with error handling."""
@@ -150,5 +119,21 @@ def check_license(commercial_use=False, intent=None):
     log_license_check("Passed", intent, commercial_use)
     return True
 
+def hash_surface(points, precision=6, device_hash="kappa_001"):
+    """Generate kappasha256 hash for a set of points."""
+    intent, commercial_use = read_config()
+    check_license(commercial_use, intent)
+    if check_revocation(device_hash):
+        log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
+        raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
+    
+    # Flatten and quantize points
+    flat_points = points.flatten()
+    quantized = np.round(flat_points, precision).astype(str)
+    seed = "".join(quantized)
+    return sha256(seed.encode()).hexdigest()[:16]
+
 if __name__ == "__main__":
-    run_formwork_monitor()
+    points = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+    hash_val = hash_surface(points)
+    print(f"Kappasha256 hash: {hash_val}")
