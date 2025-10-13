@@ -1,5 +1,5 @@
-# ink_sim.py
 #!/usr/bin/env python3
+# Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,6 @@
 #   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
 #   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
 #   for details, with the following xAI-specific terms appended.
-#
-# Copyright 2025 xAI
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,13 +45,14 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for licensing.
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
 import numpy as np
 import json
 import os
 from datetime import datetime
 from tetra.arch_utils import tetra_hash_surface
+from proto.revocation_stub import check_revocation
 
 def read_config(config_file="config/config.json"):
     """Read intent and commercial use from config file with error handling."""
@@ -94,7 +93,7 @@ def write_config(intent, commercial_use, config_file="config/config.json"):
         print(f"Error writing to {config_file}: {e}")
 
 def log_license_check(result, intent, commercial_use):
-    """Log license check results for audit trail."""
+    """Log license and revocation check results for audit trail."""
     try:
         with open("license_log.txt", "a") as f:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -120,22 +119,23 @@ def check_license(commercial_use=False, intent=None):
     log_license_check("Passed", intent, commercial_use)
     return True
 
-def simulate_gaze_tracking(users=5, theta_range=360):
+def simulate_gaze_tracking(users=5, theta_range=360, device_hash="ink_sim_001"):
     """Simulate multi-user gaze tracking with theta spiral."""
     intent, commercial_use = read_config()
     check_license(commercial_use, intent)
     
-    # Placeholder: Generate mock mesh for gaze simulation
+    if check_revocation(device_hash):
+        log_license_check("Revoked: Device hash invalidated", intent, commercial_use)
+        raise ValueError("Device revoked by xAI. Contact github.com/tetrasurfaces/issues for details.")
+    
     points = np.zeros((users, 3))  # Mock 3D points for users
     for i in range(users):
         theta = i * (theta_range / users) * np.pi / 180
         points[i] = [np.cos(theta), np.sin(theta), 0]  # Theta spiral
     
-    # Hash points for tetra integration
     hash_val = tetra_hash_surface(points)
     print(f"Gaze simulation hash: {hash_val}")
     
-    # Mock gaze data: intensity based on angle
     gaze_data = np.sin(points[:, 0]) * 0.5 + 0.5  # Mock intensity
     return gaze_data
 
