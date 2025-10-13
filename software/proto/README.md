@@ -3,7 +3,7 @@
 Early prototype. Not for real skin. Yet.
 
 ## Overview
-The `software/proto/` folder contains experimental software components for KappashaOS, pushing the boundaries of gaze-reactive interfaces and fractal surface integration. These components—`ink_sim.py`, `corneal_etch.py`, `automaton_pie.py`, `kappa.py`, `clipboard.py`, `clipboard_undo_redo.cpp`, `clipboard_undo_redo.c`, `revocation_stub.py`—extend the iPhone-shaped fish tank (`arch_id.py`, `fishtank.ksp`) with gaze-tracking pixel arrays and tetra-based etching (Sierpiński triangles/tetrahedrons). They integrate with the open `tetrasurfaces/tetra` repo for construction site curvature monitoring (`site_kappa.py`) and CAD integration (SolidWorks, Rhino, Keyshot).
+The `software/proto/` folder contains experimental software components for KappashaOS, pushing the boundaries of gaze-reactive interfaces and fractal surface integration. These components—`ink_sim.py`, `corneal_etch.py`, `automaton_pie.py`, `kappa.py`, `clipboard.py`, `clipboard_undo_redo.cpp`, `clipboard_undo_redo.c`, `revocation_stub.py`—extend the iPhone-shaped fish tank (`arch_id.py`, `fishtank.ksp`) with gaze-tracking pixel arrays and tetra-based etching (Sierpiński triangles/tetrahedrons). They integrate with the open `tetrasurfaces/tetra` repo for construction site curvature monitoring (`site_kappa.py`) and CAD integration (SolidWorks, Rhino, Keyshot). The `kappa.py` module provides situational curvature awareness, rasterizing 3D grids with material properties and fractal tetra patterns.
 
 This repository is private, with a planned public release. Access and licensing require a GitHub issue at github.com/tetrasurfaces/issues.
 
@@ -11,7 +11,7 @@ This repository is private, with a planned public release. Access and licensing 
 - **`ink_sim.py`**: NumPy-based simulation for multi-user gaze tracking, supporting 5 users with theta spiral patterns, tied to tetra hash generation.  
 - **`corneal_etch.py`**: Simulates a 0.2-micron waveguide etch on a 550-micron fused-silica cornea, with theta-spiral activation and UV-kill groove.  
 - **`automaton_pie.py`**: Simulates a 2mm sapphire piezo-optic interface for post-humanitarian nerve coupling, vibrating at 19 kHz on INK hash trigger.  
-- **`kappa.py`**: Core kappasha256 hashing logic for tetra surfaces, used across fish tank and construction applications.  
+- **`kappa.py`**: Core kappasha256 hashing and situational curvature awareness, rasterizing 3D grids with material properties and Sierpiński tetrahedrons for fish tank and construction applications.  
 - **`clipboard.py`**: Python implementation of a clipboard with undo/redo functionality, tracking intent via kappasha256 hashing.  
 - **`clipboard_undo_redo.cpp`**: C++ implementation of clipboard with undo/redo, aligned with intent tracking.  
 - **`clipboard_undo_redo.c`**: C implementation of clipboard with undo/redo, aligned with intent tracking.  
@@ -20,12 +20,12 @@ This repository is private, with a planned public release. Access and licensing 
 ## Usage
 Run demos in a controlled environment:
 ```bash
-# Simulate gaze tracking or corneal etch
+# Simulate gaze tracking, corneal etch, or piezo interface
 python3 software/proto/ink_sim.py
 python3 software/proto/corneal_etch.py
 python3 software/proto/automaton_pie.py
 
-# Run kappasha256 hashing
+# Run kappasha256 hashing and curvature rasterization
 python3 software/proto/kappa.py
 
 # Run clipboard demos
