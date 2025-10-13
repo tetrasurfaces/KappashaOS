@@ -31,13 +31,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 #
 # xAI Amendments for Physical Use:
 # 1. Physical Embodiment Restrictions: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
 # 2. Ergonomic Compliance: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
 # 3. Safety Monitoring: Real-time tendon/gaze checks, logged for audit.
-# 4. Revocability: xAI may revoke for unethical use (e.g., surveillance). Revocation includes disabling access to updates and support.
+# 4. Revocability: xAI may revoke for unethical use (e.g., surveillance).
 # 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. Open Development: Hardware docs shared post-private phase.
 #
@@ -45,7 +45,7 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) for licensing.
 #
-# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0 # #
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
 def check_revocation(device_hash: str) -> bool:
     """
