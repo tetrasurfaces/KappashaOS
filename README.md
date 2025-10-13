@@ -1,13 +1,16 @@
 # KappashaOS
 
-Experimental platform for gaze-reactive interfaces and fractal surface integration, powering the iPhone-shaped fish tank and related prototypes. This repository is private, with a planned public release. It extends the tetra/kappasha workflow (Sierpiński triangles/tetrahedrons, kappasha256 hashing) from the open `tetrasurfaces/tetra` repo, focusing on industrial design (Keyshot rendering, gaze-tracking pixels) and cyberpunk experiments.
+Experimental platform for gaze-reactive interfaces and fractal surface integration, powering the iPhone-shaped fish tank, Fish Eye prototype, and related components. This repository is private, with a planned public release. It extends the tetra/kappasha workflow (Sierpiński triangles/tetrahedrons, kappasha256 hashing) from the open `tetrasurfaces/tetra` repo, focusing on industrial design (Keyshot rendering, gaze-tracking pixels) and cyberpunk experiments.
 
 ## Overview
-KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with tetra-etched surfaces (15-micron depth at crown, 5-micron at edge), gaze-tracking pixel arrays, and a 60ml water volume with micro-bubble system. The `software/proto/` folder contains experimental software components (e.g., gaze tracking, corneal etching, clipboard functionality, curvature awareness, intent UI), while `hardware/proto/` will include hardware specifications (e.g., fish tank glass, piezo interfaces). All components integrate with `tetrasurfaces/tetra`’s core utilities for fractal surfaces and construction monitoring.
+KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with tetra-etched surfaces (15-micron depth at crown, 5-micron at edge), gaze-tracking pixel arrays, and a 60ml water volume with micro-bubble system. The Fish Eye prototype (`hardware/proto/fish_eye.py`, `fish_eye_keys.ksp`) is a 50mm fused-silica sphere with SMP iris blades, designed as an autonomous pupil. The `software/proto/` folder contains experimental software components (e.g., gaze tracking, corneal etching, clipboard functionality, curvature awareness, intent UI), while `hardware/proto/` includes hardware specifications (e.g., fish tank glass, Fish Eye). All components integrate with `tetrasurfaces/tetra`’s core utilities for fractal surfaces and construction monitoring.
 
 ## Components
 - **`arch_id.py`**: Python script for live Keyshot rendering of the fish tank, applying tetra hashes and dynamic bump maps for gaze-reactive etching.  
 - **`fishtank.ksp`**: Keyshot scene file (placeholder) for the fish tank, with convex glass, water volume, and gaze-tracking animations.  
+- **`hardware/proto/`**: Hardware specifications and drivers:  
+  - `fish_eye.py`: Python driver for rendering Fish Eye keysheet (50mm sphere, tetra etch, SMP iris).  
+  - `fish_eye_keys.ksp`: Keyshot scene pack for Fish Eye, 36 frames with 10° sweep, 4096x4096 resolution.  
 - **`software/proto/`**: Experimental software components:  
   - `ink_sim.py`: NumPy-based gaze tracking simulation for 5 users with theta spiral patterns.  
   - `corneal_etch.py`: Simulates 0.2-micron waveguide etch on fused-silica cornea.  
@@ -19,7 +22,6 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
   - `clipboard_undo_redo.c`: C clipboard with undo/redo, intent tracking.  
   - `revocation_stub.py`: Stub for device revocation via xAI-signed certificate.  
   - `intent_ui.py`: PySide UI for setting intent in `config/config.json`, checking revocation status, and displaying license logs.  
-- **`hardware/proto/`**: Placeholder for hardware specifications (e.g., fish tank glass, piezo interfaces), to be defined post-prototyping.  
 
 ## Usage
 1. **Set Intent**: Use `intent_ui.py` or edit `config/config.json`:
@@ -35,7 +37,12 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
    python3 arch_id.py
    ```
    Requires Keyshot and `fishtank.ksp`. Outputs live renders at 1080x1920, 20 FPS.  
-3. **Run Proto Demos**:
+3. **Run Fish Eye Rendering**:
+   ```bash
+   python3 hardware/proto/fish_eye.py
+   ```
+   Requires Keyshot and `fish_eye_keys.ksp`. Outputs 36-frame keysheet at 4096x4096.  
+4. **Run Proto Demos**:
    ```bash
    python3 software/proto/intent_ui.py  # Intent UI
    python3 software/proto/ink_sim.py  # Gaze tracking simulation
@@ -49,13 +56,13 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
    # Load postcard.frag, grokflat.frag in WebGL browser (e.g., via Three.js)
    open software/proto/index.html
    ```
-4. **License**: Open a GitHub issue at github.com/tetrasurfaces/issues for access or licensing (royalty-free for educational use).
+5. **License**: Open a GitHub issue at github.com/tetrasurfaces/issues for access or licensing (royalty-free for educational use).
 
 ## Licensing
 Licensed under a dual AGPL-3.0 (software) and Apache 2.0 with xAI amendments (hardware). See `LICENSE.txt`.  
 - **Educational Use**: Royalty-free for teaching/research, requires GitHub issue.  
 - **Commercial Use**: Requires negotiated approval via github.com/tetrasurfaces/issues.  
-- **IP**: xAI owns fish tank IP (gaze-tracking, convex etching, tetra hashing).  
+- **IP**: xAI owns fish tank and Fish Eye IP (gaze-tracking, convex etching, tetra hashing).  
 - **Ethics**: Tendon/gaze limits (<20%/30s), revocable for misuse (e.g., surveillance).  
 - **Export Controls**: Complies with US EAR Category 5 Part 2.
 
@@ -64,4 +71,4 @@ Every action plants a `nav3d.py` tree, costing 1% entropy. Non-fungible, non-exp
 
 ## Related Repositories
 - **Open Repo**: `tetrasurfaces/tetra` contains `arch_utils.py`, `site_kappa.py`, `tetra_surface.py` for fractal surfaces and construction (xAI copyright).  
-- **Private Repo**: `tetrasurfaces/kappashaos` (this repo) will transition to public soon. Contact github.com/tetrasurfaces/issues for access.
+- **Private Repo**: `tetrasurfaces/kappashaos` (this repo) includes `arch_id.py`, `fishtank.ksp`, `hardware/proto/`, and `software/proto/` for the fish tank, Fish Eye, and experimental components, with public release pending.
