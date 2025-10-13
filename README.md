@@ -3,7 +3,7 @@
 Experimental platform for gaze-reactive interfaces and fractal surface integration, powering the iPhone-shaped fish tank and related prototypes. This repository is private, with a planned public release. It extends the tetra/kappasha workflow (Sierpiński triangles/tetrahedrons, kappasha256 hashing) from the open `tetrasurfaces/tetra` repo, focusing on industrial design (Keyshot rendering, gaze-tracking pixels) and cyberpunk experiments.
 
 ## Overview
-KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with tetra-etched surfaces (15-micron depth at crown, 5-micron at edge), gaze-tracking pixel arrays, and a 60ml water volume with micro-bubble system. The `software/proto/` folder contains experimental software components (e.g., gaze tracking, corneal etching, clipboard functionality), while `hardware/proto/` will include hardware specifications (e.g., fish tank glass, piezo interfaces). All components integrate with `tetrasurfaces/tetra`’s core utilities for fractal surfaces and construction monitoring.
+KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with tetra-etched surfaces (15-micron depth at crown, 5-micron at edge), gaze-tracking pixel arrays, and a 60ml water volume with micro-bubble system. The `software/proto/` folder contains experimental software components (e.g., gaze tracking, corneal etching, clipboard functionality, curvature awareness), while `hardware/proto/` will include hardware specifications (e.g., fish tank glass, piezo interfaces). All components integrate with `tetrasurfaces/tetra`’s core utilities for fractal surfaces and construction monitoring.
 
 ## Components
 - **`arch_id.py`**: Python script for live Keyshot rendering of the fish tank, applying tetra hashes and dynamic bump maps for gaze-reactive etching.  
@@ -12,7 +12,7 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
   - `ink_sim.py`: NumPy-based gaze tracking simulation for 5 users with theta spiral patterns.  
   - `corneal_etch.py`: Simulates 0.2-micron waveguide etch on fused-silica cornea.  
   - `automaton_pie.py`: Simulates 2mm sapphire piezo-optic interface for nerve coupling.  
-  - `kappa.py`: Core kappasha256 hashing logic for tetra surfaces.  
+  - `kappa.py`: Core kappasha256 hashing and situational curvature awareness for tetra surfaces.  
   - `clipboard.py`: Python clipboard with undo/redo, intent tracking via kappasha256.  
   - `clipboard_undo_redo.cpp`: C++ clipboard with undo/redo, intent tracking.  
   - `clipboard_undo_redo.c`: C clipboard with undo/redo, intent tracking.  
@@ -38,7 +38,7 @@ KappashaOS drives the iPhone-shaped fish tank—a 0.7mm convex glass device with
    python3 software/proto/ink_sim.py  # Gaze tracking simulation
    python3 software/proto/corneal_etch.py  # Corneal etching simulation
    python3 software/proto/automaton_pie.py  # Piezo interface simulation
-   python3 software/proto/kappa.py  # Kappasha256 hashing
+   python3 software/proto/kappa.py  # Kappasha256 hashing and curvature
    python3 software/proto/clipboard.py  # Clipboard demo
    g++ software/proto/clipboard_undo_redo.cpp -o clipboard_cpp && ./clipboard_cpp
    gcc software/proto/clipboard_undo_redo.c -o clipboard_c && ./clipboard_c
