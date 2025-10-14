@@ -34,7 +34,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
+# Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
 #
 # xAI Amendments for Physical Use:
 # 1. Physical Embodiment Restrictions: Use of this software in conjunction with physical devices (e.g., fish tank glass, pixel sensors) is permitted only for non-hazardous, non-weaponized applications. Any modification or deployment that enables harm (e.g., targeting systems, explosive triggers) is expressly prohibited and subject to immediate license revocation by xAI.
@@ -73,7 +73,7 @@ class Hashlet(greenlet.Greenlet):
         result = super().switch(*args, **kwargs)
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        return result, self.rgb_color  # Yield landing + ribit hex
+        return result, self.rgb_color
 
 def channel(pin, primes=[20, 41, 97, 107]):
     tame = 5
@@ -86,9 +86,9 @@ def channel(pin, primes=[20, 41, 97, 107]):
         current = (current + step) % 512
         landings.append(current)
         if current in primes:
-            polarity *= -1  # Swap tame/wild
+            polarity *= -1
             yield current
-    yield 0  # Silence if no afford
+    yield 0
 
 def afford_curve(pin, num_thetas=64):
     h = Hashlet(channel, pin)
@@ -98,14 +98,13 @@ def afford_curve(pin, num_thetas=64):
             landing, rgb = h.switch()
             landings.append(landing)
             if landing != 0:
-                thetas = np.linspace(0, 2 * np.pi, num_thetas)
-                return thetas.tobytes(), rgb  # Raw floats + ribit hex
+                thetas = np.linspace(0, 2 * np.pi, num_thetas, dtype=np.float32)
+                return thetas.tobytes(), rgb  # Floats as bytes + ribit hex
         except greenlet.GreenletExit:
             break
-    return b'', '#000000'  # No afford, black hex
+    return b'', '#000000'
 
 def hashlet_jack(pin):
-    """Hashlet for threading in extension: yield landings + ribit hex."""
     h = Hashlet(channel, pin)
     while True:
         try:
