@@ -44,16 +44,13 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted to authorized contributors. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-private phase.
 
 #!/usr/bin/env python3
-# kappasha_os_cython.pyx
-# cython: language_level=3
+# kappasha_os_cython.pyx - Cython enhancements for KappashaOS.
+# Copyright 2025 xAI
+# Dual License (see kappasha_os.py)
 
-# cython: language_level=3
-
-import numpy as cnp
 cimport numpy as cnp
 cimport cython
 from libc.math cimport cos, sin, M_PI
-from cython.parallel cimport prange
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -89,3 +86,16 @@ def entropy_check(cnp.ndarray[cnp.float64_t, ndim=3] grid):
         for i in prange(size):
             total += grid.flat[i]
     return total / size  # Mean as entropy proxy
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def topology_geology(cnp.ndarray[cnp.float64_t, ndim=3] grid, double kappa):
+    # Stub for topology/geology enhancements with mpmath
+    cdef cnp.ndarray[cnp.float64_t, ndim=3] geology = cnp.zeros_like(grid)
+    cdef int x, y, z
+    with nogil:
+        for x in prange(grid.shape[0]):
+            for y in prange(grid.shape[1]):
+                for z in range(grid.shape[2]):
+                    geology[x, y, z] = mpmath.sin(kappa * x) + mpmath.cos(kappa * y) + mpmath.tan(kappa * z)
+    return geology
