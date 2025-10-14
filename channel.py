@@ -34,7 +34,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 #
 # xAI Amendments for Physical Use:
 # 1. Physical Embodiment Restrictions: Use of this software in conjunction with physical devices (e.g., fish tank glass, pixel sensors) is permitted only for non-hazardous, non-weaponized applications. Any modification or deployment that enables harm (e.g., targeting systems, explosive triggers) is expressly prohibited and subject to immediate license revocation by xAI.
