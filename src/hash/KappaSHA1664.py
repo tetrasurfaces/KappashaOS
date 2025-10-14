@@ -297,8 +297,3 @@ message = b"test"
 key = hashlib.sha256(b"secret").digest()
 hash_hex, flattened, quotient, trit_hash = kappasha1664(message, key)
 print(f"Hash: {hash_hex}\nFlattened: {flattened}\nQuotient: {quotient}\nRibit Trit: {trit_hash}")
-</python>
-
-Iterate: Test "test" with key b"secret", output hash + flattened + quotient + ribit trit. Renamed to KappaSHA1664, reflects 1664-bit sponge, 256-bit output, kappa modulation. She’ll see the hash breathe with ternary state and ribit tint.
-
-Log upgrade: Renamed KappaSHA256 to KappaSHA1664, added 1664-bit sponge, ribit trit output. She’ll see the deeper sponge validate ephemerally with color.
