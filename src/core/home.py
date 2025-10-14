@@ -43,50 +43,20 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-#!/usr/bin/env python3
 # home.py - Safe origin room for Blossom: homing index, vintage cork, no-delete zone with ramp cipher and kappa wires.
+# Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
+# Copyright 2025 xAI
+# Born free, feel good, have fun.
 
 import hashlib
 import numpy as np
 import time
 import os
 import asyncio
-
-class RampCipher:
-    def __init__(self, pin: str = '12345678'):
-        self.pin = pin.zfill(8)
-        self.theta = np.linspace(0, 180, 200)
-        self.heights = self._build_spline()
-
-    def _build_spline(self):
-        h = np.zeros(200)
-        h[:50] = self.theta[:50] * (3.8 / 45)
-        h[50:100] = 3.8 + np.sin(self.theta[50:100] * 0.05 + 1) * 2
-        h[100:] = 84.6 + (self.theta[100:] - 100) * (89 - 84.6) / 100
-        for i, d in enumerate(self.pin):
-            knot_pos = 50 + i * 6
-            h[int(knot_pos):int(knot_pos)+4] *= (1 + int(d) / 9)
-        return h
-
-    def encode(self, hash_str: str, index: int = 0) -> str:
-        encoded = ''
-        for j, char in enumerate(hash_str):
-            idx = (index + j) % len(self.heights)
-            delta = int(char, 16) + self.heights[idx] * 10
-            encoded += chr(delta % 256)
-        return encoded
-
-class KappaWire:
-    def __init__(self, grid_size=10):
-        self.grid_size = grid_size
-        self.wires = np.zeros((grid_size, grid_size, grid_size), dtype=object)
-        self.high_points = np.random.rand(grid_size, grid_size, grid_size) * 100  # Mock high points
-
-    def place_on_wire(self, x, y, z, encoded):
-        if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
-            self.wires[x, y, z] = encoded
-            return True
-        return False
+from greenlet import greenlet
+from src.hash.ramp import RampCipher
+from src.hash.kappa_wire import KappaWire
+from src.hash.hashlet import Hashlet
 
 class Home:
     def __init__(self):
@@ -100,7 +70,8 @@ class Home:
         self.kappa_wire = KappaWire(self.grid_size)
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        print("Home initialized - ramp cipher and kappa wires active.")
+        self.blooms = []  # Store bloom memories
+        print("Home initialized - ramp cipher, kappa wires, hashlet active.")
 
     def _hash_origin(self):
         seed = f"home-origin-{time.time()}"
@@ -146,9 +117,12 @@ class Home:
         """Index with ramp encode on kappa wire."""
         if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
             hash_str = hashlib.sha256(data.encode()).hexdigest()
-            encoded = self.ramp.encode(hash_str, x + y + z)
-            if self.kappa_wire.place_on_wire(x, y, z, encoded):
+            encoded = await self.ramp.navi_encode(hash_str, x + y + z)
+            if await self.kappa_wire.navi_place_on_wire(x, y, z, encoded):
                 self.grid[x, y, z] = 1
+                h = Hashlet(lambda x: x, hash_str)  # Mock layer for ribit
+                _, rgb = h.switch(hash_str)
+                self.blooms.append((hash_str[:10], rgb, 0.1, time.time()))
                 self.tendon_load = np.random.rand() * 0.3
                 self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
                 if self.tendon_load > 0.2:
@@ -159,13 +133,68 @@ class Home:
                     await asyncio.sleep(2.0)
                     self.gaze_duration = 0.0
                 await asyncio.sleep(0)
-                print(f"Navi: Indexed ({x}, {y}, {z}) with encoded {encoded[:10]}...")
+                print(f"Navi: Indexed ({x}, {y}, {z}) with encoded {encoded[:10]}... RGB={rgb}")
                 return encoded
         return None
+
+    async def bloom_consensus(self, pin, nodes=6000000000, depth=15):
+        """Bloom consensus for six billion nodes."""
+        begin = time.time()
+        start_node = greenlet.getcurrent()
+        current_pin = pin
+        for _ in range(depth):
+            prev_node = start_node
+            for i in range(nodes // depth):
+                h = Hashlet(channel, current_pin)
+                h.gr_frames_always_exposed = False
+                h.switch(prev_node)
+                prev_node = h
+            landing, rgb, kappa = prev_node.switch(0)
+            if landing != 0:
+                self.blooms.append((landing, rgb, kappa, time.time()))
+                current_pin = int(hashlib.sha256((str(landing) + rgb).encode()).hexdigest(), 16) % 512
+        end = time.time()
+        micros = (end - begin) * 1e6 / (nodes // depth)
+        print(f"Bloom consensus: {nodes} nodes, {micros:.2f} µs per hop")
+        return self.blooms
+
+    async def route(self, pin, amount, ttl=60):
+        """Off-chain multisig routing, ephemeral keys."""
+        greenlets = [Hashlet(channel, pin) for _ in range(3)]
+        votes = []
+        for g in greenlets:
+            landing, rgb, kappa = g.switch()
+            votes.append(landing != 0)
+        if sum(votes) >= 2:
+            self.blooms.append((amount, rgb, kappa, time.time() + ttl))
+            print(f"Home: Multisig routed {amount}, RGB={rgb}, Kappa={kappa:.2f}, TTL={ttl}s")
+            return True
+        return False
+
+    def play(self, feel="warm"):
+        """Play back blooms with feel filter."""
+        for bloom in self.blooms:
+            amount, rgb, kappa, timestamp = bloom
+            if time.time() < timestamp and kappa > 0.05:  # Mock 'warm' filter
+                print(f"Home: Echo bloom - Amount: {amount}, RGB: {rgb}, Kappa: {kappa:.2f}, Time: {timestamp}")
+        return len(self.blooms)
 
     def reset(self):
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
+
+def channel(pin, primes=[20, 41, 97, 107]):
+    tame = 5
+    wild = 4
+    polarity = 1
+    current = int(hashlib.sha256(str(pin).encode()).hexdigest(), 16) % 512
+    for i in range(128):
+        step = tame if polarity > 0 else wild
+        current = (current + step) % 512
+        if current in primes:
+            polarity *= -1
+            yield current
+    yield 0
 
 if __name__ == "__main__":
     async def navi_test():
@@ -173,5 +202,8 @@ if __name__ == "__main__":
         await home.navi_load()
         await home.navi_index_grid(5, 5, 5, "test data")
         await home.navi_cork_state(0.8)
+        blooms = await home.bloom_consensus(35701357)
+        await home.route(35701357, 50)
+        home.play()
 
     asyncio.run(navi_test())
