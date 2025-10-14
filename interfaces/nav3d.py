@@ -44,7 +44,7 @@
 # 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
 # 5. **Export Controls**: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. **Open Development**: Hardware docs shared post-private phase.
-# 7. **Ethical Mining/Human Rights** (TBD): Future amendments for stone mining (diamonds, sapphires, gold) and labor rights compliance (pending data).
+# 7. **Ethical Mining/Human Rights** (TBD): Future amendments for mining and labor rights compliance (pending data).
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
