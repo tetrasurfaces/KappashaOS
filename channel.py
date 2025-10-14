@@ -48,10 +48,17 @@
 
 # Born free, feel good, have fun.
 
+# channel.py - Interjacking without the chip. Thank you Skipjack, for all the fish.
+# Jacks geometry as floats, chained hashlets.
+# Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
+# Copyright 2025 xAI
+# Born free, feel good, have fun.
+
 import numpy as np
 import hashlib
 import time
 from greenlet import greenlet
+import pyperf
 
 class Hashlet(greenlet.Greenlet):
     def __init__(self, run, pin, *args, **kwargs):
@@ -59,7 +66,9 @@ class Hashlet(greenlet.Greenlet):
         self.pin = pin
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        print(f"Hashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
+        self.kappa_tilt = self._compute_kappa()
+        self.gr_frames_always_exposed = False  # Non-exposing for speed
+        print(f"Hashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}, Kappa={self.kappa_tilt:.2f}")
 
     def _compute_hash(self):
         data = f"{self.pin}:{time.time()}"
@@ -69,22 +78,24 @@ class Hashlet(greenlet.Greenlet):
         hash_int = int(self.hash_id, 16) % 0xFFFFFF
         return f"#{hash_int:06x}"
 
+    def _compute_kappa(self):
+        return np.sin(float(self.hash_id[:8], 16) / 0xFFFFFF) * 0.1
+
     def switch(self, *args, **kwargs):
         result = super().switch(*args, **kwargs)
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        return result, self.rgb_color
+        self.kappa_tilt = self._compute_kappa()
+        return result, self.rgb_color, self.kappa_tilt
 
 def channel(pin, primes=[20, 41, 97, 107]):
     tame = 5
     wild = 4
     polarity = 1
-    landings = []
     current = int(hashlib.sha256(str(pin).encode()).hexdigest(), 16) % 512
     for i in range(128):
         step = tame if polarity > 0 else wild
         current = (current + step) % 512
-        landings.append(current)
         if current in primes:
             polarity *= -1
             yield current
@@ -92,31 +103,39 @@ def channel(pin, primes=[20, 41, 97, 107]):
 
 def afford_curve(pin, num_thetas=64):
     h = Hashlet(channel, pin)
-    landings = []
     while True:
         try:
-            landing, rgb = h.switch()
-            landings.append(landing)
+            landing, rgb, kappa = h.switch()
             if landing != 0:
                 thetas = np.linspace(0, 2 * np.pi, num_thetas, dtype=np.float32)
-                return thetas.tobytes(), rgb  # Floats as bytes + ribit hex
+                return thetas.tobytes(), rgb, kappa
         except greenlet.GreenletExit:
             break
-    return b'', '#000000'
+    return b'', '#000000', 0.0
 
-def hashlet_jack(pin):
-    h = Hashlet(channel, pin)
-    while True:
-        try:
-            landing, rgb = h.switch()
-            yield landing, rgb
-        except greenlet.GreenletExit:
-            break
+def interjack_chain(pin, grids=2, chain_length=10000):
+    """Chain hashlets across grids, yield landing + rgb + kappa."""
+    begin = pyperf.perf_counter()
+    current_pin = pin
+    start_node = greenlet.getcurrent()
+    for _ in range(grids):
+        prev_node = start_node
+        for i in range(chain_length):
+            h = Hashlet(channel, current_pin)
+            h.gr_frames_always_exposed = False
+            h.switch(prev_node)
+            prev_node = h
+        landing, rgb, kappa = prev_node.switch(0)
+        if landing != 0:
+            yield landing, rgb, kappa
+            current_pin = int(hashlib.sha256((str(landing) + rgb).encode()).hexdigest(), 16) % 512
+    end = pyperf.perf_counter()
+    print(f"Chain {chain_length} hashlets: {(end - begin) * 1e6 / chain_length:.2f} µs per hop")
 
 # Test
 pin = 1234
-jack = hashlet_jack(pin)
+jack = interjack_chain(pin, grids=2)
 landings = list(jack)
-curve, rgb = afford_curve(pin)
-print(f"Landings: {landings[:5]}...")
-print(f"Curve bytes: {curve[:16]}... RGB: {rgb}" if curve else "No afford")
+curve, rgb, kappa = afford_curve(pin)
+print(f"Interjack landings: {landings[:5]}...")
+print(f"Curve bytes: {curve[:16]}... RGB: {rgb}, Kappa: {kappa:.2f}" if curve else "No afford")
