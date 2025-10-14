@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# channel.py - Interjacking without the chip. Thank you SkipJack, for all the fish.
-# Jacks geometry as floats.
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
