@@ -34,7 +34,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 #
 # xAI Amendments for Physical Use:
 # 1. **Physical Embodiment Restrictions**: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
