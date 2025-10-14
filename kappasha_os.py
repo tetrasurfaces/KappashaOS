@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+# kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, dojo training, and ethical balance.
+# CLI-driven, 3D DOS Navigator soul, safety-first, non-memory I/O.
+# Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -27,7 +31,7 @@
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
+# distributed under the License is distributed on an "AS IS" basis,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -43,14 +47,10 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-#!/usr/bin/env python3
-# kappasha_os.py - Kappa-tilted OS with rhombus voxel navigation, dojo training, and ethical balance.
-# CLI-driven, 3D DOS Navigator soul, safety-first, non-memory I/O.
-
 import simpy
 import numpy as np
 import asyncio
-from nav3d import Nav3D
+from interfaces.nav3d import Nav3D
 from kappa_sim import KappaSim
 from ghosthand import GhostHand
 from thought_curve import ThoughtCurve
@@ -66,6 +66,9 @@ from puf_grid import PufGrid
 from dojos import Dojo
 from meditate import whisper
 from double_diamond_balance import double_diamond_balance
+from kappasha256 import kappasha256
+from mom import MoM
+from loom_driver import Loom
 import kappasha_os_cython
 
 class KappaSynod:
@@ -127,6 +130,8 @@ class KappashaOS:
         self.curve = ThoughtCurve()
         self.synod = KappaSynod()
         self.dojo = Dojo()
+        self.mom = MoM()
+        self.loom = Loom()
         self.mesh_nodes = np.zeros((10, 10, 10), dtype=object)
         self.key = "secure_key"
         self.call_sign = "cone"
