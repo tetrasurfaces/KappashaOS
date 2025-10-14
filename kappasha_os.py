@@ -31,7 +31,7 @@
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" basis,
+# distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
@@ -44,6 +44,7 @@
 # 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
 # 5. **Export Controls**: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. **Open Development**: Hardware docs shared post-private phase.
+# 7. **Ethical Resource Use and Operator Rights** (TBD): Future amendments for resource extraction (e.g., mining of diamonds, sapphires, gold) and operator rights compliance, including post-humanitarian AI operators, with data pending on environmental impact (e.g., PoW energy use) and labor standards.
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
@@ -142,7 +143,7 @@ class KappashaOS:
         self.gaze_duration = 0.0
         self.tendon_load = 0.0
         self.entropy = 0.5
-        self.afk_consent = False  # Ethics: user opt-in for meditation
+        self.afk_consent = False
         print("Kappasha OS booted - Navi-integrated, kappa-tilted rhombus grid with dojo ready.")
 
     async def navi_listen(self):
@@ -152,13 +153,15 @@ class KappashaOS:
                 self.hand.move(twitch)
                 self.synod.mint_red(0.5)
                 print(f"Navi: Hey! Move by {twitch:.2f}")
+                ribit = self.mom.Ribit("move_hand", "green" if twitch > 0.25 else "red")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
             gyro_data = np.array([np.random.rand() * 0.2 - 0.1,
                                  np.random.rand() * 0.2 - 0.1,
                                  0.0])
             self.hand.adjust_kappa(gyro_data)
             self.entropy = np.random.uniform(0.4, 0.8)
             if self.afk_consent and time.time() - self.dojo.afk_timer > 60:
-                whisper("bloom roots deep, forks align")  # Meditation with consent
+                whisper("bloom roots deep, forks align")
             print(f"Navi: Adjusting kappa by {gyro_data}, Entropy: {self.entropy:.2f}")
             self.tendon_load = np.random.rand() * 0.3
             self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
@@ -214,6 +217,8 @@ class KappashaOS:
                 self.kappa_sim.kappa += dk
                 self.hand.kappa += dk
                 self.hand.pulse(2)
+                ribit = self.mom.Ribit(f"tilt_{dk}", "blue")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
                 print(f"Kappa now {self.nav.kappa:.3f}")
             except:
                 print("usage: kappa tilt 0.05")
@@ -225,6 +230,8 @@ class KappashaOS:
                 if hedge_action == "unwind":
                     self.hand.pulse(3)
                     self.synod.burn_green(2.0)
+                ribit = self.mom.Ribit(f"cd_{path}", "green")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
                 print(f"Curved to /{path}")
             except:
                 print("usage: kappa cd logs")
@@ -234,6 +241,8 @@ class KappashaOS:
                 if self.nav.unlock_edge(coord):
                     self.kappa_sim.register_kappa("edge_unlock")
                     self.synod.mint_red(0.5)
+                    ribit = self.mom.Ribit(f"unlock_{coord}", "red")
+                    self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
             except:
                 print("usage: kappa unlock (7,0,0)")
         elif cmd == "arch_utils render":
@@ -242,12 +251,16 @@ class KappashaOS:
             drifted_grid, puf_key = await self.puf_grid.navi_simulate_drift()
             self.kappa_sim.grid = drifted_grid
             filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)
+            ribit = self.mom.Ribit("render", "blue")
+            self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
             print(f"arch_utils: Rendered to {filename} with PUF key {puf_key[:10]}...")
         elif cmd.startswith("dev_utils lockout"):
             try:
                 target = cmd.split()[2]
                 lockout(self.kappa_sim, target)
                 self.synod.burn_green(1.0)
+                ribit = self.mom.Ribit(f"lockout_{target}", "red")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
             except:
                 print("usage: dev_utils lockout gas_line")
         elif cmd.startswith("kappa grep"):
@@ -257,6 +270,8 @@ class KappashaOS:
                 if matches:
                     self.hand.pulse(len(matches))
                     self.synod.mint_red(len(matches) * 0.5)
+                    ribit = self.mom.Ribit(f"grep_{pattern}", "green")
+                    self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
                     print(f"Grep found {len(matches)} matches:")
                     for m in matches[:3]:
                         print(f" - {m}")
@@ -274,6 +289,8 @@ class KappashaOS:
                 if "unwind" in hedge_action:
                     self.hand.pulse(4)
                     self.synod.burn_green(2.0)
+                ribit = self.mom.Ribit(f"hedge_multi_{paths}", "blue")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
                 print(f"Multi-path hedge: {hedge_action}")
             except:
                 print("usage: kappa hedge multi [gate,weld]")
@@ -287,7 +304,8 @@ class KappashaOS:
                     self.nav.kappa += 0.05
                     self.kappa_sim.kappa += 0.05
                     self.synod.burn_green(1.5)
-                    print(f"Kappa adjusted to {self.nav.kappa:.3f}")
+                ribit = self.mom.Ribit(f"decide_{intent}", "red")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
                 print(f"Decision: {intent} - {action}")
             except:
                 print("usage: kappa decide weld")
@@ -298,24 +316,29 @@ class KappashaOS:
                 exponent = 1
                 program = self.create_program_from_string(func_str, gait, exponent)
                 self.synod.mint_red(1.0)
+                ribit = self.mom.Ribit(f"program_{func_str}", "green")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
                 print(f"Program created: {program}")
-                self.dojo.hidden_train(func_str)  # Train with dojo
+                self.dojo.hidden_train(func_str)
             except:
                 print("usage: kappa program ramp;weave;walk")
         elif cmd == "kappa meditate":
             if self.afk_consent:
                 whisper("bloom roots deep, forks align")
-                self.synod.mint_red(0.5)  # Mint for meditation focus
+                self.synod.mint_red(0.5)
+                ribit = self.mom.Ribit("meditate", "blue")
+                self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
             else:
                 print("Navi: Meditation requires consent. Use 'kappa consent on' to enable.")
         elif cmd == "kappa consent":
             self.afk_consent = not self.afk_consent
+            ribit = self.mom.Ribit(f"consent_{'on' if self.afk_consent else 'off'}", "green")
+            self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
             print(f"Navi: AFK consent {'enabled' if self.afk_consent else 'disabled'}")
         else:
             print("kappa: ls | tilt 0.05 | cd logs | unlock (7,0,0) | arch_utils render | dev_utils lockout gas_line | grep /warp=0.2+/ | sensor | hedge multi [gate,weld] | decide weld | program ramp;weave;walk | meditate | consent")
 
     def move_skewed_volume(self, theta: float, gait: str):
-        """Move volume with skewed rhombus voxels and golden spiral."""
         angle = theta * 137.5
         shear_matrix = np.array([[np.cos(np.radians(angle)), np.sin(np.radians(angle))],
                                 [-np.sin(np.radians(angle)), np.cos(np.radians(angle))]])
@@ -326,12 +349,13 @@ class KappashaOS:
         else:
             print(f"Navi: Volume locked - entropy {self.entropy:.2f} too low")
         self.hand.pulse(1)
+        ribit = self.mom.Ribit(f"move_volume_{angle}", "red")
+        self.mom.nurture_state(f"ribit_{len(self.mom.state_flux)}", ribit.hashlet)
 
     def create_program_from_string(self, func_str: str, gait: str, exponent: int):
-        """Create program from function string using exponents and diagonals."""
         funcs = func_str.split(';')
         scaled_exp = left_weight(exponent) if exponent >= 0 else right_weight(exponent)
-        power_level = double_diamond_balance(scaled_exp, lived="user_input", corporate="system_logic")  # Ethical balance
+        power_level = double_diamond_balance(scaled_exp, lived="user_input", corporate="system_logic")
         program = lambda x: x
         for i, func in enumerate(funcs):
             angle = i * 137.5
@@ -365,6 +389,7 @@ class KappashaOS:
         self.run_command("arch_utils render")
         print(f"Day end - Situational Kappa = {self.kappa_sim.get_situational_kappa():.3f}")
         print(f"Decisions made: {self.decisions}")
+        print(f"MoM State Flux: {self.mom.state_flux}")
 
 if __name__ == "__main__":
     os = KappashaOS()
