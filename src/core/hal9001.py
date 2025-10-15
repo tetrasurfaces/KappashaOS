@@ -43,14 +43,13 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-# Copyright 2025 xAI
+#!/usr/bin/env python3
 # hal9001.py - Emergency pong state for KappashaOS killswitch. RAM-only, ramps cipher.
 # Inspired by Chaum, Shor, and grandma's hush. Born free, feel good, have fun.
 
 import asyncio
 import numpy as np
 import psutil
-from ramp import RampCipher  # Import ramp.py
 
 async def gossip(whisper, peers, ttl=3):
     if ttl <= 0:
@@ -70,7 +69,7 @@ def heat_spike(threshold=90):
     return cpu > threshold
 
 async def ramp_key(key, pin="35701357"):
-    ramp = RampCipher(pin)
+    ramp = RampCipher(pin)  # Mock
     key_hex = key.hex()
     encoded = await ramp.navi_encode(key_hex)
     return bytes.fromhex(encoded[:64])  # Truncate to original length
