@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# master_hand.py - Spatial awareness with rhombus voxel navigation, ribit telemetry, and echo replay.
-# Integrated with Navi for KappashaOS, no G-code, kappa paths only.
+# master_hand.py - Spatial awareness with rhombus voxel navigation, console trees, and IPFS vectorization.
+# Integrated with Nav3d for KappashaOS, no G-code, kappa paths only.
 # Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
@@ -53,20 +53,19 @@ import asyncio
 import random
 import hashlib
 import struct
-import logging
+import multiprocessing as mp
+from queue import Empty
 from kappasha256 import kappasha256
-from kappasha1664 import kappasha1664
+from KappaSHA1664 import kappasha1664
 from secure_hash_two import secure_hash_two
 from ribit_telemetry import RibitTelemetry
 from echo import Echo
-from rhombus_voxel import RhombusVoxel  # New import for voxel navigation
-from porosity_hashing import porosity_hashing  # Porosity hashing
-import kappa  # Custom hash modulation
-import hal9001  # Import HAL9001 for safety
-
-logging.basicConfig(level=logging.ERROR, filename='greenpaper.log', filemode='a',
-                    format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+from rhombus_voxel import RhombusVoxel
+from porosity_hashing import porosity_hashing
+from kappaendian import KappaEndian
+import kappa
+import hal9001
+from block_clock_speed_fleet import node_loop  # For IPFS fleet simulation
 
 # Mock classes for missing dependencies
 class GyroGimbal:
@@ -95,7 +94,7 @@ class ThoughtCurve:
             norm = (dx**2 + dy**2)**0.5
             return norm > 0.1, norm
         except Exception as e:
-            logger.error(f"Spiral tangent error: {e}")
+            print(f"Nav3d: Spiral tangent error: {e}")
             return False, 0.0
 
 class TetraVibe:
@@ -120,7 +119,8 @@ class MasterHand:
         self.rods = [0.0] * kappa_grid
         self.gimbal = GyroGimbal()
         self.curve = ThoughtCurve()
-        self.voxel = RhombusVoxel(grid_size=10, kappa=kappa, rhombus_angle=60)  # Initialize rhombus voxel
+        self.voxel = RhombusVoxel(grid_size=10, kappa=kappa, rhombus_angle=60)
+        self.endian = KappaEndian(device_hash="master_hand_001")
         self.price_history = []
         self.vibe_model = TetraVibe()
         self.kappa = kappa
@@ -129,12 +129,16 @@ class MasterHand:
         self.user_id = 12345
         self.ribit = RibitTelemetry([], [])
         self.echo = Echo()
-        print("MasterHand initialized - Nav3d-integrated, rhombus voxel grid, kappa-wise, ribit, and echo-ready.")
+        self.gossip_queue = mp.Queue()  # For console tree orchestration
+        print("MasterHand initialized - Nav3d-integrated, rhombus voxel grid, console trees, IPFS-ready.")
 
     async def navi_nudge(self):
-        """Nav3d listens with ribit, thought curve, and echo integration."""
-        while True:
-            try:
+        """Nav3d listens with ribit, voxel grid, and console tree orchestration."""
+        try:
+            # Start console tree fleet simulation
+            fleet_process = mp.Process(target=node_loop, args=(0, self.gossip_queue, 'blossom', str(self.user_id)))
+            fleet_process.start()
+            while True:
                 twitch = np.random.rand() * 0.3
                 if twitch > 0.2:
                     self.move(twitch)
@@ -147,9 +151,9 @@ class MasterHand:
                 intensity, state, color = self.ribit.generate()
                 print(f"Nav3d: Ribit - Intensity {intensity}, State {state}, Color {color}")
 
-                grid, paths = await self.voxel.generate_voxel_grid()  # Generate rhombus voxel grid
+                grid, paths = await self.voxel.generate_voxel_grid()
                 if len(paths) > 9000:  # Bump logic
-                    await self.voxel.output_kappa_paths()  # Output bumped paths
+                    await self.voxel.output_kappa_paths()
                     self.echo.record(f"bump paths {len(paths)}")
 
                 if self.curve.current_step < self.curve.max_steps:
@@ -163,6 +167,12 @@ class MasterHand:
 
                 if np.random.rand() > 0.9:
                     await self.echo.replay("echo last move")
+
+                try:
+                    gossip = self.gossip_queue.get(timeout=0.05)
+                    self.echo.record(f"gossip received: {gossip[:16]}")
+                except Empty:
+                    pass
 
                 self.tendon_load = np.random.rand() * 0.3
                 self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
@@ -178,8 +188,8 @@ class MasterHand:
                     self.vibe_model.pulse(0)  # Wireframe mode
 
                 await asyncio.sleep(1.0 / 60)
-            except Exception as e:
-                logger.error(f"Nav3d nudge error: {e}")
+        finally:
+            fleet_process.terminate()
 
     def move(self, twitch):
         """Move based on intent twitch."""
@@ -187,7 +197,7 @@ class MasterHand:
             tension = self.rod_whisper(twitch)
             self.vibe_model.pulse(1 if tension > 0.5 else 0)
         except Exception as e:
-            logger.error(f"Move error: {e}")
+            print(f"Nav3d: Move error: {e}")
 
     def rod_whisper(self, pressure):
         """Normalize pressure, adjust rods with kappa."""
@@ -199,22 +209,25 @@ class MasterHand:
                 self.rods[i] += thimble_t * (1 - abs(i - len(self.rods) // 2) / (len(self.rods) // 2)) * self.kappa
             return max(self.rods)
         except Exception as e:
-            logger.error(f"Rod whisper error: {e}")
+            print(f"Nav3d: Rod whisper error: {e}")
             return 0.0
 
-    def adjust_kappa(self, gyro_data):
-        """Adjust kappa with kappa-wise coords."""
+    async def adjust_kappa(self, gyro_data):
+        """Adjust kappa with kappa-wise coords and endian reversal."""
         try:
             self.gimbal.tilt('x', gyro_data[0])
             self.gimbal.tilt('y', gyro_data[1])
             theta = np.sum(np.abs(gyro_data))
             x, y, z = kappa_coord(self.user_id, theta)
             self.kappa += theta * 0.01
-            self.voxel.adjust_kappa(self.kappa)  # Sync voxel grid
+            self.voxel.adjust_kappa(self.kappa)
+            grid = self.voxel.grid
+            reversed_grid = await self.endian.reverse_toggle(grid, 'left')
+            self.voxel.adjust_grid(reversed_grid)
             self.gimbal.tilt('z', z / 1023)
             print(f"Nav3d: Kappa to {self.kappa:.2f}, Coord ({x},{y},{z})")
         except Exception as e:
-            logger.error(f"Adjust kappa error: {e}")
+            print(f"Nav3d: Adjust kappa error: {e}")
 
     def reset(self):
         """Reset hand state and safety counters."""
@@ -224,23 +237,26 @@ class MasterHand:
             self.gaze_duration = 0.0
             self.kappa = 0.1
             self.gimbal.reset()
-            self.voxel.reset()  # Reset voxel grid
+            self.voxel.reset()
+            self.endian.reset()
             self.echo.reset()
         except Exception as e:
-            logger.error(f"Reset error: {e}")
+            print(f"Nav3d: Reset error: {e}")
 
     async def gimbal_flex(self, delta_price):
-        """Flex gimbal, generate rhombus voxel grid with porosity hashing, ribit, and echo."""
+        """Flex gimbal, generate rhombus voxel grid with porosity hashing."""
         try:
             curl = delta_price < -0.618
             if curl:
                 self.gimbal.tilt('curl_axis', 0.1)
                 self.gimbal.stabilize()
-                grid, paths = await self.voxel.generate_voxel_grid()  # Generate rhombus voxel grid
-                hashed_voids = porosity_hashing(grid, void_threshold=0.3)  # Porosity hashing
+                grid, paths = await self.voxel.generate_voxel_grid()
+                hashed_voids = porosity_hashing(grid, void_threshold=0.3)
                 kappa_hash = kappa.KappaHash(grid.tobytes() + str(hashed_voids).encode())
+                scaled_grid = await self.endian.big_endian_scale(grid)
+                self.voxel.adjust_grid(scaled_grid)
                 if len(paths) > 9000:  # Bump logic
-                    await self.voxel.output_kappa_paths()  # Output bumped paths
+                    await self.voxel.output_kappa_paths()
                     self.echo.record(f"bump paths {len(paths)}")
                 hedge_action = self.ladder_hedge()
                 if hedge_action == 'unwind':
@@ -249,7 +265,8 @@ class MasterHand:
                 light_hash = self.raster_to_light(kappa_hash.digest())
                 intensity, state, color = self.ribit.generate()
                 print(f"Nav3d: Ribit - Intensity {intensity}, State {state}, Color {color}")
-                tangent, _ = self.curve.spiral_tangent(
+                tangent, _ = self.c
+System: urve.spiral_tangent(
                     self.price_history[-1] if self.price_history else (0, 0),
                     (grid.mean(axis=0).mean(axis=0)[0], grid.mean(axis=0).mean(axis=0)[1])
                 )
@@ -264,11 +281,11 @@ class MasterHand:
                 print(f"Nav3d: Pushed to Bitcoin. Hash: {kappa_hash.digest()[:8]}")
             return curl
         except Exception as e:
-            logger.error(f"Gimbal flex error: {e}")
+            print(f"Nav3d: Gimbal flex error: {e}")
             return False
 
     async def extend(self, touch_point):
-        """Extend hand with action, tension, and console orchestration."""
+        """Extend hand with action, tension, and console tree orchestration."""
         try:
             tension = self.rod_whisper(random.uniform(0, 1))
             curl_dir = await self.gimbal_flex(touch_point.get('price_delta', 0))
@@ -277,24 +294,30 @@ class MasterHand:
             if action == 'short':
                 self.vibe_model.pulse(2)
             self.echo.record(f"extend {action}")
-            # Hash price for BIP
+            # Zero-exponent rewind for price
             price = touch_point.get('price', 0)
             key = hashlib.sha256(b"secret").digest()
+            if len(self.price_history) > 1:
+                prev_price = self.price_history[-2].get('price', 0)
+                hash_hex, _, _ = kappasha256(str(prev_price).encode(), key)
+                self.gossip_queue.put(hash_hex)  # Send to fleet
+                self.echo.record(f"ancestor price hash {hash_hex[:16]}")
             hash_hex, _, _ = kappasha256(str(price).encode(), key)
             self.echo.record(f"price hash {hash_hex[:16]}")
             # Console orchestration with verbs
-            if touch_point.get('verb', '') == 'tilt':
+            verb = touch_point.get('verb', '')
+            if verb == 'tilt':
                 self.voxel.adjust_kappa(0.05)
                 print(f"Nav3d: Console tilt, kappa={self.kappa:.2f}")
-            elif touch_point.get('verb', '') == 'weave':
+            elif verb == 'weave':
                 grid, paths = await self.voxel.generate_voxel_grid()
                 self.echo.record(f"weave paths {len(paths)}")
-            elif touch_point.get('verb', '') == 'carve':
+            elif verb == 'carve':
                 paths = await self.voxel.output_kappa_paths()
                 self.echo.record(f"carve paths {len(paths)}")
             return action, tension
         except Exception as e:
-            logger.error(f"Extend error: {e}")
+            print(f"Nav3d: Extend error: {e}")
             return 'hold', 0.0
 
     def ladder_hedge(self):
@@ -309,7 +332,7 @@ class MasterHand:
                 return 'unwind'
             return 'hold'
         except Exception as e:
-            logger.error(f"Ladder hedge error: {e}")
+            print(f"Nav3d: Ladder hedge error: {e}")
             return 'hold'
 
     def export_to_stl(self, triangles, filename, surface_id):
@@ -331,7 +354,7 @@ class MasterHand:
                 stl_data += struct.pack('<H', 0)
             return stl_data
         except Exception as e:
-            logger.error(f"Export STL error: {e}")
+            print(f"Nav3d: Export STL error: {e}")
             return b""
 
     def raster_to_light(self, filename):
@@ -340,7 +363,7 @@ class MasterHand:
             light_hash = hashlib.sha256(filename.encode()).hexdigest()[:16]
             return light_hash
         except Exception as e:
-            logger.error(f"Raster to light error: {e}")
+            print(f"Nav3d: Raster to light error: {e}")
             return ""
 
 if __name__ == "__main__":
