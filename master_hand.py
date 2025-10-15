@@ -60,7 +60,7 @@ from secure_hash_two import secure_hash_two
 from ribit_telemetry import RibitTelemetry
 from echo import Echo
 from rhombus_voxel import RhombusVoxel  # New import for voxel navigation
-from porosity_hashing import porosity_hashing  # Beau's porosity hashing
+from porosity_hashing import porosity_hashing  # Porosity hashing
 import kappa  # Custom hash modulation
 import hal9001  # Import HAL9001 for safety
 
