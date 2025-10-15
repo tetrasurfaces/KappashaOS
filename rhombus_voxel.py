@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # rhombus_voxel.py - Rhombus voxel grid for KappashaOS navigation and machine output.
-# Integrates porosity hashing for material sims, kappa paths, no G-code.
+# Integrates optimized porosity hashing for material sims, kappa paths, no G-code.
 # Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
@@ -42,7 +42,7 @@
 # 4. Revocability: xAI may revoke for unethical use (e.g., surveillance).
 # 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. Open Development: Hardware docs shared post-private phase.
-# 7. Ethical Resource Use and Operator Rights: No machine code output (e.g., kappa paths) without breath consent; decay signals at 11 hours (8 for bumps).
+# 7. Color Consent: No signal may change hue without explicit user intent (e.g., heartbeat sync or verbal confirmation).
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 #
@@ -53,16 +53,16 @@
 import numpy as np
 import hashlib
 import asyncio
-import kappa  # Custom hash modulation
-import hal9001  # Import HAL9001 for safety
-from porosity_hashing import porosity_hashing  # Beau's porosity hashing
+import kappa
+import hal9001
+from porosity_hashing import porosity_hashing
 
 class RhombusVoxel:
     def __init__(self, grid_size=10, kappa=0.1, rhombus_angle=60):
         self.grid_size = grid_size
         self.kappa = kappa
         self.rhombus_angle = rhombus_angle
-        self.grid = np.zeros((grid_size, grid_size, grid_size), dtype=np.float32)
+        self.grid = np.zeros((grid_size, grid_size, grid_size), dtype=np.uint8)  # Optimized to uint8
         self.paths = []
         self.breath_rate = 12.0  # Mock breath rate
         print(f"RhombusVoxel initialized: {grid_size}x{grid_size}x{grid_size}, kappa={kappa:.2f}, angle={rhombus_angle}°")
@@ -71,7 +71,7 @@ class RhombusVoxel:
         """Adjust kappa tilt for voxel grid."""
         try:
             self.kappa += dk
-            self.grid = np.sin(self.grid * self.kappa)  # Update grid with kappa tilt
+            self.grid = np.sin(self.grid * self.kappa).astype(np.uint8)  # Update with uint8
             print(f"Nav3d: Kappa adjusted to {self.kappa:.2f}")
         except Exception as e:
             print(f"Nav3d: Kappa adjust error: {e}")
@@ -79,13 +79,13 @@ class RhombusVoxel:
     def adjust_grid(self, input_grid):
         """Update voxel grid with new data."""
         try:
-            self.grid = input_grid[:self.grid_size, :self.grid_size, :self.grid_size]
+            self.grid = input_grid[:self.grid_size, :self.grid_size, :self.grid_size].astype(np.uint8)
             print(f"Nav3d: Grid updated, mean={np.mean(self.grid):.2f}")
         except Exception as e:
             print(f"Nav3d: Grid adjust error: {e}")
 
     async def generate_voxel_grid(self):
-        """Generate rhombohedral voxel grid with porosity hashing and kappa tilt."""
+        """Generate rhombohedral voxel grid with optimized porosity hashing and kappa tilt."""
         try:
             self.breath_rate = await XApi.get_breath_rate()  # Mock API
             if self.breath_rate > 20:
@@ -107,12 +107,15 @@ class RhombusVoxel:
             z = np.linspace(-1, 1, self.grid_size)
             X, Y, Z = np.meshgrid(x, y, z)
             self.grid = np.sin(X * Y * Z * self.kappa) * 0.3
-            self.grid = np.tensordot(self.grid, shear_matrix, axes=0).mean(axis=-1)
+            self.grid = np.tensordot(self.grid, shear_matrix, axes=0).mean(axis=-1).astype(np.uint8)
 
-            # Porosity hashing for voids
-            hashed_voids = porosity_hashing(self.grid, void_threshold=0.3)
+            # Optimized porosity hashing with parallel numpy
+            threshold = 0.3 + (self.breath_rate - 12.0) * 0.01  # Breath-modulated threshold
+            flat_grid = self.grid.ravel()
+            mask = flat_grid > threshold
+            hashed_voids = porosity_hashing(flat_grid[mask], void_threshold=threshold, parallel=True)
             self.paths = [(X[i, j, k], Y[i, j, k], Z[i, j, k]) for i in range(self.grid_size)
-                          for j in range(self.grid_size) for k in range(self.grid_size) if self.grid[i, j, k] > 0]
+                          for j in range(self.grid_size) for k in range(self.grid_size) if mask[i * self.grid_size * self.grid_size + j * self.grid_size + k]]
             kappa_hash = kappa.KappaHash(self.grid.tobytes() + str(hashed_voids).encode())
             print(f"Nav3d: Rhombus voxel grid generated: {self.grid.shape}, {len(self.paths)} paths, voids={len(hashed_voids)}, hash={kappa_hash.digest()[:8]}")
             return self.grid, self.paths
@@ -140,6 +143,16 @@ class RhombusVoxel:
         except Exception as e:
             print(f"Nav3d: Path output error: {e}")
             return []
+
+    def reset(self):
+        """Reset voxel grid state."""
+        try:
+            self.grid = np.zeros((self.grid_size, self.grid_size, self.grid_size), dtype=np.uint8)
+            self.paths = []
+            self.kappa = 0.1
+            print("Nav3d: RhombusVoxel reset")
+        except Exception as e:
+            print(f"Nav3d: Reset error: {e}")
 
 if __name__ == "__main__":
     voxel = RhombusVoxel()
