@@ -69,4 +69,3 @@ if __name__ == "__main__":
     print(f"Pi-wise: {pi_wise(light_wise(10, 0.15))}")
     print(f"Time-wise: {time_wise(10, 300)}")  # 0.3s, green
     print(f"Wave-wise: {wave_wise(8000)}")  # Fast wave
-```
