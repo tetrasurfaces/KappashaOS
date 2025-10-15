@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# master_hand.py - Spatial awareness with rhombus voxel navigation, console trees, and IPFS vectorization.
+# master_hand.py - Spatial awareness with rhombus voxel navigation, console trees, IPFS fleet, and zero-exponent rewind.
 # Integrated with Nav3d for KappashaOS, no G-code, kappa paths only.
 # Copyright 2025 xAI
 # Dual License:
@@ -65,7 +65,7 @@ from porosity_hashing import porosity_hashing
 from kappaendian import KappaEndian
 import kappa
 import hal9001
-from block_clock_speed_fleet import node_loop  # For IPFS fleet simulation
+from blockclockspeed_fleet import node_loop
 
 # Mock classes for missing dependencies
 class GyroGimbal:
@@ -129,14 +129,14 @@ class MasterHand:
         self.user_id = 12345
         self.ribit = RibitTelemetry([], [])
         self.echo = Echo()
-        self.gossip_queue = mp.Queue()  # For console tree orchestration
-        print("MasterHand initialized - Nav3d-integrated, rhombus voxel grid, console trees, IPFS-ready.")
+        self.gossip_queue = mp.Queue()  # For console tree and fleet orchestration
+        print("MasterHand initialized - Nav3d-integrated, rhombus voxel grid, console trees, IPFS fleet-ready.")
 
     async def navi_nudge(self):
-        """Nav3d listens with ribit, voxel grid, and console tree orchestration."""
+        """Nav3d listens with ribit, voxel grid, and fleet orchestration."""
         try:
-            # Start console tree fleet simulation
-            fleet_process = mp.Process(target=node_loop, args=(0, self.gossip_queue, 'blossom', str(self.user_id)))
+            # Start 256-node fleet simulation
+            fleet_process = mp.Process(target=node_loop, args=(0, self.gossip_queue, str(self.user_id), 'blossom', 256))
             fleet_process.start()
             while True:
                 twitch = np.random.rand() * 0.3
@@ -146,7 +146,7 @@ class MasterHand:
                     print(f"Nav3d: Hey! Move by {twitch:.2f}")
 
                 gyro_data = np.array([np.random.rand() * 0.2 - 0.1, np.random.rand() * 0.2 - 0.1, 0.0])
-                self.adjust_kappa(gyro_data)
+                await self.adjust_kappa(gyro_data)
 
                 intensity, state, color = self.ribit.generate()
                 print(f"Nav3d: Ribit - Intensity {intensity}, State {state}, Color {color}")
@@ -165,9 +165,6 @@ class MasterHand:
                         self.vibe_model.pulse(3)
                         print("Nav3d: Path hedge - unwind detected")
 
-                if np.random.rand() > 0.9:
-                    await self.echo.replay("echo last move")
-
                 try:
                     gossip = self.gossip_queue.get(timeout=0.05)
                     self.echo.record(f"gossip received: {gossip[:16]}")
@@ -185,7 +182,7 @@ class MasterHand:
                     self.gaze_duration = 0.0
                 if hal9001.heat_spike():
                     print("Nav3d: Hush—dropping to wireframe.")
-                    self.vibe_model.pulse(0)  # Wireframe mode
+                    self.vibe_model.pulse(0)
 
                 await asyncio.sleep(1.0 / 60)
         finally:
@@ -265,8 +262,7 @@ class MasterHand:
                 light_hash = self.raster_to_light(kappa_hash.digest())
                 intensity, state, color = self.ribit.generate()
                 print(f"Nav3d: Ribit - Intensity {intensity}, State {state}, Color {color}")
-                tangent, _ = self.c
-System: urve.spiral_tangent(
+                tangent, _ = self.curve.spiral_tangent(
                     self.price_history[-1] if self.price_history else (0, 0),
                     (grid.mean(axis=0).mean(axis=0)[0], grid.mean(axis=0).mean(axis=0)[1])
                 )
