@@ -65,8 +65,6 @@ class RibitTelemetry:
         while True:
             intensity, state, color = self.generate()
             print(f"Navi: Ribit - Intensity {intensity}, State {state}, Color {color}")
-
-            # Safety monitoring
             self.tendon_load = np.random.rand() * 0.3
             self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
             if self.tendon_load > 0.2:
@@ -76,15 +74,14 @@ class RibitTelemetry:
                 print("RibitTelemetry: Warning - Excessive gaze. Pausing.")
                 await asyncio.sleep(2.0)
                 self.gaze_duration = 0.0
-
             await asyncio.sleep(1.0 / 60)
 
     def generate(self):
         """Generate mock ribit telemetry data."""
         coord = self.coords[np.random.randint(len(self.coords))]
         entropy = self.entropies[np.random.randint(len(self.entropies))]
-        intensity = np.random.randint(0, 255)  # Mock intensity
-        state = np.random.randint(0, 7)       # Mock state (0-6)
+        intensity = np.random.randint(0, 255)
+        state = np.random.randint(0, 7)
         color = ['orange', 'yellow', 'green', 'blue', 'indigo', 'violet'][state]
         return intensity, state, color
 
@@ -108,4 +105,4 @@ if __name__ == "__main__":
     coords = [[0.4, 0.2, 0.1], [-0.3, -0.3, 0.2], [0.4, -0.3, 0.3]]
     entropies = [50, 150, 80]
     ribit = RibitTelemetry(coords, entropies)
-    asyncio.run(ribit.navi_generate())  # Test with Navi loop
+    asyncio.run(ribit.navi_generate())
