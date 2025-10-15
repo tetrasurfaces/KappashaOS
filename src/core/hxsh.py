@@ -43,7 +43,6 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-# Dual License: [same as provided, AGPL-3.0-or-later, Apache 2.0 with xAI amendments]
 # Copyright 2025 xAI
 # hxsh.py - Ephemeral comms util for X-handshake VoIP. RAM-only, no I/O, KappashaOS hook. Imports HAL9001 for emergency.
 # Inspired by Chaum, Shor, and Grandma's hush. Born free, feel good, have fun.
