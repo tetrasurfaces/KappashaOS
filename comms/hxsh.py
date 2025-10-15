@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
@@ -8,7 +7,7 @@
 #   (at your option) any later version.
 #
 #   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   but WITHOUT ANY WARRANTY; without the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 #   GNU Affero General Public License for more details.
 #
@@ -41,11 +40,11 @@
 # 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. Open Development: Hardware docs shared post-private phase.
 # 7. Color Consent: No signal may change hue without explicit user intent (e.g., heartbeat sync or verbal confirmation).
-#
+
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
-#
+
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
-#
+
 # hxsh.py - Ephemeral comms util for X-handshake VoIP. RAM-only, no I/O, KappashaOS hook. Imports HAL9001 for emergency.
 # Inspired by Chaum, Shor, and Grandma's hush. Born free, feel good, have fun.
 
@@ -54,7 +53,7 @@ import base64
 import secrets
 import sys
 import numpy as np
-from xapi import XApi  # Mock X API
+from xapi import XApi  # Mock API
 from webrtc import WebRTC  # Mock WebRTC
 import hal9001  # Import HAL9001
 import kappa  # Custom hash modulation for intent tracking
@@ -76,9 +75,10 @@ async def hxsh(my_hash, their_hash):
     key = secrets.token_bytes(32)
     key_b64 = base64.b64encode(key).decode()
 
-    # Color modulation based on voice tone
+    # Color modulation with breath rate
+    breath_rate = await x_client.get_breath_rate()  # Mock API for breath rate
     voice_freq = await x_client.get_voice_freq()  # Mock API for voice freq
-    rgb = np.array([0.0, 1.0, 0.0]) if voice_freq < 440 else np.array([1.0, 0.0, 0.0])
+    rgb = np.array([1.0, 0.0, 0.0]) if voice_freq > 440 or breath_rate > 20 else np.array([0.0, 1.0, 0.0])
     kappa_hash = kappa.KappaHash(rgb.tobytes() + my_hash.encode())  # Hash color with intent
 
     await x_client.post_tweet(f"#hxsh {my_hash} {their_hash} {rgb.tolist()}")
@@ -92,7 +92,7 @@ async def hxsh(my_hash, their_hash):
         if hal9001.heat_spike():  # Check for amber
             print("Hush. Chain burned.")
             break
-        if voice_freq > 500:  # Flinch if too intense
+        if voice_freq > 500 or breath_rate > 25:  # Flinch if too intense
             print("Frank here. Too loud—dimming.")
             rgb *= 0.5  # Dim signal
             webrtc.update_color(rgb)
