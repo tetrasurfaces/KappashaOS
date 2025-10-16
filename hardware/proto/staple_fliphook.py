@@ -45,8 +45,8 @@
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
 #!/usr/bin/env python3
-# staple_stack.py - TildeVerbstack for KappashaOS
-# Stacks telehashes into stacks (lenses), etches staples for program recall, watercolor bleed
+# staple_fliphook.py - StaplefliphookHashlet for KappashaOS
+# Stacks telehashes into fliphooks, etches staples for program recall, watercolor bleed
 # Integrated with MiracleTree, RhombusVoxel, INK-Flux, EtcherSketcher, IPFS
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
@@ -57,7 +57,7 @@ import cv2
 import hashlib
 import math
 from greenlet import greenlet
-from typing import Tuple, Optional, List
+from typing import Tuple, Optional
 import asyncio
 import ipfshttpclient
 
@@ -112,7 +112,7 @@ class MiracleTree:
         """Return current Merkle root."""
         return self.nodes[self.root]["hash"] if self.root else ""
 
-class TildeVerbstack(greenlet):
+class StaplefliphookHashlet(greenlet):
     def __init__(self, run, kappa: float = 1.2, theta: float = 137.5):
         """Initialize with Fibonacci spiral, Platonic tetra grid, Merkle tree, IPFS."""
         super().__init__(run)
@@ -131,18 +131,8 @@ class TildeVerbstack(greenlet):
             "W": "wave", "S": "string", "A": "attention", "D": "return",
             "E": "execute", "R": "reload", "~tilt": "~tilt", "~swirl": "~swirl"
         }
-        self.non_hash_verbs = [
-            ("~wave", "loosen grid with sine"),
-            ("~string", "commit image mean to grid"),
-            ("~attention", "nudge kappa with tilt"),
-            ("~return", "reset grid to zero"),
-            ("~execute", "run hash and etch staple"),
-            ("~reload", "reset kappa and staples"),
-            ("~tilt", "rotate grid 137.5°"),
-            ("~swirl", "recompute Fibonacci laps")
-        ]
         self.staples = []  # Programmatic pins
-        print(f"TildeVerbstack init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
+        print(f"StaplefliphookHashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
 
     def _compute_hash(self) -> str:
         """Compute SHA256 hash with object ID and random seed."""
@@ -238,58 +228,46 @@ class TildeVerbstack(greenlet):
             print(f"Nav3d: Invalid command {command}. Use: {list(self.commands.keys())}")
             return self.tetra_grid, ""
         action = self.commands[command]
-        if action in [verb for verb, _ in self.non_hash_verbs]:
-            if action == "wave":  # W
-                self.tetra_grid = np.sin(self.tetra_grid * self.kappa).astype(np.float32)
-            elif action == "string":  # S
-                self.tetra_grid = tf.reduce_mean(image, axis=[1,2]).numpy().reshape(4, 4, 1)
-            elif action == "attention":  # A
-                self.kappa += tilt * 0.1
-                self.tetra_grid = np.cos(self.tetra_grid * self.kappa).astype(np.float32)
-            elif action == "return":  # D
-                self.tetra_grid = np.zeros((4, 4, 4))
-            elif action == "execute":  # E
-                spiral = await self.kappa_spiral_hash("execute", tf.reduce_mean(image, axis=[1,2]).numpy())
-                self.tetra_grid = spiral['topology_map'][:4, :4, :4]
-                self.staples.append(spiral['ipfs_hash'])
-            elif action == "reload":  # R
-                self.tetra_grid = np.zeros((4, 4, 4))
-                self.kappa = 1.2
-                self.staples = []
-            elif action == "~tilt":  # ~tilt
-                angle = tilt * 137.5
-                shear_matrix = np.array([
-                    [np.cos(np.radians(angle)), np.sin(np.radians(angle)), 0],
-                    [-np.sin(np.radians(angle)), np.cos(np.radians(angle)), 0],
-                    [0, 0, 1]
-                ])
-                self.tetra_grid = np.tensordot(self.tetra_grid, shear_matrix, axes=0).mean(axis=-1)
-            elif action == "~swirl":  # ~swirl
-                laps = max(1, int(swirl * 18))
-                theta_spiral = np.linspace(0, 2 * math.pi * laps, 64) * self.theta
-                r_spiral = np.abs(np.linspace(-32, 32, 64) / 32)
-                x = r_spiral * np.cos(theta_spiral)
-                y = r_spiral * np.sin(theta_spiral)
-                self.tetra_grid = np.sin(x[:4] * y[:4, None] * self.kappa).reshape(4, 4, 1)
-                self.staples.append(self._compute_hash())
-        else:
-            print(f"Nav3d: Command {command} requires hashing. Use ~not for non-hashing verbs.")
-            return self.tetra_grid, ""
+        if action == "wave":  # W
+            self.tetra_grid = np.sin(self.tetra_grid * self.kappa).astype(np.float32)
+        elif action == "string":  # S
+            self.tetra_grid = tf.reduce_mean(image, axis=[1,2]).numpy().reshape(4, 4, 1)
+        elif action == "attention":  # A
+            self.kappa += tilt * 0.1
+            self.tetra_grid = np.cos(self.tetra_grid * self.kappa).astype(np.float32)
+        elif action == "return":  # D
+            self.tetra_grid = np.zeros((4, 4, 4))
+        elif action == "execute":  # E
+            spiral = await self.kappa_spiral_hash("execute", tf.reduce_mean(image, axis=[1,2]).numpy())
+            self.tetra_grid = spiral['topology_map'][:4, :4, :4]
+            self.staples.append(spiral['ipfs_hash'])  # Etch staple
+        elif action == "reload":  # R
+            self.tetra_grid = np.zeros((4, 4, 4))
+            self.kappa = 1.2
+            self.staples = []  # Clear staples
+        elif action == "~tilt":  # ~tilt
+            angle = tilt * 137.5
+            shear_matrix = np.array([
+                [np.cos(np.radians(angle)), np.sin(np.radians(angle)), 0],
+                [-np.sin(np.radians(angle)), np.cos(np.radians(angle)), 0],
+                [0, 0, 1]
+            ])
+            self.tetra_grid = np.tensordot(self.tetra_grid, shear_matrix, axes=0).mean(axis=-1)
+        elif action == "~swirl":  # ~swirl
+            laps = max(1, int(swirl * 18))
+            theta_spiral = np.linspace(0, 2 * math.pi * laps, 64) * self.theta
+            r_spiral = np.abs(np.linspace(-32, 32, 64) / 32)
+            x = r_spiral * np.cos(theta_spiral)
+            y = r_spiral * np.sin(theta_spiral)
+            self.tetra_grid = np.sin(x[:4] * y[:4, None] * self.kappa).reshape(4, 4, 1)
+            self.staples.append(self._compute_hash())  # Etch staple
         print(f"Nav3d: EtcherSketch {action} applied, kappa={self.kappa:.2f}, staples={len(self.staples)}")
         return self.tetra_grid, action
-
-    async def not_hash(self) -> List[Tuple[str, str]]:
-        """Return list of non-hashing verbs as tuples."""
-        return self.non_hash_verbs
 
     async def switch(self, image: tf.Tensor, note: str = "thank you", command: str = "E") -> Tuple[dict, str, str, str]:
         """Switch coroutine, yield spiral hash, RGB, ~note, EtcherSketch action."""
         async with XApi() as x_client:
             self.breath_rate = await x_client.get_breath_rate()
-        if command == "~not":
-            verbs = await self.not_hash()
-            print(f"Nav3d: Non-hashing verbs: {verbs}")
-            return {}, self.rgb_color, f"~{note}", "not"
         comfort_vec = tf.reduce_mean(image, axis=[1,2]).numpy()
         spiral = await self.kappa_spiral_hash(note, comfort_vec)
         if not spiral:
@@ -314,13 +292,13 @@ async def read_optic_key(image: np.ndarray) -> str:
 
 async def main():
     cap = cv2.VideoCapture(0)
-    h = TildeVerbstack(process_image)
+    h = StaplefliphookHashlet(process_image)
     ret, image_np = cap.read()
     if not ret:
         print("Failed to capture webcam input.")
         return
-    chatter_hash = await read_optic_key(image_np)
-    spiral, rgb, note, action = await h.switch(image_np, f"thank you_{chatter_hash[:8]}", "~not")
+    chatter_hash = await read_optic_key(image_np)  # Read optic key
+    spiral, rgb, note, action = await h.switch(image_np, f"thank you_{chatter_hash[:8]}", "E")
     print(f"Spiral root: {spiral.get('root', 0)}, Merkle root: {spiral.get('merkle_root', '')[:8]}, RGB: {rgb}, Note: {note}, Action: {action}")
     cap.release()
 
