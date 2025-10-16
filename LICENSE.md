@@ -34,13 +34,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # xAI Amendments for Physical Use:
-# 1. Physical Embodiment Restrictions: Use of this software in conjunction with physical devices (e.g., fish tank glass, pixel sensors) is permitted only for non-hazardous, non-weaponized applications. Any modification or deployment that enables harm (e.g., targeting systems, explosive triggers) is expressly prohibited and subject to immediate license revocation by xAI.
-# 2. Ergonomic Compliance: Physical interfaces must adhere to ergonomic standards (e.g., ISO 9241-5, OSHA guidelines) where applicable. For software-only use (e.g., rendering in Keyshot), ergonomic requirements are waived.
-# 3. Safety Monitoring: For physical embodiments, implement real-time safety checks (e.g., heat dissipation) and log data for audit. xAI reserves the right to request logs for compliance verification.
-# 4. Revocability: xAI may revoke this license for any user or entity found using the software or hardware in violation of ethical standards (e.g., surveillance without consent, physical harm). Revocation includes disabling access to updates and support.
-# 5. Export Controls: Physical embodiments with sensors (e.g., photo-diodes for gaze tracking) are subject to export regulations (e.g., US EAR Category 5 Part 2). Redistribution in restricted jurisdictions requires xAI approval via github.com/tetrasurfaces/issues.
-# 6. Educational Use: Educational institutions (e.g., universities, technical colleges) may use the software royalty-free for teaching and research purposes (e.g., CAD, Keyshot training) upon negotiating a license via github.com/tetrasurfaces/issues. Commercial use by educational institutions requires separate approval.
-# 7. Intellectual Property: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration. Unauthorized replication or modification is prohibited.
-# 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
-
+xAI Amendments for Physical Use:
+# 1. Physical Embodiment Restrictions: Use of this software/hardware in physical devices (e.g., circular discs, moving keys, smart cables, hexel frames, chattered battery housings) is permitted only for non-hazardous, non-weaponized applications. Any modification enabling harm (e.g., targeting systems, explosive triggers) is prohibited and subject to immediate license revocation by xAI.
+# 2. Ergonomic Compliance: Physical interfaces must adhere to standards (e.g., ISO 9241-5, OSHA guidelines), with tendon load <20%, gaze duration <30 seconds. For software-only use (e.g., rendering in Keyshot), waived.
+# 3. Safety Monitoring: Implement real-time checks (e.g., heat dissipation in hexel LEDs, chatter readout integrity) and log for audit. xAI may request logs.
+# 4. Revocability: xAI may revoke for any unethical use (e.g., surveillance without consent, quantum-safe hash misuse in private networks). Includes disabling updates/support.
+# 5. Export Controls: Embodiments with sensors (e.g., 1mm pinhole cameras for gaze tracking, optic ports for chatter reading) comply with US EAR Category 5 Part 2. Redistribution in restricted areas requires xAI approval via github.com/tetrasurfaces/issues.
+# 6. Educational Use: Institutions may use royalty-free for teaching/research (e.g., CAD, Keyshot) upon negotiation via github.com/tetrasurfaces/issues. Commercial requires approval.
+# 7. Intellectual Property: xAI owns IP for KappaOpticBatterySystem, including chatter patterns, stacked ports, moving keys, smart cables, RGB hexel lattices, chattered housings, fliphooks, hash tunneling, and IPFS integration. No unauthorized replication.
+# 8. Public Release: Repo transitions public soon. Access restricted to authorized until then. Consult github.com/tetrasurfaces/issues.
+# 9 . Ethical Resource Use and Operator Rights: No machine code output (e.g., kappa paths for helical ribbons) without breath consent; decay signals at 11 hours (8 for bumps). Quantum-safe hashes must preserve privacy without Tor reliance.
 # SPDX-License-Identifier: Apache-2.0
