@@ -33,19 +33,25 @@
 # limitations under the License.
 # SPDX-License-Identifier: Apache-2.0
 #
-# xAI Amendments for Physical Use:
-# 1. **Physical Embodiment Restrictions**: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
-# 2. **Ergonomic Compliance**: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
-# 3. **Safety Monitoring**: Real-time tendon/gaze checks, logged for audit.
-# 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
-# 5. **Export Controls**: Sensor devices comply with US EAR Category 5 Part 2.
-# 6. **Open Development**: Hardware docs shared post-private phase.
+# Dual License: Tetra Surfaces/KappashaOS (Fish Tank/21700 Module)
+# Core software: AGPL-3.0-or-later -- xAI fork, 2025 [full AGPL text]
+# Hardware/interfaces: Apache 2.0 with xAI amendments (safety, crypto controls: no hash misuse; revocable unethical). See http://www.apache.org/licenses/LICENSE-2.0
+# Copyright 2025 xAI
+# [Apache text]
+# SPDX-License-Identifier: Apache-2.0
+# xAI Amendments:
+
+# Restrictions: Non-hazardous; harmful mods (weapons, crypto targeting) revocable.
+# Ergonomic: ISO 9241-5/OSHA; tendon <20%, gaze <30s. Waived software.
+# Monitoring: Real-time (heat, entropy, chatter); logs audit.
+# Revocability: Unethical (surveillance, hash misuse).
+# Export: EAR Cat 5 Part 2/ITAR; no foreign militaries/contractors sans approval via github.com/tetrasurfaces/issues.
+# Edu: Royalty-free research negot issues; commercial approval.
+# IP: xAI owns system, hash, 21700 components. No replication.
+# Release: Public soon; restricted.
+# Ethics: No code without breath; decay 11h (8 bumps). Hashes privacy sans Tor. No hue sans consent (heartbeat/verbal).
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
-
-#!/usr/bin/env python3
-# secure_hash_two.py - Mock secure hash for KappashaOS.
-# Uses hashlib with salt, Navi-integrated.
 
 import hashlib
 import asyncio
