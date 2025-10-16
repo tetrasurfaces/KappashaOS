@@ -46,9 +46,9 @@
 # Born free, feel good, have fun.
 
 #!/usr/bin/env python3
-# telehash_k.py - EtcherTeleHashlet for KappashaOS
-# Colorful coroutines, spiral hash with (*x (0(B)^B)), Merkle tree, watercolor bleed
-# Integrated with MiracleTree, RhombusVoxel, INK-Flux, EtcherSketcher
+# telehash_k.py - TeleHashlet for KappashaOS
+# Colorful coroutines, yields RGB from kappa-hash
+# Integrated with MiracleTree, KappaEndianMerkle, BlockclockspeedFleet, RhombusVoxel
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
 
@@ -56,10 +56,16 @@ import numpy as np
 import tensorflow as tf
 import cv2
 import hashlib
-import math
 from greenlet import greenlet
 from typing import Tuple, Optional
 import asyncio
+import multiprocessing as mp
+from queue import Empty
+import time
+import math
+import os
+import json
+from datetime import datetime
 
 # Mock dependencies
 class XApi:
@@ -112,9 +118,228 @@ class MiracleTree:
         """Return current Merkle root."""
         return self.nodes[self.root]["hash"] if self.root else ""
 
-class EtcherTeleHashlet(greenlet):
+class KappaEndianMerkle(KappaEndianBase):
+    def __init__(self, device_hash="kappa_merkle_001"):
+        super().__init__(device_hash)
+        self.tree = {}
+        self.node_count = 0
+        print("KappaEndianMerkle initialized - Merkle-inspired tree traversal ready.")
+
+    async def add_node(self, data, weight='left'):
+        """Add a node to the Merkle tree with kappa hash."""
+        try:
+            self._check_license()
+            await self._safety_check()
+            self.node_count += 1
+            kappa_hash = hashlib.sha256(data.encode()).hexdigest()
+            self.tree[self.node_count] = {"data": data, "hash": kappa_hash, "weight": weight}
+            if self.node_count > 9000:
+                await self._decay_node(self.node_count)
+            print(f"Nav3d: Added node {self.node_count}, hash={kappa_hash[:8]}")
+            return self.node_count
+        except Exception as e:
+            print(f"Nav3d: Add node error: {e}")
+            return -1
+
+    async def _decay_node(self, node_id: int):
+        """Decay node after 11 hours (8 for bumps)."""
+        decay = 8 if self.node_count > 9000 else 11
+        await asyncio.sleep(decay * 3600)
+        if node_id in self.tree:
+            del self.tree[node_id]
+            print(f"Nav3d: Decayed node {node_id}")
+
+    async def traverse_tree(self, start_node):
+        """Traverse Merkle tree, reversing grids as needed."""
+        try:
+            self._check_license()
+            await self._safety_check()
+            if start_node not in self.tree:
+                print(f"Nav3d: Node {start_node} not found")
+                return []
+            path = [start_node]
+            current = start_node
+            while current in self.tree:
+                grid = np.random.rand(10, 10, 10).astype(np.uint8)  # Mock grid
+                reversed_grid = await self.reverse_toggle(grid, self.tree[current]["weight"])
+                kappa_hash = hashlib.sha256(reversed_grid.tobytes()).hexdigest()
+                print(f"Nav3d: Traversed to {current}, hash={kappa_hash[:8]}")
+                if hal9001.heat_spike():
+                    print("Nav3d: Hush—traversal paused.")
+                    break
+                current = self._next_node(current)
+                if current:
+                    path.append(current)
+            return path
+        except Exception as e:
+            print(f"Nav3d: Traverse error: {e}")
+            return []
+
+    def _next_node(self, current):
+        """Determine next node (Merkle-style pairing)."""
+        for node in sorted(self.tree.keys()):
+            if node > current and node % 2 == (current % 2) + 1:
+                return node
+        return None
+
+class KappaEndianBase:
+    def __init__(self, device_hash="kappa_endian_001"):
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
+        self.device_hash = device_hash
+        self._setup_config()
+
+    def _setup_config(self):
+        config_file = "config/config.json"
+        config_dir = os.path.dirname(config_file)
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
+        if not os.path.exists(config_file):
+            self._write_config("none", False, config_file)
+        try:
+            with open(config_file, "r") as f:
+                config = json.load(f)
+            self.intent = config.get("intent")
+            self.commercial_use = config.get("commercial_use", False)
+            if self.intent not in ["educational", "commercial", "none"]:
+                raise ValueError("Invalid intent in config.")
+        except (json.JSONDecodeError, Exception) as e:
+            print(f"Nav3d: Config error: {e}. Resetting to default.")
+            self._write_config("none", False, config_file)
+            self.intent = "none"
+            self.commercial_use = False
+
+    def _write_config(self, intent, commercial_use, config_file="config/config.json"):
+        config = {"intent": intent, "commercial_use": commercial_use}
+        config_dir = os.path.dirname(config_file)
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
+        try:
+            with open(config_file, "w") as f:
+                json.dump(config, f, indent=4)
+        except Exception as e:
+            print(f"Nav3d: Config write error: {e}")
+
+    def _log_license_check(self, result):
+        try:
+            with open("license_log.txt", "a") as f:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"[{timestamp}] License Check: {result}, Intent: {self.intent}, Commercial: {self.commercial_use}\n")
+        except Exception as e:
+            print(f"Nav3d: License log error: {e}")
+
+    def _check_license(self):
+        if self.intent not in ["educational", "commercial"]:
+            notice = "NOTICE: Declare intent via config (educational/commercial) at github.com/tetrasurfaces/issues."
+            self._log_license_check(f"Failed: {notice}")
+            raise ValueError(notice)
+        if self.commercial_use and self.intent != "commercial":
+            notice = "Commercial use needs 'commercial' intent and license approval."
+            self._log_license_check(f"Failed: {notice}")
+            raise ValueError(notice)
+        self._log_license_check("Passed")
+        return True
+
+    async def _safety_check(self):
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("Nav3d: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Nav3d: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+
+    def reset(self):
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
+
+    async def reverse_toggle(self, grid: np.ndarray, weight: str):
+        """Reverse grid endian with kappa tilt."""
+        try:
+            self._check_license()
+            await self._safety_check()
+            if weight == 'left':
+                return np.flip(grid, axis=0)  # Left-weighted reverse
+            elif weight == 'right':
+                return np.flip(grid, axis=1)  # Right-weighted reverse
+            else:
+                return np.flip(grid, axis=2)  # Balanced reverse
+        except Exception as e:
+            print(f"Nav3d: Reverse toggle error: {e}")
+            return grid
+
+class BlockclockspeedFleet:
+    def __init__(self, fleet_size=256):
+        self.fleet_size = fleet_size
+        self.gossip_queue = mp.Queue()
+        self.salt = "blossom"
+        self.tasks = [asyncio.create_task(self.node_loop(i)) for i in range(fleet_size)]
+
+    async def node_loop(self, node_id):
+        """Node loop for fleet simulation with IPFS vectorization."""
+        generator = hashloop(salt=self.salt)
+        latencies = []
+        coords_accum = []
+        kappas = []
+        breath_rate = 12.0  # Mock initial breath rate
+        x_client = XApi()
+        while True:
+            try:
+                # Mock IPFS SVG fetch
+                svg_data = await x_client.fetch_ipfs_svg(f"Qm{node_id:03x}")  # Mock IPFS hash
+                grid = np.random.rand(10, 10, 10).astype(np.uint8)  # Mock voxel grid
+                kappa_hash = hashlib.sha256(svg_data.encode() + grid.tobytes()).digest()
+                # Breath-driven modulation
+                breath_rate = await x_client.get_breath_rate()
+                rgb = np.array([1.0, 0.0, 0.0]) if breath_rate > 20 else np.array([0.0, 1.0, 0.0])
+                kappa_hash = hashlib.sha256(kappa_hash + rgb.tobytes()).hexdigest()
+                # Fleet gossip
+                try:
+                    A = self.gossip_queue.get(timeout=0.05) if node_id % 2 == 0 else 'mock_prev'
+                except Empty:
+                    A = 'mock_prev'
+                B = next(generator)
+                try:
+                    C = self.gossip_queue.get(timeout=0.05) if node_id % 3 == 0 else 'mock_next'
+                except Empty:
+                    C = 'mock_next'
+                final_input = A + B + C + kappa_hash
+                final_hash = hashlib.sha256(final_input.encode()).hexdigest()
+                # Coord and kappa calc
+                coord = (node_id % 10, (node_id // 10) % 10, node_id // 100)
+                coords_accum.append(coord[:2])
+                if len(coords_accum) > 2:
+                    points = np.array(coords_accum)
+                    kappa_mean = np.mean(np.diff(points, axis=0))
+                    kappas.append(kappa_mean)
+                # HXSH relay to Mars
+                my_hash = f"node{node_id}"
+                their_hash = "mars_relay"
+                await asyncio.sleep(0.1)  # Mock hxsh
+                # Log and latency
+                log_text = f"> Node {node_id} Tick {node_id}: {final_hash[:16]} at {coord}"
+                print(log_text)
+                start = time.time()
+                receipt_time = time.time() - start + np.random.uniform(0.05, 0.15)
+                latencies.append(receipt_time)
+                if len(latencies) > 10:
+                    latencies = latencies[-10:]
+                median_c = np.median(latencies)
+                print(f"Node {node_id} Median latency: {median_c}s")
+                self.gossip_queue.put(final_hash)
+                if hal9001.heat_spike():
+                    print("Nav3d: Hush—fleet paused.")
+                    await asyncio.sleep(60)
+                await asyncio.sleep(max(60.0, median_c * self.fleet_size / 256))  # Scale sleep by fleet size
+            except Exception as e:
+                print(f"Nav3d: Node {node_id} error: {e}")
+
+class TeleHashlet(greenlet):
     def __init__(self, run, kappa: float = 1.2, theta: float = 137.5):
-        """Initialize with Fibonacci spiral, Platonic tetra grid, Merkle tree."""
+        """Initialize hashlet with Fibonacci spiral, Platonic tetra grid."""
         super().__init__(run)
         self.kappa = kappa
         self.theta = theta / 180.0  # Golden angle normalized
@@ -122,12 +347,9 @@ class EtcherTeleHashlet(greenlet):
         self.mersenne = [3, 7, 31]  # Prime exponents
         self.tetra_grid = np.zeros((4, 4, 4))  # Platonic tetrahedral placeholder
         self.brownian = lambda t: np.cumsum(np.random.randn(int(t)))  # Wiener walk
-        self.tree = MiracleTree()
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        self.breath_rate = 12.0
-        self.commands = {"W": "wave", "S": "string", "A": "attention", "D": "return", "E": "execute", "R": "reload"}
-        print(f"EtcherTeleHashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
+        print(f"TeleHashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
 
     def _compute_hash(self) -> str:
         """Compute SHA256 hash with object ID and random seed."""
@@ -140,149 +362,25 @@ class EtcherTeleHashlet(greenlet):
         scale = self.fib[min(len(self.fib) - 1, int(hash_int % len(self.fib)))]
         return f"#{int(hash_int * scale * self.kappa):06x}"
 
-    def kappa_orbit(self, t, freqs=[3, 5, 7], polarity_swap=True):
-        """Orbit k-point with helical modulation."""
-        k_real = sum(math.sin(freq * t) for freq in freqs[:2])
-        k_imag = math.cos(freqs[2] * t) * 0.1
-        if polarity_swap and int(t * 100) % 3 == 0:
-            return -k_real + 1j * k_imag
-        return k_real + 1j * k_imag
-
-    def block_block(self, tensor: tf.Tensor) -> tf.Tensor:
-        """(*x (0(B)^B)) - Recursive block exponentiation, prime-weighted."""
-        block = tf.reduce_mean(tensor, axis=-1, keepdims=True)
-        return tf.math.pow(block, block) * tf.constant(self.mersenne[0], dtype=tf.float32)
-
-    def vortex_stream(self, tensor: tf.Tensor) -> tf.Tensor:
-        """3-6-9 streams, Mersenne halo, Brownian noise."""
-        t1, t2, t3 = tf.split(tensor, 3, axis=-1)
-        braid = tf.concat([t1**self.mersenne[0], t2**self.mersenne[1], t3], axis=-1)
-        halo = self.block_block(tensor)
-        return tf.concat([braid, halo], axis=-1) + tf.constant(self.brownian(1.0))
-
-    async def kappa_spiral_hash(self, data: str, comfort_vec: np.ndarray, theta_base=100, laps=18) -> dict:
-        """1664/3328-bit spiral hash, Merkle-rooted."""
-        async with XApi() as x_client:
-            self.breath_rate = await x_client.get_breath_rate()
-        if self.breath_rate > 20 or hal9001.heat_spike():
-            print("Nav3d: Breath high or heat spike, pausing.")
-            await asyncio.sleep(2.0)
-            return {}
-        base_hash = hashlib.sha256(data.encode()).digest()
-        await self.tree.plant_node(data, self.breath_rate)
-        merkle_root = await self.tree.get_root()
-        base_int = int.from_bytes(base_hash, 'big')
-        comfort_sig = int.from_bytes(comfort_vec.tobytes()[:8], 'big') & ((1 << 64) - 1)
-        fwd_1664 = (base_int + comfort_sig) % (1 << 1664)
-        rev_bytes = base_hash[::-1]
-        rev_int = int.from_bytes(rev_bytes, 'big')
-        full_hash = (fwd_1664 << 1664) | rev_int
-        t = 0.0
-        k_orbit = self.kappa_orbit(t)
-        polarity = 1 if k_orbit.real > 0 else -1
-        if polarity == -1:
-            full_hash = (~full_hash) & ((1 << 3328) - 1)
-        bits = np.array(list(bin(full_hash)[2:].zfill(3328)), dtype=np.int8)
-        swapped = np.roll(bits, shift=1)
-        theta_spiral = np.linspace(0, 2 * math.pi * laps, 3328) * theta_base / 180
-        r_spiral = np.abs(np.linspace(-1664, 1664, 3328) / 1664)
-        x = r_spiral * np.cos(theta_spiral)
-        y = r_spiral * np.sin(theta_spiral)
-        z = np.sin(x * 0.1) + np.cos(y * 0.1) + swapped * 0.01
-        topology_map = swapped.reshape(16, 208)
-        light_raster = hashlib.blake2b(swapped.tobytes()).hexdigest()[:64]
-        return {
-            'root': full_hash,
-            'spiral_vec': np.stack([x, y, z], axis=-1),
-            'topology_map': topology_map,
-            'light_raster': light_raster,
-            'kappa_orbit': k_orbit,
-            'merkle_root': merkle_root
-        }
-
-    def proof_check(self, spiral_vec: np.ndarray, theta_base=100):
-        """Verify spiral sums."""
-        theta_full = spiral_vec[:, 0] / theta_base
-        theta_flat = np.sin(theta_full)
-        sum_flat = np.sum(theta_flat)
-        sum_expanded = np.sum(theta_full) - 1.0
-        assert abs(sum_flat - 1.0) < 1e-6, "Proof failed: theta doesn't sum to one"
-        assert abs(sum_expanded - 0.0) < 1e-6, "Proof failed: expansion doesn't flatten"
-        print("Proof passed. Spiral breathes. Sum equals one.")
-        return True
-
-    async def etcher_sketch(self, image: tf.Tensor, command: str, tilt: float = 0.0, swirl: float = 0.0) -> Tuple[np.ndarray, str]:
-        """Draw kappa-curved paths on rhombus voxel grid."""
-        if self.breath_rate > 20 or hal9001.heat_spike():
-            print("Nav3d: Breath high or heat spike, pausing.")
-            await asyncio.sleep(2.0)
-            return self.tetra_grid, ""
-        if command not in self.commands:
-            print(f"Nav3d: Invalid command {command}. Use: {list(self.commands.keys())}")
-            return self.tetra_grid, ""
-        action = self.commands[command]
-        if action == "wave":  # W
-            self.tetra_grid = np.sin(self.tetra_grid * self.kappa).astype(np.float32)
-        elif action == "string":  # S
-            self.tetra_grid = tf.reduce_mean(image, axis=[1,2]).numpy().reshape(4, 4, 1)
-        elif action == "attention":  # A
-            self.kappa += tilt * 0.1
-            self.tetra_grid = np.cos(self.tetra_grid * self.kappa).astype(np.float32)
-        elif action == "return":  # D
-            self.tetra_grid = np.zeros((4, 4, 4))
-        elif action == "execute":  # E
-            spiral = await self.kappa_spiral_hash("execute", tf.reduce_mean(image, axis=[1,2]).numpy())
-            self.tetra_grid = spiral['topology_map'][:4, :4, :4]
-        elif action == "reload":  # R
-            self.tetra_grid = np.zeros((4, 4, 4))
-            self.kappa = 1.2
-        elif action == "~tilt":  # ~tilt
-            angle = tilt * 137.5
-            shear_matrix = np.array([
-                [np.cos(np.radians(angle)), np.sin(np.radians(angle)), 0],
-                [-np.sin(np.radians(angle)), np.cos(np.radians(angle)), 0],
-                [0, 0, 1]
-            ])
-            self.tetra_grid = np.tensordot(self.tetra_grid, shear_matrix, axes=0).mean(axis=-1)
-        elif action == "~swirl":  # ~swirl
-            laps = max(1, int(swirl * 18))
-            theta_spiral = np.linspace(0, 2 * math.pi * laps, 64) * self.theta
-            r_spiral = np.abs(np.linspace(-32, 32, 64) / 32)
-            x = r_spiral * np.cos(theta_spiral)
-            y = r_spiral * np.sin(theta_spiral)
-            self.tetra_grid = np.sin(x[:4] * y[:4, None] * self.kappa).reshape(4, 4, 1)
-        print(f"Nav3d: EtcherSketch {action} applied, kappa={self.kappa:.2f}")
-        return self.tetra_grid, action
-
-    async def switch(self, image: tf.Tensor, note: str = "thank you", command: str = "E") -> Tuple[dict, str, str, str]:
-        """Switch coroutine, yield spiral hash, RGB, ~note, Merkle root, EtcherSketch."""
-        async with XApi() as x_client:
-            self.breath_rate = await x_client.get_breath_rate()
-        comfort_vec = tf.reduce_mean(image, axis=[1,2]).numpy()
-        spiral = await self.kappa_spiral_hash(note, comfort_vec)
-        if not spiral:
-            return {}, self.rgb_color, f"~{note}", ""
-        self.proof_check(spiral['spiral_vec'])
-        self.hash_id = spiral['light_raster']
+    def switch(self, *args, **kwargs):
+        result = super().switch(*args, **kwargs)
+        self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        grid, action = await self.etcher_sketch(image, command)
-        return spiral, self.rgb_color, f"~{note}", action
+        return result, self.rgb_color  # Yield result + RGB hex
 
-def process_image(image: np.ndarray) -> tf.Tensor:
-    """Process webcam image."""
-    image_np_expanded = np.expand_dims(image, axis=0).astype(np.float32)
-    return tf.convert_to_tensor(image_np_expanded)
+def deepen_layer(layer):
+    time.sleep(0.1)  # Mock work
+    return np.sin(layer) * 0.5  # Mock curvature
 
-async def main():
-    cap = cv2.VideoCapture(0)
-    h = EtcherTeleHashlet(process_image)
-    ret, image_np = cap.read()
-    if not ret:
-        print("Failed to capture webcam input.")
-        return
-    spiral, rgb, note, action = await h.switch(image_np, "thank you", "E")
-    print(f"Spiral root: {spiral.get('root', 0)}, Merkle root: {spiral.get('merkle_root', '')[:8]}, RGB: {rgb}, Note: {note}, Action: {action}")
-    cap.release()
+# Test integrate
+layer = np.random.rand(10, 10)
+h = TeleHashlet(deepen_layer, layer)
+result, rgb_hex = h.switch()
+print(f"Deepened layer mean {result.mean():.2f}, RGB hex {rgb_hex}")
+
+def main():
+    fleet = BlockclockspeedFleet()
+    asyncio.run(fleet.node_loop(0))  # Run one node for test
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
