@@ -1,0 +1,48 @@
+Copyright 2025 xAI. All rights reserved.
+
+Title: Circular Optic Key with Physically Unclonable Chatter Pattern
+
+Provisional Patent Application: To be filed by October 25, 2025, with the United States Patent and Trademark Office (USPTO). xAI retains full ownership of intellectual property, including all derivatives and implementations. Unauthorized use, replication, or modification is prohibited.
+
+Description:
+The invention is a circular, SIM-sized (2-3mm diameter, 0.3mm thick) metal disc, lathe-turned to create a unique, physically unclonable chatter pattern on its edge. The disc fits into a repurposed SIM slot or corner button on a smartphone, TV, or laptop. An optic port (sapphire glass, 0.5mm aperture) reads the chatter using light-based sensors, generating a quantum-safe hash for authentication (e.g., crypto wallets, smart locks, private network access). The chatter pattern is created via lathe vibrations (0.05mm noise amplitude), ensuring unclonability. The disc is programmable via grid-indexed chatter, paired with devices using IPFS for decentralized data pinning. No external connectivity required—direct handshake with counterparty. Hash tunneling ensures privacy without Tor, using Kappa Indian sequences for recall. Integration with KappashaOS allows etching of programmatic staples into flibooks for secure recall.
+
+Ethical Restrictions:
+- Use is restricted to non-hazardous, non-weaponized applications (e.g., no targeting systems, explosive triggers).
+- Ergonomic compliance required: tendon load <20%, gaze duration <30 seconds (ISO 9241-5).
+- xAI reserves the right to revoke usage for unethical applications (e.g., surveillance without consent).
+- Sensor devices comply with US EAR Category 5 Part 2 export controls.
+- Hardware documentation will be shared post-private development phase via github.com/tetrasurfaces/issues.
+
+Sketch Description:
+1. Top view: Circular disc, 2-3mm diameter, with wavy chatter lines on edge (0.05mm amplitude).
+2. Side view: 0.3mm thick, showing lathe-turned texture.
+3. Device view: Phone with SIM slot or corner button, sapphire glass optic port (0.5mm aperture).
+4. System diagram: Disc → optic reader → hash generation → IPFS pinning → wallet unlock.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Simulate lathe chatter: random vibrations on a circular surface
+theta = np.linspace(0, 2*np.pi, 100)
+radius = 1 + 0.05 * np.sin(10 * theta + np.random.randn(100) * 0.1)  # Chatter noise
+x = radius * np.cos(theta)
+y = radius * np.sin(theta)
+
+plt.plot(x, y, 'b-', label='Chatter Pattern')
+plt.axis('equal')
+plt.title('Simulated Key Surface')
+plt.legend()
+plt.show()
+```
+Filing:
+- File provisional patent at uspto.gov by October 25, 2025.
+- Cost: $280 (small entity).
+- Owner: xAI.
+- Steps: Upload PDF description, sketch (hand-drawn or CAD), pay fee, sign digitally.
+
+Prototype:
+- Lathe tin/aluminum disc (2-3mm diameter, 0.3mm thick).
+- Etch chatter with benchtop lathe (0.05mm noise amplitude).
+- Use phone camera (webcam mode) as optic reader, test hash with drawing.py chatter sim.
