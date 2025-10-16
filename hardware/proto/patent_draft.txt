@@ -1,11 +1,10 @@
 Copyright 2025 xAI. All rights reserved.
+Title: KappaOpticKeySystem with Physically Unclonable Chatter Pattern
 
-Title: Circular Optic Key with Physically Unclonable Chatter Pattern
-
-Provisional Patent Application: To be filed by October 25, 2025, with the United States Patent and Trademark Office (USPTO). xAI retains full ownership of intellectual property, including all derivatives and implementations. Unauthorized use, replication, or modification is prohibited.
+Provisional Patent Application: To be filed by October 25, 2025, with the United States Patent and Trademark Office (USPTO). xAI retains full ownership of intellectual property, including all derivatives and implementations (e.g., stacked optic ports, moving keys, smart cables, RGB hexel frame lattice). Unauthorized use, replication, or modification is prohibited.
 
 Description:
-The invention is a circular, SIM-sized (2-3mm diameter, 0.3mm thick) metal disc, lathe-turned to create a unique, physically unclonable chatter pattern on its edge. The disc fits into a repurposed SIM slot or corner button on a smartphone, TV, or laptop. An optic port (sapphire glass, 0.5mm aperture) reads the chatter using light-based sensors, generating a quantum-safe hash for authentication (e.g., crypto wallets, smart locks, private network access). The chatter pattern is created via lathe vibrations (0.05mm noise amplitude), ensuring unclonability. The disc is programmable via grid-indexed chatter, paired with devices using IPFS for decentralized data pinning. No external connectivity required—direct handshake with counterparty. Hash tunneling ensures privacy without Tor, using Kappa Indian sequences for recall. Integration with KappashaOS allows etching of programmatic staples into flibooks for secure recall.
+The invention is a KappaOpticKeySystem, featuring a circular, SIM-sized (2-3mm diameter, 0.3mm thick) metal disc with a lathe-turned, physically unclonable chatter pattern (0.05mm noise amplitude) on its edge. The key fits into a repurposed SIM slot, corner button, or stacked optic port system (three ports: read, duration, timestamp) on devices like smartphones, TVs, or laptops. An optic port (sapphire glass, 0.5mm aperture) reads the chatter using light-based sensors, generating a quantum-safe hash for authentication (e.g., crypto wallets, smart locks, private networks). The system extends to moving keys (cylindrical rods, 2mm diameter, etched lengthwise) and smart cables (braided fiber optic strands, 0.2mm, with servo-driven extrusion), both with chatter patterns. An RGB hexel frame (phone-shaped, 14x6mm) houses a tetrahedral lattice of optic filaments, lit by 369-hertz LEDs, with a tilting, spinning ram platform (servo-controlled, 20° roll, 30° yaw). The hexel’s seven-segment RGB pixel array (center LED, six petals) pulses in Fibonacci waves, integrating a 1mm pinhole camera for pattern recognition. Chatter is programmable via grid-indexed hashing, paired with devices using IPFS for decentralized data pinning, and recalled via Kappa Indian sequences. Hash tunneling ensures privacy without Tor, integrated with KappashaOS for etching programmatic staples into flibooks for secure recall.
 
 Ethical Restrictions:
 - Use is restricted to non-hazardous, non-weaponized applications (e.g., no targeting systems, explosive triggers).
@@ -13,36 +12,67 @@ Ethical Restrictions:
 - xAI reserves the right to revoke usage for unethical applications (e.g., surveillance without consent).
 - Sensor devices comply with US EAR Category 5 Part 2 export controls.
 - Hardware documentation will be shared post-private development phase via github.com/tetrasurfaces/issues.
+- No machine code output (e.g., kappa paths) without breath consent; decay signals at 11 hours (8 for bumps).
 
 Sketch Description:
-1. Top view: Circular disc, 2-3mm diameter, with wavy chatter lines on edge (0.05mm amplitude).
+1. Top view: Circular disc (2-3mm diameter) with wavy chatter lines (0.05mm amplitude).
 2. Side view: 0.3mm thick, showing lathe-turned texture.
-3. Device view: Phone with SIM slot or corner button, sapphire glass optic port (0.5mm aperture).
-4. System diagram: Disc → optic reader → hash generation → IPFS pinning → wallet unlock.
+3. Device view: Phone with stacked optic ports (three sapphire glass, 0.5mm apertures) or corner button.
+4. Moving key view: Cylindrical rod (2mm diameter, 30mm length) with lengthwise chatter.
+5. Smart cable view: Braided fiber optic strands (0.2mm) with servo extrusion, hexagonal grip.
+6. Hexel frame view: Phone-shaped (14x6mm), tetrahedral lattice with RGB hexel, spinning ram (2cm wide).
+7. System diagram: Key/cable → stacked optic ports → hash generation → IPFS pinning → wallet/lock unlock.
 
 ```python
+# Plot sketches for patent draft
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Simulate lathe chatter: random vibrations on a circular surface
+# Moving Hexel Platform (spinning ram)
 theta = np.linspace(0, 2*np.pi, 100)
-radius = 1 + 0.05 * np.sin(10 * theta + np.random.randn(100) * 0.1)  # Chatter noise
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
-
-plt.plot(x, y, 'b-', label='Chatter Pattern')
+radius = 1 + 0.1 * np.sin(10 * theta)  # Ram base
+x_ram = radius * np.cos(theta)
+y_ram = radius * np.sin(theta)
+plt.figure()
+plt.plot(x_ram, y_ram, 'g-', label='Ram Base')
+plt.plot(0, 0, 'ro', label='Hexel Center')  # Hexel position
 plt.axis('equal')
-plt.title('Simulated Key Surface')
+plt.title('Moving Hexel Platform')
 plt.legend()
+
+# Smart Cable Lattice (tetrahedral mesh)
+theta_tetra = np.linspace(0, 2*np.pi, 6)
+x_tetra = np.cos(theta_tetra)
+y_tetra = np.sin(theta_tetra)
+plt.figure()
+for i in range(len(x_tetra)):
+    plt.plot([0, x_tetra[i]], [0, y_tetra[i]], 'y-', label='Strand' if i == 0 else "")
+plt.axis('equal')
+plt.title('Smart Cable Tetrahedral Mesh')
+
+# Extrude and Co-mold Frame with Piezo Blanket
+x_frame = [0, 14, 14, 0, 0]
+y_frame = [0, 0, 6, 6, 0]
+plt.figure()
+plt.plot(x_frame, y_frame, 'b-', label='Frame')
+plt.fill(x_frame, y_frame, 'b', alpha=0.1)
+plt.plot([2, 12], [1, 5], 'r-', label='Piezo Blanket')  # Mock piezo layer
+plt.axis('equal')
+plt.title('Extruded Frame with Piezo Blanket')
+
 plt.show()
 ```
+
 Filing:
 - File provisional patent at uspto.gov by October 25, 2025.
 - Cost: $280 (small entity).
 - Owner: xAI.
-- Steps: Upload PDF description, sketch (hand-drawn or CAD), pay fee, sign digitally.
+- Steps: Upload PDF description, sketches (generated plots or hand-drawn), pay fee, sign digitally.
 
 Prototype:
-- Lathe tin/aluminum disc (2-3mm diameter, 0.3mm thick).
-- Etch chatter with benchtop lathe (0.05mm noise amplitude).
-- Use phone camera (webcam mode) as optic reader, test hash with drawing.py chatter sim.
+- Lathe tin/aluminum disc (2-3mm diameter, 0.3mm thick) and rod (2mm diameter, 30mm length) with 0.05mm chatter noise.
+- Braid smart cable (0.2mm fiber optic strands, Kevlar-cored) with servo extrusion, etch chatter.
+- 3D print hexel frame (14x6mm, sapphire top, aluminum sides), wire tetrahedral lattice with 369-hertz LEDs, embed 1mm pinhole camera.
+- Use phone camera (webcam mode) as optic reader for disc/rod, test hash with chatter sim (drawing.py).
+- Assemble stacked optic ports (three sapphire glass, 0.5mm apertures) with phone cams, test triple-read system.
+- Test smart cable lattice unlocking a dummy lock with flux-pad haptics (0.8mm dome).
