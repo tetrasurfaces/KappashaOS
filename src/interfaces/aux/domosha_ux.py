@@ -52,8 +52,8 @@
 
 import numpy as np
 import tensorflow as tf
-from greenlet import greenlet
 import cv2
+from greenlet import greenlet
 from typing import Tuple, Optional
 
 class Block369Vortex:
@@ -94,48 +94,18 @@ class Block369Vortex:
         tensor = self.vortex_stream(tensor)
         return self.tetra_grid, f"~{note}"
 
-class EyeMouse:
-    def __init__(self):
-        """Gaze cursor, blink click, drag ectoplasm."""
-        self.prev_x, self.prev_y = 0, 0
-        self.blink_start = 0
-        self.blink_threshold = 0.3
-        self.dragging = False
-        self.drag_pos = None
-        self.tendon_load = 0.0
-        self.gaze_duration = 0.0
-        print("EyeMouse initialized - gaze cursor ready.")
+def main():
+    vortex = Block369Vortex()
+    # Webcam input (replaced mock)
+    cap = cv2.VideoCapture(0)
+    ret, image_np = cap.read()
+    if not ret:
+        print("Failed to capture webcam input.")
+        return
+    image_np_expanded = np.expand_dims(image_np, axis=0).astype(np.float32)
+    grid, note = vortex.domosha_hash("thank you", tf.convert_to_tensor(image_np_expanded))
+    print(f"Grid: {grid.shape}, Note: {note}")
+    cap.release()
 
-    async def navi_detect(self, vortex: Block369Vortex):
-        """Navi detects blink, integrates with vortex hash."""
-        while True:
-            is_blink = np.random.rand() > 0.8  # Mock blink
-            if is_blink:
-                if time.time() - self.blink_start > self.blink_threshold * 2:
-                    if not self.dragging:
-                        self.dragging = True
-                        self.drag_pos = (self.prev_x, self.prev_y)
-                        print("Long blink - start drag ectoplasm.")
-                    else:
-                        self.dragging = False
-                        grid, note = vortex.domosha_hash("blink", tf.random.uniform((1, 800, 600, 3)))
-                        print(f"Long blink release - end drag: {note}")
-                else:
-                    grid, note = vortex.domosha_hash("click", tf.random.uniform((1, 800, 600, 3)))
-                    print(f"Short blink - click: {note}")
-            self.tendon_load = np.random.rand() * 0.3
-            self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-            if self.tendon_load > 0.2:  # Ethics: ISO 9241-5 compliance
-                print("EyeMouse: Warning - Tendon overload. Resetting.")
-                self.reset()
-            if self.gaze_duration > 30.0:
-                print("EyeMouse: Warning - Excessive gaze. Pausing.")
-                await asyncio.sleep(2.0)
-                self.gaze_duration = 0.0
-            await asyncio.sleep(0.01)
-
-    def reset(self):
-        """Reset eye mouse state and safety counters."""
-        self.tendon_load = 0.0
-        self.gaze_duration = 0.0
-        self.dragging,...
+if __name__ == "__main__":
+    main()
