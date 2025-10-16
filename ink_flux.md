@@ -47,10 +47,11 @@
 # Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
 # Copyright 2025 xAI
 
-# Ink_Flux-Pad
+# INK_Flux
+# Flux-Handle
 > Surface that moves. Buttons only when you want.
 - **Tilt**: Dome rises under thumb. 0.8mm convex, 3mm concave on press.
 - **Haptics**: Piezo clack, 20% tendon load max (ISO 9241-5).
-- **Verbs**: W=wave, S=string, A=attention, D=return, E=execute, R=reload.
+- **Verbs**: W=wave, S=string, A=attention, D=return, E=execute, R=reload, ~tilt=rotate grid, ~swirl=recompute Fibonacci scale.
 - **No buttons**: Surface adapts. Camera grip (shutter, zoom, mode) or keyboard (WSAD).
 > Born free: No fixed grid. Feel good: No cramp. Have fun: Click sings.
