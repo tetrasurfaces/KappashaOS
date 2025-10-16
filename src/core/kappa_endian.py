@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# kappa_endian_miracle_tree.py - Demo for endian reversals and miracle (Merkle-like) tree.
+# kappa_endian.py - Base class for endian grid operations, tribute to Merkle.
 # Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
@@ -41,100 +41,94 @@
 # 4. Revocability: xAI may revoke for unethical use (e.g., surveillance).
 # 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
 # 6. Open Development: Hardware docs shared post-private phase.
-# 7. Color Consent: No signal may change hue without explicit user intent (e.g., heartbeat sync or verbal confirmation).
+# 7. Ethical Resource Use and Operator Rights: No machine code output without breath consent; decay signals at 11 hours (8 for bumps).
 #
-# Private Development Notice: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 #
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 #
-# Born free, feel good, have fun.
+# Born free, feel good, have fun. Tribute to Ralph Merkle.
 
 import numpy as np
 import asyncio
+import json
+import os
 from datetime import datetime
 
-# Mock for demo
-class XApi:
-    @staticmethod
-    async def get_breath_rate():
-        return 12.0 + np.random.uniform(-2, 2)  # Mock breath rate
-
-# Kappa Endian - Grid reversals and scaling
-class KappaEndian:
+class KappaEndianBase:
     def __init__(self, device_hash="kappa_endian_001"):
-        self.device_hash = device_hash
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        print("KappaEndian initialized - reverse toggle and endian scale ready.")
+        self.device_hash = device_hash
+        self._setup_config()
 
-    async def reverse_toggle(self, grid, weight='left'):
-        """Reverse toggle past grid with weight adjustment."""
-        print(f"Navi: Reversing grid with {weight}-weight")
-        reversed_grid = np.flip(grid, axis=(0, 1, 2))
-        if weight == 'left':
-            reversed_grid -= 1e-4  # Left-weighted nudge
-        else:
-            reversed_grid += 1e-4  # Right-weighted nudge
+    def _setup_config(self):
+        config_file = "config/config.json"
+        config_dir = os.path.dirname(config_file)
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
+        if not os.path.exists(config_file):
+            self._write_config("none", False, config_file)
+        try:
+            with open(config_file, "r") as f:
+                config = json.load(f)
+            self.intent = config.get("intent")
+            self.commercial_use = config.get("commercial_use", False)
+            if self.intent not in ["educational", "commercial", "none"]:
+                raise ValueError("Invalid intent in config.")
+        except (json.JSONDecodeError, Exception) as e:
+            print(f"Nav3d: Config error: {e}. Resetting to default.")
+            self._write_config("none", False, config_file)
+            self.intent = "none"
+            self.commercial_use = False
+
+    def _write_config(self, intent, commercial_use, config_file="config/config.json"):
+        config = {"intent": intent, "commercial_use": commercial_use}
+        config_dir = os.path.dirname(config_file)
+        if not os.path.exists(config_dir):
+            os.makedirs(config_dir)
+        try:
+            with open(config_file, "w") as f:
+                json.dump(config, f, indent=4)
+        except Exception as e:
+            print(f"Nav3d: Config write error: {e}")
+
+    def _log_license_check(self, result):
+        try:
+            with open("license_log.txt", "a") as f:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"[{timestamp}] License Check: {result}, Intent: {self.intent}, Commercial: {self.commercial_use}\n")
+        except Exception as e:
+            print(f"Nav3d: License log error: {e}")
+
+    def _check_license(self):
+        if self.intent not in ["educational", "commercial"]:
+            notice = "NOTICE: Declare intent via config (educational/commercial) at github.com/tetrasurfaces/issues."
+            self._log_license_check(f"Failed: {notice}")
+            raise ValueError(notice)
+        if self.commercial_use and self.intent != "commercial":
+            notice = "Commercial use needs 'commercial' intent and license approval."
+            self._log_license_check(f"Failed: {notice}")
+            raise ValueError(notice)
+        self._log_license_check("Passed")
+        return True
+
+    async def _safety_check(self):
         self.tendon_load = np.random.rand() * 0.3
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-        if self.tendon_load > 0.2 or self.gaze_duration > 30.0:
-            print("Navi: Warning - Tendon overload or excessive gaze. Resetting.")
-            self.tendon_load = 0.0
-            self.gaze_duration = 0.0
+        if self.tendon_load > 0.2:
+            print("Nav3d: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Nav3d: Warning - Excessive gaze. Pausing.")
             await asyncio.sleep(2.0)
-        return reversed_grid
-
-    async def big_endian_scale(self, grid, angle=137.5):
-        """Apply big endian scale with golden spiral rotation."""
-        print(f"Navi: Scaling grid with angle {angle}")
-        theta = np.radians(angle)
-        shear_matrix = np.array([[np.cos(theta), np.sin(theta)],
-                                 [-np.sin(theta), np.cos(theta)]])
-        scaled_grid = np.tensordot(grid, shear_matrix, axes=0)
-        self.tendon_load = np.random.rand() * 0.3
-        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-        if self.tendon_load > 0.2 or self.gaze_duration > 30.0:
-            print("Navi: Warning - Tendon overload or excessive gaze. Resetting.")
-            self.tendon_load = 0.0
             self.gaze_duration = 0.0
-            await asyncio.sleep(2.0)
-        return scaled_grid
+        await asyncio.sleep(0)
 
-# Miracle Tree - Merkle-like tree for hashing, with miracle twist (oscillation)
-class MiracleTree:
-    def __init__(self):
-        self.leaves = ["node1", "node2", "node3", "node4"]
-        self.root = self.build_tree(self.leaves)
-    
-    def build_tree(self, leaves):
-        print(f"Navi: Building miracle tree from leaves: {leaves}")
-        if len(leaves) == 1:
-            return leaves[0]
-        mid = len(leaves) // 2
-        left = self.build_tree(leaves[:mid])
-        right = self.build_tree(leaves[mid:])
-        node = f"{left}-{right}"
-        print(f"Navi: Tree node: {node}")
-        return node
-    
-    def verify(self, leaf):
-        print(f"Navi: Verifying leaf {leaf} in tree")
-        return leaf in self.leaves
-
-# Demo
-async def navi_demo():
-    endian = KappaEndian()
-    grid = np.array([1, 2, 3, 4, 5])
-    print("Original grid:", grid)
-    reversed_grid = await endian.reverse_toggle(grid)
-    print("Reversed grid:", reversed_grid)
-    scaled_grid = await endian.big_endian_scale(reversed_grid)
-    print("Scaled grid:", scaled_grid)
-
-    tree = MiracleTree()
-    print("Tree root:", tree.root)
-    print("Verify node1:", tree.verify("node1"))
-    print("Verify unknown:", tree.verify("unknown"))
+    def reset(self):
+        self.tendon_load = 0.0
+        self.gaze_duration = 0.0
 
 if __name__ == "__main__":
-    asyncio.run(navi_demo())
+    base = KappaEndianBase()
+    asyncio.run(base._safety_check())
