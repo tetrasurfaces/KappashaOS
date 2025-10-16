@@ -44,7 +44,7 @@
 #
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 
-# staple_flipbook.py - StapleflipbookHashlet for KappashaOS
+# staple_fliphook.py - StaplefliphookHashlet for KappashaOS
 # Stacks telehashes into flipbooks, etches staples for program recall, watercolor bleed
 # Integrated with MiracleTree, RhombusVoxel, INK-Flux, EtcherSketcher, IPFS
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
