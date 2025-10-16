@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# hashlet.py - colourful coroutines.
-# hashlet switches on layer, yields rgb hex from hash.
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -47,38 +44,88 @@
 # 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
 
 # Born free, feel good, have fun.
-  
-import numpy as np
-import hashlib
-import greenlet
 
-class Hashlet(greenlet.Greenlet):
-    def __init__(self, run, *args, **kwargs):
-        super().__init__(run, *args, **kwargs)
+#!/usr/bin/env python3
+# telehash_k.py - TeleHashlet for KappashaOS
+# Colorful coroutines, bleeds watercolor, yields RGB from (*x (0(B)^B)) hash
+# Integrated with Block369Vortex, Nav3d, INK-Flux
+# Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
+# Born free, feel good, have fun.
+
+import numpy as np
+import tensorflow as tf
+import cv2
+import hashlib
+from greenlet import greenlet
+from typing import Tuple
+
+class KappaHashlet(greenlet):
+    def __init__(self, run, kappa: float = 1.2, theta: float = 137.5):
+        """Initialize hashlet with Fibonacci spiral, Platonic tetra grid."""
+        super().__init__(run)
+        self.kappa = kappa
+        self.theta = theta / 180.0  # Golden angle normalized
+        self.fib = [1, 1, 2, 3, 5, 8, 13]  # Fibonacci growth
+        self.mersenne = [3, 7, 31]  # Prime exponents
+        self.tetra_grid = np.zeros((4, 4, 4))  # Platonic tetrahedral placeholder
+        self.brownian = lambda t: np.cumsum(np.random.randn(int(t)))  # Wiener walk
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        print(f"Hashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
+        print(f"KappaHashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
 
-    def _compute_hash(self):
+    def _compute_hash(self) -> str:
+        """Compute SHA256 hash with object ID and random seed."""
         data = f"{id(self)}:{np.random.rand()}"
         return hashlib.sha256(data.encode()).hexdigest()
 
-    def _hash_to_rgb(self):
+    def _hash_to_rgb(self) -> str:
+        """Convert hash to RGB hex, Fibonacci-weighted."""
         hash_int = int(self.hash_id, 16) % 0xFFFFFF
-        return f"#{hash_int:06x}"
+        scale = self.fib[min(len(self.fib) - 1, int(hash_int % len(self.fib)))]
+        return f"#{int(hash_int * scale * self.kappa):06x}"
 
-    def switch(self, *args, **kwargs):
-        result = super().switch(*args, **kwargs)
+    def block_block(self, tensor: tf.Tensor) -> tf.Tensor:
+        """(*x (0(B)^B)) - Recursive block exponentiation, prime-weighted."""
+        block = tf.reduce_mean(tensor, axis=-1, keepdims=True)  # Zero-block base
+        return tf.math.pow(block, block) * tf.constant(self.mersenne[0], dtype=tf.float32)
+
+    def vortex_stream(self, tensor: tf.Tensor) -> tf.Tensor:
+        """3-6-9 streams, Mersenne halo, Brownian noise."""
+        t1, t2, t3 = tf.split(tensor, 3, axis=-1)  # Tesla thirds
+        braid = tf.concat([t1**self.mersenne[0], t2**self.mersenne[1], t3], axis=-1)
+        halo = self.block_block(tensor)  # Prime shadow
+        return tf.concat([braid, halo], axis=-1) + tf.constant(self.brownian(1.0))
+
+    def clear_water(self, tensor: tf.Tensor, mood: str = "gratitude") -> tf.Tensor:
+        """Recrystallize tensor with Emoto's intent."""
+        if mood == "gratitude":
+            return tf.math.multiply(tensor, tf.constant(1.618))  # Golden ratio nudge
+        return tensor
+
+    def switch(self, image: tf.Tensor, note: str = "thank you") -> Tuple[tf.Tensor, str, str]:
+        """Switch coroutine, yield kappa-curved grid, RGB, and ~note."""
+        tensor = self.clear_water(image)
+        tensor = tf.reshape(tensor, [4, -1, 4])  # Plato tetra
+        tensor = self.vortex_stream(tensor)
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        return result, self.rgb_color  # Yield result + ribit hex
+        return tensor, self.rgb_color, f"~{note}"
 
-def deepen_layer(layer):
-    time.sleep(0.1)  # Mock work
-    return np.sin(layer) * 0.5  # Mock curvature
+def process_image(image: np.ndarray) -> tf.Tensor:
+    """Process webcam image for object detection."""
+    image_np_expanded = np.expand_dims(image, axis=0).astype(np.float32)
+    return tf.convert_to_tensor(image_np_expanded)
 
-# Test integrate
-layer = np.random.rand(10, 10)
-h = Hashlet(deepen_layer, layer)
-result, ribit_hex = h.switch()
-print(f"Deepened layer mean {result.mean():.2f}, Ribit hex {ribit_hex}")
+def main():
+    cap = cv2.VideoCapture(0)  # Webcam input
+    h = KappaHashlet(process_image)
+    ret, image_np = cap.read()
+    if not ret:
+        print("Failed to capture webcam input.")
+        return
+    tensor, rgb, note = h.switch(image_np)
+    print(f"Grid: {tensor.shape}, RGB: {rgb}, Note: {note}")
+    cap.release()
+
+if __name__ == "__main__":
+    main()
