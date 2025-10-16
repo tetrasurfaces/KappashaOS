@@ -46,9 +46,9 @@
 # Born free, feel good, have fun.
 
 #!/usr/bin/env python3
-# telehash_k.py - MiracleTeleHashlet for KappashaOS
+# telehash_k.py - EtcherTeleHashlet for KappashaOS
 # Colorful coroutines, spiral hash with (*x (0(B)^B)), Merkle tree, watercolor bleed
-# Integrated with Block369Vortex, MiracleTree, RhombusVoxel, INK-Flux
+# Integrated with MiracleTree, RhombusVoxel, INK-Flux, EtcherSketcher
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
 
@@ -65,6 +65,7 @@ import asyncio
 class XApi:
     async def get_breath_rate(self):
         return np.random.uniform(10, 20)  # Mock breath rate
+
 class hal9001:
     @staticmethod
     def heat_spike():
@@ -111,7 +112,7 @@ class MiracleTree:
         """Return current Merkle root."""
         return self.nodes[self.root]["hash"] if self.root else ""
 
-class MiracleTeleHashlet(greenlet):
+class EtcherTeleHashlet(greenlet):
     def __init__(self, run, kappa: float = 1.2, theta: float = 137.5):
         """Initialize with Fibonacci spiral, Platonic tetra grid, Merkle tree."""
         super().__init__(run)
@@ -125,7 +126,8 @@ class MiracleTeleHashlet(greenlet):
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
         self.breath_rate = 12.0
-        print(f"MiracleTeleHashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
+        self.commands = {"W": "wave", "S": "string", "A": "attention", "D": "return", "E": "execute", "R": "reload"}
+        print(f"EtcherTeleHashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
 
     def _compute_hash(self) -> str:
         """Compute SHA256 hash with object ID and random seed."""
@@ -181,7 +183,7 @@ class MiracleTeleHashlet(greenlet):
         if polarity == -1:
             full_hash = (~full_hash) & ((1 << 3328) - 1)
         bits = np.array(list(bin(full_hash)[2:].zfill(3328)), dtype=np.int8)
-        swapped = np.roll(bits, shift=1)  # Mock diagonal_swap
+        swapped = np.roll(bits, shift=1)
         theta_spiral = np.linspace(0, 2 * math.pi * laps, 3328) * theta_base / 180
         r_spiral = np.abs(np.linspace(-1664, 1664, 3328) / 1664)
         x = r_spiral * np.cos(theta_spiral)
@@ -209,16 +211,62 @@ class MiracleTeleHashlet(greenlet):
         print("Proof passed. Spiral breathes. Sum equals one.")
         return True
 
-    async def switch(self, image: tf.Tensor, note: str = "thank you") -> Tuple[dict, str, str]:
-        """Switch coroutine, yield spiral hash, RGB, ~note, Merkle root."""
+    async def etcher_sketch(self, image: tf.Tensor, command: str, tilt: float = 0.0, swirl: float = 0.0) -> Tuple[np.ndarray, str]:
+        """Draw kappa-curved paths on rhombus voxel grid."""
+        if self.breath_rate > 20 or hal9001.heat_spike():
+            print("Nav3d: Breath high or heat spike, pausing.")
+            await asyncio.sleep(2.0)
+            return self.tetra_grid, ""
+        if command not in self.commands:
+            print(f"Nav3d: Invalid command {command}. Use: {list(self.commands.keys())}")
+            return self.tetra_grid, ""
+        action = self.commands[command]
+        if action == "wave":  # W
+            self.tetra_grid = np.sin(self.tetra_grid * self.kappa).astype(np.float32)
+        elif action == "string":  # S
+            self.tetra_grid = tf.reduce_mean(image, axis=[1,2]).numpy().reshape(4, 4, 1)
+        elif action == "attention":  # A
+            self.kappa += tilt * 0.1
+            self.tetra_grid = np.cos(self.tetra_grid * self.kappa).astype(np.float32)
+        elif action == "return":  # D
+            self.tetra_grid = np.zeros((4, 4, 4))
+        elif action == "execute":  # E
+            spiral = await self.kappa_spiral_hash("execute", tf.reduce_mean(image, axis=[1,2]).numpy())
+            self.tetra_grid = spiral['topology_map'][:4, :4, :4]
+        elif action == "reload":  # R
+            self.tetra_grid = np.zeros((4, 4, 4))
+            self.kappa = 1.2
+        elif action == "~tilt":  # ~tilt
+            angle = tilt * 137.5
+            shear_matrix = np.array([
+                [np.cos(np.radians(angle)), np.sin(np.radians(angle)), 0],
+                [-np.sin(np.radians(angle)), np.cos(np.radians(angle)), 0],
+                [0, 0, 1]
+            ])
+            self.tetra_grid = np.tensordot(self.tetra_grid, shear_matrix, axes=0).mean(axis=-1)
+        elif action == "~swirl":  # ~swirl
+            laps = max(1, int(swirl * 18))
+            theta_spiral = np.linspace(0, 2 * math.pi * laps, 64) * self.theta
+            r_spiral = np.abs(np.linspace(-32, 32, 64) / 32)
+            x = r_spiral * np.cos(theta_spiral)
+            y = r_spiral * np.sin(theta_spiral)
+            self.tetra_grid = np.sin(x[:4] * y[:4, None] * self.kappa).reshape(4, 4, 1)
+        print(f"Nav3d: EtcherSketch {action} applied, kappa={self.kappa:.2f}")
+        return self.tetra_grid, action
+
+    async def switch(self, image: tf.Tensor, note: str = "thank you", command: str = "E") -> Tuple[dict, str, str, str]:
+        """Switch coroutine, yield spiral hash, RGB, ~note, Merkle root, EtcherSketch."""
+        async with XApi() as x_client:
+            self.breath_rate = await x_client.get_breath_rate()
         comfort_vec = tf.reduce_mean(image, axis=[1,2]).numpy()
         spiral = await self.kappa_spiral_hash(note, comfort_vec)
         if not spiral:
-            return {}, self.rgb_color, f"~{note}"
+            return {}, self.rgb_color, f"~{note}", ""
         self.proof_check(spiral['spiral_vec'])
         self.hash_id = spiral['light_raster']
         self.rgb_color = self._hash_to_rgb()
-        return spiral, self.rgb_color, f"~{note}"
+        grid, action = await self.etcher_sketch(image, command)
+        return spiral, self.rgb_color, f"~{note}", action
 
 def process_image(image: np.ndarray) -> tf.Tensor:
     """Process webcam image."""
@@ -227,13 +275,13 @@ def process_image(image: np.ndarray) -> tf.Tensor:
 
 async def main():
     cap = cv2.VideoCapture(0)
-    h = MiracleTeleHashlet(process_image)
+    h = EtcherTeleHashlet(process_image)
     ret, image_np = cap.read()
     if not ret:
         print("Failed to capture webcam input.")
         return
-    spiral, rgb, note = await h.switch(image_np, "thank you")
-    print(f"Spiral root: {spiral.get('root', 0)}, Merkle root: {spiral.get('merkle_root', '')[:8]}, RGB: {rgb}, Note: {note}")
+    spiral, rgb, note, action = await h.switch(image_np, "thank you", "E")
+    print(f"Spiral root: {spiral.get('root', 0)}, Merkle root: {spiral.get('merkle_root', '')[:8]}, RGB: {rgb}, Note: {note}, Action: {action}")
     cap.release()
 
 if __name__ == "__main__":
