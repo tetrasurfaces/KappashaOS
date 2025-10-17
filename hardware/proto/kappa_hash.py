@@ -128,11 +128,22 @@ def kappa_hash_snapshot(file_path="KappashaOS", device_hash="kappa_hash_001"):
     if not os.path.exists(file_path):
         print(f"Snapshot {file_path} not found. Regen with repo_audit.py.")
         return None
+    
     with open(file_path, "rb") as f:
         content = f.read()
-    # Mock grid from content length
+    
+    # Dynamic grid sizing based on content length
+    content_len = len(content)
     grid_size = 10
-    grid = np.frombuffer(content, dtype=np.uint8)[:grid_size**3].reshape((grid_size, grid_size, grid_size))
+    target_size = grid_size ** 3
+    if content_len < target_size:
+        # Pad with zeros if content is too short
+        content = content + b'\x00' * (target_size - content_len)
+    elif content_len > target_size:
+        # Truncate to fit grid
+        content = content[:target_size]
+    
+    grid = np.frombuffer(content, dtype=np.uint8).reshape((grid_size, grid_size, grid_size))
     flat_grid = grid.flatten()
     seed = flat_grid.tobytes()
     hash_val = sha256(seed).hexdigest()
