@@ -6,7 +6,7 @@
 #   (at your option) any later version.
 #
 #   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without the implied warranty of
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 #   GNU Affero General Public License for more details.
 #
@@ -48,25 +48,23 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def generate_spiral_primes(num_primes=50, kappa=0.5):
+def spiral_prime_lock(num_primes=50, kappa=0.5, blades=10):
     primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97][:num_primes]
     theta = np.cumsum(primes) / np.arange(1, len(primes) + 1)
     r = theta * np.exp(kappa * theta)
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
-    return x, y, primes
+    gaps = np.diff(primes)
+    return r, theta, gaps
 
-def simulate_obscura_flux(x, y, blades=10, rpm=20):
+def simulate_obscura_flux(r, theta, rpm=20, blades=10):
     t = np.linspace(0, 1, 100)
-    flux = np.sum(np.cos(2 * np.pi * rpm / 60 * t[:, np.newaxis] + np.arange(blades)), axis=1)
+    flux = np.sum(np.cos(2 * np.pi * rpm / 60 * t[:, np.newaxis] + theta[:blades]), axis=1)
     return flux
 
 if __name__ == "__main__":
-    x, y, primes = generate_spiral_primes()
-    print("Locked primes sample:", primes[:5])
-    flux = simulate_obscura_flux(x, y)
+    r, theta, gaps = spiral_prime_lock()
+    print("Prime gaps sample:", gaps[:5])
+    flux = simulate_obscura_flux(r, theta)
     print("Flux sample:", flux[:10])
-    plt.scatter(x, y, c=primes, cmap='viridis')
-    plt.colorbar(label='Prime Values')
+    plt.polar(theta, r, 'r-')
     plt.title("Spiral Locked Primes in Obscura")
     plt.show()
