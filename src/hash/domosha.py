@@ -46,7 +46,7 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# domosha.py - Dōmo secure hashing algorithm with eclipse logic for KappashaOS
+# domosha.py - Dōmo secure hashing algorithm with eclipse logic and H metric for KappashaOS
 # Takes any tensor, whispers thank you, spits out rhombus grid, integrates daisy-chained Muse lenses.
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
@@ -89,12 +89,13 @@ class Domosha:
         self.flux_pad = FluxPad()
         self.num_lenses = num_lenses  # Daisy-chained Muse lenses
         self.entropy = np.random.uniform(0.4, 0.8)  # Entropy for eclipse trigger
+        self.phi = 1.6180339887  # Golden ratio for H metric
         print(f"Domosha initialized - {num_lenses} Muse lenses, kappa={kappa:.2f}, theta={theta}")
 
     def clear_water(self, tensor: tf.Tensor, mood: str = "gratitude") -> tf.Tensor:
         """Recrystallize tensor with Emoto's intent."""
         if mood == "gratitude":
-            return tf.math.multiply(tensor, tf.constant(1.618))  # Golden ratio nudge
+            return tf.math.multiply(tensor, tf.constant(self.phi))  # Golden ratio nudge
         return tensor
 
     def nerkology(self, spline: np.ndarray) -> np.ndarray:
@@ -107,6 +108,11 @@ class Domosha:
             evens = tf.math.mod(tensor, 2) == 0
             tensor = tf.where(evens, tf.zeros_like(tensor), tensor)
         return tensor
+
+    def calculate_h_metric(self, theta: float) -> float:
+        """Calculate H metric: perpendicular distance from spiral to y-axis."""
+        h = 1 / (self.phi * self.kappa)  # Tangency distance proxy
+        return h * np.sin(theta * self.theta)  # Modulate with normalized theta
 
     def mersenne_stream(self, input: tf.Tensor, state: str = 'e') -> tf.Tensor:
         """Prime exponent layer with eclipse logic for sacred weights."""
@@ -125,20 +131,17 @@ class Domosha:
         hash_val = hashlib.sha3_256(f"{note}:{grid.tobytes()}".encode()).hexdigest()
         return grid, f"~{note}", hash_val
 
-    def flux_pad(self, tilt: float, yaw: float) -> Tuple[bool, float]:
-        """Kinetic button surface. Rises on intent."""
-        return self.flux_pad.activate(tilt, yaw)
-
     def simulate_daisy_chain(self, tensor: tf.Tensor, state: str = 'e') -> tf.Tensor:
-        """Simulate daisy-chained Muse lenses, cascading flux."""
+        """Simulate daisy-chained Muse lenses, cascading flux with H metric."""
         flux = tensor
         for i in range(self.num_lenses):
             t, packet = mersenne_gaussian_packet()
             collapsed = collapse_wavepacket(t, packet)
             woven = weave_kappa_blades(t, collapsed)
             amused = amusement_factor(woven)
+            h = self.calculate_h_metric(t[i % len(t)])  # H metric per lens
             flux = tf.math.multiply(flux, tf.constant(np.sin(np.pi * i)))  # 180° phase offset
-            flux += tf.constant(amused[:flux.shape[0]], dtype=tf.float32) * 0.1
+            flux += tf.constant(amused[:flux.shape[0]], dtype=tf.float32) * h * 0.1
             flux = self.eclipse_evens(flux, state)  # Eclipse per lens
         return flux
 
@@ -150,8 +153,8 @@ def main():
     grid, note, hash_val = domo.hashlet("thank you")
     print(f"Grid: {grid.shape}, Note: {note}, Hash: {hash_val[:16]}...")
     import matplotlib.pyplot as plt
-    plt.plot(flux.numpy().flatten()[:100], 'green', label='Eclipsed Flux')
-    plt.title("Daisy-Chained Muse Lens Flux with Eclipse")
+    plt.plot(flux.numpy().flatten()[:100], 'green', label='Eclipsed Flux with H Metric')
+    plt.title("Daisy-Chained Muse Lens Flux with H Metric")
     plt.xlabel("Time (rotations)")
     plt.ylabel("Flux Amplitude")
     plt.legend()
