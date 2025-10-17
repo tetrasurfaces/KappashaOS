@@ -1,21 +1,24 @@
+# Born free, feel good, have fun.
+# muse.py
+
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU Affero General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU Affero General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
 #
-#   You should have received a copy of the GNU Affero General Public License
-#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
-#   with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
-#   for details, with the following xAI-specific terms appended.
+# with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
+# for details, with the following xAI-specific terms appended.
 
 # Copyright 2025 xAI
 
@@ -42,7 +45,6 @@
 # 7. Intellectual Property: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration. Unauthorized replication or modification is prohibited.
 # 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
 
-# muse.py
 # SPDX-License-Identifier: Apache-2.0
 
 import numpy as np
@@ -65,23 +67,29 @@ def collapse_wavepacket(t, base_packet, folds=3):
     return np.sum(np.array(layers), axis=0)
 
 def weave_kappa_blades(t, packet, knots=7):
-    # Simulate loom blades lifting based on knot tensions
     ropes = np.zeros(len(t))
     for i in range(knots):
         tension = np.sin(2 * np.pi * i / knots) * 0.5 + 0.5
         ropes += np.sin(2 * np.pi * t * tension)
     return packet * (1 + 0.1 * ropes)
 
+def amusement_factor(packet, amplitude=0.05):
+    # Random Mersenne jitter for 'fun' peaks
+    jitter = np.random.uniform(-amplitude, amplitude, len(packet))
+    return packet + jitter * np.sin(2 * np.pi * 369 / 60 * np.arange(len(packet)))  # 369 Hz calming tone
+
 if __name__ == "__main__":
     t, packet = mersenne_gaussian_packet()
     collapsed = collapse_wavepacket(t, packet)
     woven = weave_kappa_blades(t, collapsed)
-    print("Woven flux peak:", np.max(woven))
+    amused = amusement_factor(woven)
+    print("Amused flux peak:", np.max(amused))
     plt.plot(t, packet, 'lightblue', label='Original Packet')
     plt.plot(t, collapsed, 'red', label='Collapsed Packet')
-    plt.plot(t, woven, 'green', lw=2, label='Woven with Knots')
+    plt.plot(t, woven, 'blue', label='Woven with Knots')
+    plt.plot(t, amused, 'green', lw=2, label='Amused Flux')
     plt.axhline(0, color='k', alpha=0.3)
-    plt.title("Mersenne Gaussian Packet with Collapse and Knot Weave")
+    plt.title("Mersenne Gaussian Packet with Collapse, Weave, and Amusement")
     plt.xlabel("Time (rotations at 20 RPM)")
     plt.ylabel("Flux amplitude")
     plt.legend()
