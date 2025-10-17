@@ -1,21 +1,23 @@
+# Born free, feel good, have fun.
+
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU Affero General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU Affero General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
 #
-#   You should have received a copy of the GNU Affero General Public License
-#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
-#   with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
-#   for details, with the following xAI-specific terms appended.
+# with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
+# for details, with the following xAI-specific terms appended.
 
 # Copyright 2025 xAI
 
@@ -42,29 +44,55 @@
 # 7. Intellectual Property: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration. Unauthorized replication or modification is prohibited.
 # 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
 
-# simulate_obscura_flux.py
-# SPDX-License-Identifier: Apache-2.0
-
+#!/usr/bin/env python3
+# simulate_obscura_flux.py - Simulate obscura flux with H metric and eclipse logic for KappashaOS
+# Integrates daisy-chained Muse lenses, Mersenne prime gaps, and chatter etch.
+# Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
+# Born free, feel good, have fun.
 import numpy as np
 import matplotlib.pyplot as plt
+from muse import mersenne_gaussian_packet, collapse_wavepacket, weave_kappa_blades, amusement_factor
 
-def spiral_prime_lock(num_primes=50, kappa=0.5, blades=10):
+def spiral_prime_lock(num_primes=50, kappa=0.5, blades=10, phi=1.6180339887):
+    """Generate spiral with H metric for efficient prime gap calculation."""
     primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97][:num_primes]
-    theta = np.cumsum(primes) / np.arange(1, len(primes) + 1)
+    h = 1 / (phi * kappa)  # H metric: tangency distance
+    theta = np.cumsum(primes) / np.arange(1, len(primes) + 1) * h  # Scale theta by H
     r = theta * np.exp(kappa * theta)
-    gaps = np.diff(primes)
+    gaps = np.diff(primes) * h  # Scale gaps by H
     return r, theta, gaps
 
-def simulate_obscura_flux(r, theta, rpm=20, blades=10):
+def eclipse_evens(flux, state='e', entropy=0.5):
+    """Eclipse evens in flux if state='e' and entropy >0.69."""
+    if state == 'e' and entropy > 0.69:
+        evens = flux % 2 == 0
+        flux[evens] = 0
+    return flux
+
+def simulate_obscura_flux(r, theta, rpm=20, blades=10, num_lenses=3, state='e'):
+    """Simulate daisy-chained Muse lens flux with eclipse logic."""
     t = np.linspace(0, 1, 100)
-    flux = np.sum(np.cos(2 * np.pi * rpm / 60 * t[:, np.newaxis] + theta[:blades]), axis=1)
+    flux = np.zeros_like(t)
+    entropy = np.random.uniform(0.4, 0.8)
+    for i in range(num_lenses):
+        muse_t, packet = mersenne_gaussian_packet()
+        collapsed = collapse_wavepacket(muse_t, packet)
+        woven = weave_kappa_blades(muse_t, collapsed)
+        amused = amusement_factor(woven)
+        lens_flux = np.sum(np.cos(2 * np.pi * rpm / 60 * t[:, np.newaxis] + theta[:blades]), axis=1)
+        lens_flux *= np.interp(t, muse_t, amused) * np.sin(np.pi * i)  # 180° phase offset
+        lens_flux = eclipse_evens(lens_flux, state, entropy)
+        flux += lens_flux
     return flux
 
 if __name__ == "__main__":
     r, theta, gaps = spiral_prime_lock()
-    print("Prime gaps sample:", gaps[:5])
+    print("H-scaled prime gaps sample:", gaps[:5])
     flux = simulate_obscura_flux(r, theta)
-    print("Flux sample:", flux[:10])
-    plt.polar(theta, r, 'r-')
-    plt.title("Spiral Locked Primes in Obscura")
+    print("Eclipsed flux sample:", flux[:10])
+    plt.plot(flux, 'green', label='Eclipsed Obscura Flux')
+    plt.title("Obscura Flux with H Metric and Eclipse")
+    plt.xlabel("Time (rotations at 20 RPM)")
+    plt.ylabel("Flux Amplitude")
+    plt.legend()
     plt.show()
