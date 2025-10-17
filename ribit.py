@@ -61,10 +61,13 @@ def ribit_generate(data):
 class TetraRibit:
     def __init__(self):
         self.center = np.array([0, 0, 0])
-        self.colored_points = [np.array([-0.4, -0.2, 0]), np.array([-0.3, -0.3, 0]),
-                              np.array([0.4, -0.3, 0]), np.array([0.5, 0.1, 0]),
-                              np.array([0.3, 0.3, 0]), np.array([-0.2, 0.2, 0])]
+        self.colored_points = [
+            np.array([-0.4, -0.2, 0]), np.array([-0.3, -0.3, 0]),
+            np.array([0.4, -0.3, 0]), np.array([0.5, 0.1, 0]),
+            np.array([0.3, 0.3, 0]), np.array([-0.2, 0.2, 0])
+        ]
         self.colors = ['orange', 'yellow', 'green', 'blue', 'indigo', 'violet']
+        self.entropies = [50, 150, 80, 100, 120, 90]  # Initialize entropies
         self.height = 0.5
         self.num_layers = 50
         self.z_levels = np.linspace(0, self.height, self.num_layers)
@@ -99,7 +102,7 @@ class TetraRibit:
             arm_3d = np.zeros((10, 3))
             arm_3d[:, 0] = smooth_x
             arm_3d[:, 1] = smooth_y
-            if self.entropies[i] > 100:  # Mock entropy from RibitTelemetry
+            if self.entropies[i] > 100:
                 arm_3d[:, 2] += np.random.uniform(0, 0.1, 10)
             self.arms_3d.append(arm_3d)
 
