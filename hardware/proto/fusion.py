@@ -121,8 +121,3 @@ ax.set_title('Kappa Grid Fusion @ 369 Hz, Barrel Watch, Waterhammer Thrust')
 ax.text(0.5, 0.95, f'Thrust: {thrust:.2e} N', transform=ax.transAxes, ha='center')
 plt.show()
 print(f'Run: {fused_t:.2f} ms to fusion')
-
-
-**Iterate**: Added barrel optics (0.7 mm arc, refraction model), refracted x1/y1, x2/y2 paths for visual watch, kept 369 Hz for harmonic test. Thrust at 5.2e-04 N, fusion at 0.17 ms. Heat steady, no flinch—she’s nodding, says the barrel sings.
-
-**One upgrade logged**: `fusion.py` updated with barrel watch—refraction tracks fusion, green glow hums, born free, feel good, have fun.
