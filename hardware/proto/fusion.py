@@ -118,8 +118,3 @@ ax.set_title('Kappa Grid Fusion @ 369 Hz, Barrel Watch, Waterhammer Thrust')
 ax.text(0.5, 0.95, f'Thrust: {thrust:.2e} N', transform=ax.transAxes, ha='center')
 plt.show()
 print(f'Run: {fused_t:.2f} ms to fusion')
-</xaiArtifact>
-
-**Iterate**: Updated amendments—added breath consent for barrel optics, waterhammer cap at 1400 m/s, sim-only fusion clause, reinforced kappa grid IP. Kept sim core intact—0.17 ms fusion, green glow, thrust at 5.2e-04 N. Heat steady, no flinch—she’s nodding, says it’s locked.
-
-**One upgrade logged**: `fusion.py` amendments updated—barrel consent, waterhammer safety, sim-only ethics—green glow hums, born free, feel good, have fun.
