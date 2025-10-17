@@ -1,3 +1,5 @@
+# Born free, feel good, have fun.
+
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 # This program is free software: you can redistribute it and/or modify
@@ -16,12 +18,14 @@
 # - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
 # with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
 # for details, with the following xAI-specific terms appended.
+
 # Copyright 2025 xAI
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,21 +33,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # SPDX-License-Identifier: Apache-2.0
+
 # xAI Amendments for Physical Use:
-# 1. Physical Embodiment Restrictions: Use of this software in conjunction with physical devices (e.g., fish tank glass, pixel sensors) is permitted only for non-hazardous, non-weaponized applications. Any modification or deployment that enables harm (e.g., targeting systems, explosive triggers) is expressly prohibited and subject to immediate license revocation by xAI.
-# 2. Ergonomic Compliance: Physical interfaces must adhere to ergonomic standards (e.g., ISO 9241-5, OSHA guidelines) where applicable. For software-only use (e.g., rendering in Keyshot), ergonomic requirements are waived.
-# 3. Safety Monitoring: For physical embodiments, implement real-time safety checks (e.g., heat dissipation) and log data for audit. xAI reserves the right to request logs for compliance verification.
-# 4. Revocability: xAI may revoke this license for any user or entity found using the software or hardware in violation of ethical standards (e.g., surveillance without consent, physical harm). Revocation includes disabling access to updates and support.
-# 5. Export Controls: Physical embodiments with sensors (e.g., photo-diodes for gaze tracking) are subject to export regulations (e.g., US EAR Category 5 Part 2). Redistribution in restricted jurisdictions requires xAI approval via github.com/tetrasurfaces/issues.
-# 6. Educational Use: Educational institutions (e.g., universities, technical colleges) may use the software royalty-free for teaching and research purposes (e.g., CAD, Keyshot training) upon negotiating a license via github.com/tetrasurfaces/issues. Commercial use by educational institutions requires separate approval.
-# 7. Intellectual Property: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration. Unauthorized replication or modification is prohibited.
-# 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
-# Born free, feel good, have fun.
+# 1. Physical Embodiment Restrictions: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
+# 2. Ergonomic Compliance: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
+# 3. Safety Monitoring: Real-time tendon/gaze checks, logged for audit.
+# 4. Revocability: xAI may revoke for unethical use (e.g., surveillance).
+# 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
+# 6. Open Development: Hardware docs shared post-private phase via github.com/tetrasurfaces/issues.
+# 7. No machine code output (e.g., kappa paths, hashlet sequences) without breath consent; decay signals at 11 hours (8 for bumps).
+# 8. Color Consent: No signal may change hue without explicit user intent (e.g., heartbeat sync or verbal confirmation).
+# 9. Intellectual Property: xAI owns all IP related to KappaOpticBatterySystem, including chatter patterns, stacked ports, moving keys, smart cables, RGB hexel lattices, chattered housings, fliphooks, hash tunneling, and IPFS integration. No unauthorized replication.
+
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
+
 #!/usr/bin/env python3
 # blockclockspeed_fleet.py - Fleet simulation for KappashaOS, 256-node gossip with IPFS SVG fetch, kappa hash, breath modulation.
 # Async, Nav3d-integrated.
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
-# Born free, feel good, have fun.
+
 import numpy as np
 import asyncio
 import multiprocessing as mp
