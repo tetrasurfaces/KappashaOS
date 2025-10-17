@@ -64,30 +64,34 @@ class MiracleTree:
         print("MiracleTree initialized - Dynamic kappa-hash Merkle tree ready.")
 
     async def plant_node(self, data):
-        """Plant a new node with kappa hash, breath-signed."""
-        try:
-            breath_rate = await XApi.get_breath_rate()  # Mock API
-            if breath_rate > 20:
-                print("Nav3d: Breath rate high, pausing plant.")
-                await asyncio.sleep(2.0)
-                return -1
-            if hal9001.heat_spike():
-                print("Nav3d: Hush—node not planted.")
-                return -1
-            self.node_count += 1
-            kappa_hash = kappa.KappaHash(data.encode() + str(breath_rate).encode())
-            self.nodes[self.node_count] = {"data": data, "hash": kappa_hash.digest(), "parent": self.root}
-            if self.root is None:
-                self.root = self.node_count
-            else:
-                await self._grow_tree(self.root, self.node_count)
-            if self.node_count > 9000:  # Bump logic
-                await self._decay_node(self.node_count)
-            print(f"Nav3d: Planted node {self.node_count}, hash={kappa_hash.digest()[:8]}")
-            return self.node_count
-        except Exception as e:
-            print(f"Nav3d: Plant node error: {e}")
+    try:
+        breath_rate = await XApi.get_breath_rate()  # Mock API
+        if breath_rate > 20:
+            print("Nav3d: Breath rate high, pausing plant.")
+            await asyncio.sleep(2.0)
             return -1
+        if hal9001.heat_spike():
+            print("Nav3d: Hush—node not planted.")
+            return -1
+        self.node_count += 1
+        kappa_hash = kappa.KappaHash(data.encode() + str(breath_rate).encode())
+        self.nodes[self.node_count] = {
+            "data": data,
+            "hash": kappa_hash.digest(),
+            "parent": self.root,
+            "weight": "left"  # Add default weight
+        }
+        if self.root is None:
+            self.root = self.node_count
+        else:
+            await self._grow_tree(self.root, self.node_count)
+        if self.node_count > 9000:
+            await self._decay_node(self.node_count)
+        print(f"Nav3d: Planted node {self.node_count}, hash={kappa_hash.digest()[:8]}")
+        return self.node_count
+    except Exception as e:
+        print(f"Nav3d: Plant node error: {e}")
+        return -1
 
     async def _grow_tree(self, parent, child):
         """Grow tree by pairing nodes, Merkle-style."""
@@ -116,29 +120,29 @@ class MiracleTree:
             print(f"Nav3d: Decay error: {e}")
 
     async def traverse_tree(self, start_node):
-        """Traverse tree with kappaendian reversals."""
-        try:
-            if start_node not in self.nodes:
-                print(f"Nav3d: Node {start_node} not found")
-                return []
-            path = [start_node]
-            current = start_node
-            while current in self.nodes:
-                grid = np.random.rand(10, 10, 10).astype(np.uint8)  # Mock grid
-                merkle = KappaEndianMerkle()
-                reversed_grid = await merkle.reverse_toggle(grid, self.nodes[current]["weight"])
-                kappa_hash = kappa.KappaHash(reversed_grid.tobytes())
-                print(f"Nav3d: Traversed to {current}, hash={kappa_hash.digest()[:8]}")
-                if hal9001.heat_spike():
-                    print("Nav3d: Hush—traversal paused.")
-                    break
-                current = self.nodes[current]["parent"]
-                if current:
-                    path.append(current)
-            return path
-        except Exception as e:
-            print(f"Nav3d: Traverse error: {e}")
+    try:
+        if start_node not in self.nodes:
+            print(f"Nav3d: Node {start_node} not found")
             return []
+        path = [start_node]
+        current = start_node
+        while current in self.nodes:
+            grid = np.random.rand(10, 10, 10).astype(np.uint8)  # Mock grid
+            merkle = KappaEndianMerkle()
+            weight = self.nodes[current].get("weight", "left")  # Use get with default
+            reversed_grid = await merkle.reverse_toggle(grid, weight)
+            kappa_hash = kappa.KappaHash(reversed_grid.tobytes())
+            print(f"Nav3d: Traversed to {current}, hash={kappa_hash.digest()[:8]}")
+            if hal9001.heat_spike():
+                print("Nav3d: Hush—traversal paused.")
+                break
+            current = self.nodes[current]["parent"]
+            if current:
+                path.append(current)
+        return path
+    except Exception as e:
+        print(f"Nav3d: Traverse error: {e}")
+        return []
 
 if __name__ == "__main__":
     async def navi_test():
