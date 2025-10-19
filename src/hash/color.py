@@ -33,8 +33,6 @@
 # 
 #  Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-# Update color.py to match
-# KappashaOS/core/hash/color.py (AGPL-3.0-or-later)
 import cv2
 import numpy as np
 
