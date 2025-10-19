@@ -41,41 +41,35 @@
 # 7. Intellectual Property: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration. Unauthorized replication or modification is prohibited.
 # 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
 
-#!/usr/bin/env python3
 # crochet_lattice.py - 3D weave from hash, porosity, volume fill.
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
 import numpy as np
 from scipy.spatial import Voronoi
+import hashlib
 
-def weave_lattice(hash_str, resolution=100, porosity=0.15):
-    """Crochet hash into physical volume-skip knots for porosity."""
-    # Hash to coords
-    seed = int(hash_str, 16)
-    points = np.random.RandomState(seed).rand(resolution, 3) * 10  # 10x cube
-    # Knot every 2.3mm-Fibonacci twist
+def weave_lattice(hash_str, resolution=100, porosity=0.15, delays=[0.2, 0.4, 0.6]):
+    seed = int(hashlib.sha256(hash_str.encode()).hexdigest(), 16)
+    points = np.random.RandomState(seed).rand(resolution, 3) * 10
     for i in range(len(points)-1):
         vec = points[i+1] - points[i]
-        twist = np.cross(vec, [0, 0, 1]) * 0.23  # 2.3 deg turn
+        delay_idx = i % len(delays)
+        twist = np.cross(vec, [0, 0, 1]) * delays[delay_idx] * 10
         points[i+1] += twist
-    # Voronoi for volume-foam fill
     vor = Voronoi(points)
     volumes = vor.vertices
-    # Skip 15% for porosity-light leaks, breath vents
     mask = np.random.rand(len(volumes)) > porosity
     filled = volumes[mask]
-    return filled
+    return filled, [delays[i % len(delays)] for i in range(len(volumes))]
 
-# Raster → vector → recall
-def re_vectorize(lattice):
-    """Flatten lattice, hash, re-rasterize for recall."""
+def re_vectorize(lattice, delays):
     flat = lattice.flatten()
-    hash_recall = hashlib.sha256(flat.tobytes()).hexdigest()
-    return hash_recall[:16]
+    delay_str = ''.join(f"{d:.1f}" for d in delays)
+    hash_recall = hashlib.sha256((flat.tobytes() + delay_str.encode()).hexdigest()).hexdigest()[:16]
+    return hash_recall
 
-# Test
 if __name__ == "__main__":
-    lattice = weave_lattice("blossom")
-    print("Lattice volume shape:", lattice.shape)
-    hash_recall = re_vectorize(lattice)
-    print("Re-rastered hash:", hash_recall)
+    lattice, delays = weave_lattice("blossom")
+    print("Lattice shape:", lattice.shape)
+    print("Delays:", delays[:5])
+    print("Re-rastered hash:", re_vectorize(lattice, delays))
