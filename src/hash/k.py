@@ -33,11 +33,6 @@
 # 
 #  Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-
-# KappashaOS/core/hash/k.py
-# License: AGPL-3.0-or-later (xAI fork, 2025)
-# No warranties. See <https://www.gnu.org/licenses/>.
-
 import numpy as np
 
 def fibonacci_spiral(laps=18, ratio=1.618):
