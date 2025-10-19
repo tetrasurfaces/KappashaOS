@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# kappaendian_merkle.py - Merkle-inspired tree traversal with kappaendian ops, tribute to Ralph Merkle.
-# Copyright 2025 xAI
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 #   This program is free software: you can redistribute it and/or modify
@@ -48,12 +45,13 @@
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 #
 # Born free, feel good, have fun. Tribute to Ralph Merkle.
+# kappaendian_merkle.py - Merkle-inspired tree traversal with kappaendian ops, tribute to Ralph Merkle.
+# Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
+# Born free, feel good, have fun.
 
 import numpy as np
 import asyncio
 import hashlib
-import kappa
-import hal9001
 from kappaendian_base import KappaEndianBase
 
 class KappaEndianMerkle(KappaEndianBase):
@@ -61,71 +59,50 @@ class KappaEndianMerkle(KappaEndianBase):
         super().__init__(device_hash)
         self.tree = {}
         self.node_count = 0
-        print("KappaEndianMerkle initialized - Merkle-inspired tree traversal ready.")
 
     async def add_node(self, data, weight='left'):
-        """Add a node to the Merkle tree with kappa hash."""
-        try:
-            self._check_license()
-            await self._safety_check()
-            self.node_count += 1
-            kappa_hash = kappa.KappaHash(data.encode())
-            self.tree[self.node_count] = {"data": data, "hash": kappa_hash.digest(), "weight": weight}
-            if self.node_count > 9000:  # Bump logic
-                await self._decay_node(self.node_count)
-            print(f"Nav3d: Added node {self.node_count}, hash={kappa_hash.digest()[:8]}")
-            return self.node_count
-        except Exception as e:
-            print(f"Nav3d: Add node error: {e}")
-            return -1
+        self._check_license()
+        await self._safety_check()
+        self.node_count += 1
+        kappa_hash = hashlib.sha256(data.encode() + str(self.node_count).encode()).hexdigest()
+        self.tree[self.node_count] = {"data": data, "hash": kappa_hash, "weight": weight}
+        if self.node_count > 9000:
+            await self._decay_node(self.node_count)
+        print(f"Added node {self.node_count}, hash={kappa_hash[:8]}")
+        return self.node_count
 
     async def _decay_node(self, node_id):
-        """Decay node after 11 hours (8 for bumps)."""
-        try:
-            decay = 8 if self.node_count > 9000 else 11
-            await asyncio.sleep(decay * 3600)
-            if node_id in self.tree:
-                del self.tree[node_id]
-                print(f"Nav3d: Decayed node {node_id}")
-        except Exception as e:
-            print(f"Nav3d: Decay error: {e}")
+        decay = 8 if self.node_count > 9000 else 11
+        await asyncio.sleep(decay * 3600)
+        if node_id in self.tree:
+            del self.tree[node_id]
+            print(f"Decayed node {node_id}")
 
     async def traverse_tree(self, start_node):
-        """Traverse Merkle tree, reversing grids as needed."""
-        try:
-            self._check_license()
-            await self._safety_check()
-            if start_node not in self.tree:
-                print(f"Nav3d: Node {start_node} not found")
-                return []
-            path = [start_node]
-            current = start_node
-            while current in self.tree:
-                grid = np.random.rand(10, 10, 10).astype(np.uint8)  # Mock grid
-                reversed_grid = await self.reverse_toggle(grid, self.tree[current]["weight"])
-                kappa_hash = kappa.KappaHash(reversed_grid.tobytes())
-                print(f"Nav3d: Traversed to {current}, hash={kappa_hash.digest()[:8]}")
-                if hal9001.heat_spike():
-                    print("Nav3d: Hush—traversal paused.")
-                    break
-                current = self._next_node(current)
-                if current:
-                    path.append(current)
-            return path
-        except Exception as e:
-            print(f"Nav3d: Traverse error: {e}")
+        if start_node not in self.tree:
+            print(f"Node {start_node} not found")
             return []
+        path = [start_node]
+        current = start_node
+        while current in self.tree:
+            grid = np.random.rand(10, 10, 10).astype(np.uint8)
+            weight = self.tree[current]["weight"]
+            reversed_grid = np.flip(grid, axis=1 if weight == 'left' else 0)
+            kappa_hash = hashlib.sha256(reversed_grid.tobytes()).hexdigest()
+            print(f"Traversed to {current}, hash={kappa_hash[:8]}")
+            if await asyncio.to_thread(lambda: np.random.rand()) > 0.7:  # Mock heat
+                print("Hush—traversal paused.")
+                break
+            current = self._next_node(current)
+            if current:
+                path.append(current)
+        return path
 
     def _next_node(self, current):
-        """Determine next node (Merkle-style pairing)."""
-        try:
-            for node in sorted(self.tree.keys()):
-                if node > current and node % 2 == (current % 2) + 1:
-                    return node
-            return None
-        except Exception as e:
-            print(f"Nav3d: Next node error: {e}")
-            return None
+        for node in sorted(self.tree.keys()):
+            if node > current and node % 2 == (current % 2) + 1:
+                return node
+        return None
 
 if __name__ == "__main__":
     async def navi_test():
@@ -133,6 +110,5 @@ if __name__ == "__main__":
         node1 = await merkle.add_node("root")
         node2 = await merkle.add_node("leaf1")
         path = await merkle.traverse_tree(node1)
-        print(f"Nav3d: Traverse path: {path}")
-
+        print(f"Traverse path: {path}")
     asyncio.run(navi_test())
