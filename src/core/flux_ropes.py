@@ -41,7 +41,6 @@
 # 7. Intellectual Property: xAI owns all IP related to the iPhone-shaped fish tank, including gaze-tracking pixel arrays, convex glass etching (0.7mm arc), and tetra hash integration. Unauthorized replication or modification is prohibited.
 # 8. Public Release: This repository will transition to public access in the near future. Until then, access is restricted to authorized contributors. Consult github.com/tetrasurfaces/issues for licensing and access requests.
 
-#!/usr/bin/env python3
 # flux_ropes.py - Knot density by flux Indianness, 90s string ops reborn.
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
@@ -50,24 +49,23 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 def flux_knot(seed, knots_per_sec=5.0, indianness_range=(369, 443)):
-    """Tie hash knots per second, drift with flux Indianness."""
-    flux = np.linspace(indianness_range[0], indianness_range[1], num=100)  # Polarity swap on keel (406)
+    flux = np.linspace(indianness_range[0], indianness_range[1], num=100)
     keel = 406
-    polarity = np.where(flux > keel, 1, -1)  # Knot density scales with frequency-low = tight, high = loose
+    polarity = np.where(flux > keel, 1, -1)
     density = knots_per_sec * (1 + 0.3 * polarity * np.sin(flux / 100))
     chain = seed
     for knot in range(int(density.sum())):
-        chain = hashlib.sha256((chain + str(knot)).encode()).hexdigest()
-        yield chain[:16]  # 16-byte knot, tight as crochet
+        delay = 0.4 if knot % 3 == 0 else (0.2 if knot % 3 == 1 else 0.6)  # gribbit pulse
+        chain = hashlib.sha256((chain + str(knot) + f"{delay}").encode()).hexdigest()
+        yield chain[:16], delay
 
-def recall_flux(knots, target_freq=369):
-    """Recall hash from rope-flip Indianness back to base."""
-    rev = knots[::-1]
-    reconstruct = ''.join(rev)
-    return hashlib.sha256(reconstruct.encode()).hexdigest()[:16]  # Pull memory
+def recall_flux(knots_delays, target_freq=369):
+    rev_knots, rev_delays = zip(*knots_delays[::-1])
+    reconstruct = ''.join(rev_knots) + ''.join(f"{d:.1f}" for d in rev_delays)
+    return hashlib.sha256(reconstruct.encode()).hexdigest()[:16]
 
-# Test
 if __name__ == "__main__":
     rope = list(flux_knot("blossom", knots_per_sec=6.2))
-    print("Rope knots:", rope[:5])
+    print("Rope knots:", [k for k, _ in rope[:5]])
+    print("Delays:", [d for _, d in rope[:5]])
     print("Recalled hash:", recall_flux(rope))
