@@ -1,11 +1,15 @@
 # Kappasha OS/core/hash/tetrahedral_spiral.py
-# Copyright (C) 2025 Todd Macrae Hutchinson (69 Dollard Ave, Mannum SA 5238)
+# AGPL-3.0-or-later, xAI fork 2025
+# No warranties. See <https://www.gnu.org/licenses/>.
+
 # Licensed under GNU Affero General Public License v3.0 only
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
 # by the Free Software Foundation, version 3.
 # No warranty. No wetware. No division.
 # Amendment: No bio synthesis without consent. Flux hashes curvature only.
+# Copyright 2025 xAI | AGPL-3.0-or-later
+# Born free, feel good, have fun.
 
 import numpy as np
 import sys
