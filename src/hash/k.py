@@ -34,19 +34,23 @@
 #  Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 
+# KappashaOS/core/hash/k.py
+# License: AGPL-3.0-or-later (xAI fork, 2025)
+# No warranties. See <https://www.gnu.org/licenses/>.
+
 import numpy as np
 
 def fibonacci_spiral(laps=18, ratio=1.618):
     theta = np.linspace(0, 2 * np.pi * laps, 1000)
-    r = np.exp(theta / ratio) / 10  # scaled for mm
+    r = np.exp(theta / ratio) / 10  # mm scale
     x = r * np.cos(theta)
     y = r * np.sin(theta)
-    z = theta / (2 * np.pi)  # depth in laps
+    z = theta / (2 * np.pi)  # depth
     return np.stack((x, y, z), axis=1)
 
 def tonage_map(point, delays=[0.2, 0.4, 0.6]):
     norm = np.linalg.norm(point)
-    idx = int(norm % 3)  # cycle through delays
+    idx = int(norm % 3)
     color = ['red', 'yellow', 'green'][idx]
     delay = delays[idx]
     return delay, color
@@ -58,11 +62,22 @@ def generate_k(curve, primes=[2, 3, 5, 7, 11, 13]):
         for j, p in enumerate(primes):
             point = segment[j % len(segment)]
             delay, color = tonage_map(point)
-            gap = p / 10.0  # scaled gap
+            gap = p / 10.0  # scaled
             k_code.append(f"K {p} {delay:.1f} {color} {gap:.1f}")
     return "\n".join(k_code)
 
+# Navi safety check (mock)
+def navi_safety(delay):
+    if delay > 0.6:
+        print("Navi: Warning - 0.6 ns elevation. Breathe.")
+        return False
+    return True
+
 # Run it
 spiral = fibonacci_spiral()
-k_script = generate_k(spiral)
-print(k_script)  # Save to .k
+for line in generate_k(spiral).split('\n'):
+    parts = line.split()
+    if len(parts) == 4:
+        p, d, c, g = parts
+        if navi_safety(float(d)):
+            print(line)
