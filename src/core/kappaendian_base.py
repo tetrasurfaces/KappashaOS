@@ -45,9 +45,9 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 #
-# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
-#
-# Born free, feel good, have fun. Tribute to Ralph Merkle.
+# kappaendian_base.py - Base class for endian grid operations, tribute to Merkle.
+# Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
+# Born free, feel good, have fun.
 
 import numpy as np
 import asyncio
@@ -60,54 +60,38 @@ class KappaEndianBase:
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
         self.device_hash = device_hash
+        self.intent = "none"
+        self.commercial_use = False
         self._setup_config()
 
     def _setup_config(self):
         config_file = "config/config.json"
-        config_dir = os.path.dirname(config_file)
-        if not os.path.exists(config_dir):
-            os.makedirs(config_dir)
+        if not os.path.exists(os.path.dirname(config_file)):
+            os.makedirs(os.path.dirname(config_file))
         if not os.path.exists(config_file):
-            self._write_config("none", False, config_file)
-        try:
-            with open(config_file, "r") as f:
-                config = json.load(f)
-            self.intent = config.get("intent")
-            self.commercial_use = config.get("commercial_use", False)
-            if self.intent not in ["educational", "commercial", "none"]:
-                raise ValueError("Invalid intent in config.")
-        except (json.JSONDecodeError, Exception) as e:
-            print(f"Nav3d: Config error: {e}. Resetting to default.")
-            self._write_config("none", False, config_file)
-            self.intent = "none"
-            self.commercial_use = False
+            self._write_config("none", False)
+        with open(config_file, "r") as f:
+            config = json.load(f)
+        self.intent = config.get("intent", "none")
+        self.commercial_use = config.get("commercial_use", False)
 
-    def _write_config(self, intent, commercial_use, config_file="config/config.json"):
+    def _write_config(self, intent, commercial_use):
         config = {"intent": intent, "commercial_use": commercial_use}
-        config_dir = os.path.dirname(config_file)
-        if not os.path.exists(config_dir):
-            os.makedirs(config_dir)
-        try:
-            with open(config_file, "w") as f:
-                json.dump(config, f, indent=4)
-        except Exception as e:
-            print(f"Nav3d: Config write error: {e}")
+        with open("config/config.json", "w") as f:
+            json.dump(config, f, indent=4)
 
     def _log_license_check(self, result):
-        try:
-            with open("license_log.txt", "a") as f:
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                f.write(f"[{timestamp}] License Check: {result}, Intent: {self.intent}, Commercial: {self.commercial_use}\n")
-        except Exception as e:
-            print(f"Nav3d: License log error: {e}")
+        with open("license_log.txt", "a") as f:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[{timestamp}] License Check: {result}, Intent: {self.intent}, Commercial: {self.commercial_use}\n")
 
     def _check_license(self):
-        if self.intent not in ["educational", "commercial"]:
-            notice = "NOTICE: Declare intent via config (educational/commercial) at github.com/tetrasurfaces/issues."
+        if self.intent not in ["educational", "commercial", "none"]:
+            notice = "NOTICE: Declare intent via config at github.com/tetrasurfaces/issues."
             self._log_license_check(f"Failed: {notice}")
             raise ValueError(notice)
         if self.commercial_use and self.intent != "commercial":
-            notice = "Commercial use needs 'commercial' intent and license approval."
+            notice = "Commercial use needs 'commercial' intent approval."
             self._log_license_check(f"Failed: {notice}")
             raise ValueError(notice)
         self._log_license_check("Passed")
