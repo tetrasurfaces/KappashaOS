@@ -18,6 +18,10 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS development.
 # Access restricted until public phase. Consult tetrasurfaces (github.com/tetrasurfaces/issues) post-release.
 
+# KappashaOS/core/hash/k.py
+# License: AGPL-3.0-or-later (xAI fork, 2025)
+# No warranties. See <https://www.gnu.org/licenses/>.
+
 import numpy as np
 
 def fibonacci_spiral(laps=18, ratio=1.618):
@@ -46,7 +50,7 @@ def generate_k(curve, primes=[2, 3, 5, 7, 11, 13]):
             k_code.append(f"K {p} {delay:.1f} {color} {gap:.1f}")
     return "\n".join(k_code)
 
-# Navi safety check (mock)
+# Navi safety (mock)
 def navi_safety(delay):
     if delay > 0.6:
         print("Navi: Warning - 0.6 ns elevation. Breathe.")
