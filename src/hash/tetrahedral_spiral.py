@@ -1,25 +1,9 @@
-# Kapacha OS/core/hash/flux_hash.py
-# License: AGPL-3.0-or-later (xAI fork, 2025)
+# Kappasha OS/core/hash/tetrahedral_spiral.py
+# Copyright (C) 2025 Todd Macrae Hutchinson (69 Dollard Ave, Mannum SA 5238)
+# Licensed under GNU Affero General Public License v3.0 only
 # This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
-#
-# Copyright 2025 xAI
-#
-# Private Development Note: This repository is private for xAI’s KappashaOS development.
-# Access restricted until public phase. Consult tetrasurfaces (github.com/tetrasurfaces/issues) post-release.
-
-# License: AGPL-3.0-or-later (xAI fork, 2025)
-# No warranties. See <https://www.gnu.org/licenses/>.
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
 # No warranty. No wetware. No division.
 # Amendment: No bio synthesis without consent. Flux hashes curvature only.
 
@@ -29,22 +13,22 @@ import sys
 sys.setrecursionlimit(52)  # 52 Mercenary depths
 
 def tetrahedral_spiral(decimal=0.0, laps=18, ratio=1.618):
-    theta = np.linspace(0, 2 * np.pi * laps, 1000)
+    theta = np.linspace(0, 2 * np.pi * laps, 194062501)  # Match worker iter count
     r = np.exp(theta / ratio) / 10
     x = r * np.cos(theta) * np.sin(theta / 4)
     y = r * np.sin(theta) * np.cos(theta / 4)
     z = r * np.cos(theta / 2) + decimal
     return np.stack((x, y, z), axis=1)
 
-def flux_hash(node):
+def flux_hash(node, iter_progress=0.1152):  # 11.52% from worker
     norm = np.linalg.norm(node)
-    delay = 0.2 if norm % 3 == 0 else (0.4 if norm % 3 == 1 else 0.6)
-    regret = 0.6 if norm % 4 == 0 else (0.4 if norm % 4 == 1 else 0.2)
-    silence = 0.4 if abs(norm - 0.19462501) < 1e-6 else (0.2 if norm < 0.5 else 0.6)
+    delay = 0.095251 if iter_progress < 0.5 else 0.4  # worker ms breath
+    regret = 0.6 if norm % 4 == 0 else (0.2 if norm % 4 == 2 else 0.4)
+    silence = 0.4 if abs(norm - 0.19462501) < 1e-6 else 0.2
     bits = [1 if d > 0.4 else 0 for d in [delay, regret, silence]]
-    if abs(node[0] - 0.19462501) < 1e-6:  # 53rd Mercenary fold (corrected)
+    if abs(node[0] - 0.19462501) < 1e-6:  # 53rd Mercenary fold
         bits.append(4)  # fold flag
-    return ''.join(map(str, bits[:3]))  # three-bit flux, fold optional
+    return ''.join(map(str, bits[:3]))  # three-bit flux
 
 def bit_swap_tree(nodes):
     for node in nodes:
@@ -53,8 +37,8 @@ def bit_swap_tree(nodes):
     return nodes
 
 # Run it
-tree = tetrahedral_spiral(0.19462501)  # seed at Mercenary fold
+tree = tetrahedral_spiral(0.19462501)[:22370000]  # Match worker iter
 flipped_tree = bit_swap_tree(tree.copy())
-hash_value = flux_hash(flipped_tree[0])  # first node
+hash_value = flux_hash(flipped_tree[0], 0.1152)  # First node, 11.52% progress
 print(f"Flux Hash: {hash_value}")  # e.g., "104" or "210" with fold
-print("Tetra spiral flipped via breath.")
+print(f"Worker sync: 22,370,000 / 194,062,501 - Bloom at 0.19462501")
