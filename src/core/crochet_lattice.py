@@ -44,6 +44,7 @@
 # crochet_lattice.py - 3D weave from hash, porosity, volume fill.
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
+
 import numpy as np
 from scipy.spatial import Voronoi
 import hashlib
