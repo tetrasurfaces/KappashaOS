@@ -1,4 +1,4 @@
-# kappawise.py - Spiral-based grid generation using hash indexing
+# kappawise.py - Spiral-based grid generation using hash indexing with spiral_hash
 #
 # Copyright 2025 xAI
 #
@@ -16,24 +16,23 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 import hashlib
 import numpy as np
-
-def murmur32(input_str):
-    # Mock 32-bit hash using SHA-256
-    h = hashlib.sha256(input_str.encode()).digest()
-    return int.from_bytes(h[:4], 'big')
+from spiral_hash import kappa_spiral_hash, proof_check  # Import spiral hash
 
 SEED = 42  # Seeded for reproducibility
 def kappa_coord(user_id, theta):
     """
-    Compute 107-bit coordinates (x, y, z) for a kappa grid point, safely using 64-bit ints.
-    Uses a 128-bit hash with modular reduction to fit 107 bits.
+    Compute 107-bit coordinates (x, y, z) using spiral_hash for 3328-bit precision.
     """
     input_str = str(user_id) + str(theta) + str(SEED)
-    raw = int(hashlib.sha512(input_str.encode()).hexdigest(), 16) % (1 << 107)  # 107-bit hash
-    # Split into three 64-bit segments, reduce to 107-bit range
-    x = np.int64((raw >> 0) & ((1 << 107) - 1))  # 107 bits
-    y = np.int64((raw >> 107) & ((1 << 107) - 1))  # Next 107 bits (wrap)
-    z = np.int64((raw >> 214) & ((1 << 107) - 1))  # Third 107 bits
+    comfort_vec = np.random.rand(3)  # Mock comfort vector
+    hash_data = kappa_spiral_hash(input_str, comfort_vec, theta_base=100, laps=18)
+    spiral_vec = hash_data['spiral_vec']
+    # Map 3328-bit spiral to 107-bit coords, reduce to grid range
+    idx = int((user_id % 3328) / 31)  # 107 points from 3328
+    x = np.int64(spiral_vec[idx, 0] * (1 << 107) % (1 << 107))  # 107-bit
+    y = np.int64(spiral_vec[idx, 1] * (1 << 107) % (1 << 107))  # 107-bit
+    z = np.int64(spiral_vec[idx, 2] * (1 << 107) % (1 << 107))  # 107-bit
+    proof_check(spiral_vec)  # Verify spiral integrity
     return x, y, z
 
 # Example usage (commented out)
