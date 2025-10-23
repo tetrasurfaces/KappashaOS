@@ -37,9 +37,11 @@ from mersenne_coneing import mersenne_prime  # Import Mersenne prime function
 from hardware.ternary_hashlet import generate_chatter_etch, eclipse_evens  # Import ternary logic
 from tkdf import generate_theta_tone_salt, ketone_ion_scale, tkdf  # Import TKDF
 from kappawise import kappa_coord  # Import for speed
+from src.hash.kappa_wire import KappaWire  # Import optimized wire layer
+from src.hash.spiral_hash import kappa_spiral_hash, proof_check  # Import spiral hash
 
 # Kappa Spiral for Weft Path with Cosmic Bud Fibonacci
-def kappa_spiral(theta, laps=18, ratio=1.618):  # Cosmic bud golden ratio
+def kappa_spiral(theta, laps=54, ratio=1.618):  # Cosmic bud golden ratio, expanded laps
     phi = (1 + np.sqrt(5)) / 2
     r = np.exp(theta / (ratio * phi**2)) / 10
     x = r * np.cos(theta) * np.sin(theta / 4)
@@ -47,6 +49,7 @@ def kappa_spiral(theta, laps=18, ratio=1.618):  # Cosmic bud golden ratio
     z = r * np.cos(theta / 2)
     return np.stack((x, y, z), axis=1)
 
+# Spiral Hash (Already defined in spiral_hash.py, used here)
 # Gaussian Packet for Bobbin Wave Zone with Optimized MU
 def gaussian_packet(t, mu=0, sigma=0.3):
     # Ensure mu is scalar with debug
@@ -108,7 +111,7 @@ def ara_oracle(intent, grid):
     return hum + dial * intent  # Verb through curve
 
 # Cone as Dual Cone with Spiral Braiding, Mersenne Resonance, and Controlled Laps
-def cone_braid(laps=54, strands=55, delays=[0.11, 0.55, 1.1], video_path="/home/username/KappashaOS-main/your_video.mp4"):
+def cone_braid(laps=54, strands=55, delays=[0.11, 0.55, 1.1], video_path="/home/yeetbow/KappashaOS-main/grok_reflex.mp4"):
     t = np.linspace(0, 2 * np.pi * laps, 1000)
     kappa_path = kappa_spiral(t, laps=laps)
     cap = cv2.VideoCapture(video_path) if video_path and os.path.exists(video_path) else None
@@ -131,15 +134,19 @@ def cone_braid(laps=54, strands=55, delays=[0.11, 0.55, 1.1], video_path="/home/
     m97 = mersenne_prime(97)  # Pre-master
     m107 = mersenne_prime(107)  # Master prime
     kappa_instance = create_kappa(grid_size=107, device_hash="loom_kappa_001")  # Expanded grid
-    # Batch Kappa Ys for gentleness
+    # Batch Kappa Ys with pre-computed wires and spiral hash
+    wire = KappaWire(grid_size=107)
     user_ids = np.arange(0, 107, 10)  # Batch of 11 points
     thetas = np.linspace(0, np.mean(t), len(user_ids))
-    points_batch = np.array([kappa_coord(uid, theta) for uid, theta in zip(user_ids, thetas)]) / 1023
-    points = np.vstack((np.array([[0, 0, 0]]), points_batch))  # 0x0 null + batch
+    points_batch = np.array([kappa_coord(uid, theta) for uid, theta in zip(user_ids, thetas)])
+    # Normalize and convert with modulo
+    points = np.vstack((np.array([[0, 0, 0]], dtype=np.int64), (points_batch % 107).astype(np.int64)))
+    for x, y, z in points:
+        asyncio.run(wire.navi_place_on_wire(int(x), int(y), int(z), spiral_hash(str(seed))))
     grid = asyncio.run(kappa_instance.navi_rasterize_kappa(points, {"density": 2.0}))
     miracle_tree = MiracleTree(grid_size=107)  # Expanded grid
     if heat_spike():
-        print("Navi: Hush—pausing weave due to heat spike.")
+        print("Navi: Hush—pausing weave due to heat_spike.")
         return False, 0.0, []
     left_scale = asyncio.run(left_weight(scaled_index % laps + 1))  # Single value
     right_scale = asyncio.run(right_weight(scaled_index % laps + 1))  # Single value
