@@ -43,7 +43,8 @@
 # 6. Open Development: Hardware docs shared post-private phase.
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
-
+#
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
 import numpy as np
 import asyncio
 import json
@@ -51,7 +52,7 @@ import os
 from datetime import datetime
 from scipy.spatial import Delaunay
 from solid import mesh  # Mock tetra surfaces
-from proto.revocation_stub import check_revocation
+from software.proto.revocation_stub import check_revocation
 from arch_utils import tetra_hash_surface
 
 def read_config(config_file="config/config.json"):
@@ -121,4 +122,5 @@ def check_license(commercial_use=False, intent=None):
 
 # Proxy function to create Kappa instance
 def create_kappa(grid_size=10, device_hash="kappa_001"):
+    from src.core.kappa_core import Kappa  # Lazy import to avoid circularity
     return Kappa(grid_size, device_hash)
