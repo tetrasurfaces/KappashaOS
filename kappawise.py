@@ -14,24 +14,27 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-# Assuming hash_utils is available; replace with actual implementation if needed.
-# For demonstration, we'll mock murmur32 as a simple hash function.
 import hashlib
+import numpy as np
+
 def murmur32(input_str):
-    # Mock implementation of a 32-bit hash (replace with actual murmur if available)
+    # Mock 32-bit hash using SHA-256
     h = hashlib.sha256(input_str.encode()).digest()
     return int.from_bytes(h[:4], 'big')
-SEED = 42  # Change if you want forkable worlds; seeded for reproducibility
+
+SEED = 42  # Seeded for reproducibility
 def kappa_coord(user_id, theta):
     """
-    Compute 107-bit coordinates (x, y, z) for a kappa grid point based on user_id and theta.
-    Uses a 128-bit hash to derive three 107-bit values with modular reduction.
+    Compute 107-bit coordinates (x, y, z) for a kappa grid point, safely using 64-bit ints.
+    Uses a 128-bit hash with modular reduction to fit 107 bits.
     """
     input_str = str(user_id) + str(theta) + str(SEED)
     raw = int(hashlib.sha512(input_str.encode()).hexdigest(), 16) % (1 << 107)  # 107-bit hash
-    x = (raw >> 0) & ((1 << 107) - 1)  # 107 bits
-    y = (raw >> 107) & ((1 << 107) - 1)  # Next 107 bits (wrap with modulo)
-    z = (raw >> 214) & ((1 << 107) - 1)  # Third 107 bits
+    # Split into three 64-bit segments, reduce to 107-bit range
+    x = np.int64((raw >> 0) & ((1 << 107) - 1))  # 107 bits
+    y = np.int64((raw >> 107) & ((1 << 107) - 1))  # Next 107 bits (wrap)
+    z = np.int64((raw >> 214) & ((1 << 107) - 1))  # Third 107 bits
     return x, y, z
+
 # Example usage (commented out)
 # print(kappa_coord(12345, 3.14159))  # Outputs large 107-bit coords
