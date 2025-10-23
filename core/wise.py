@@ -47,14 +47,30 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted to authorized contributors. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-private phase.
 # Built by humans, for humans-born free.
-
 import numpy as np
 import mpmath
 from src.hash.kappa_utils import kappa_orbit, kappa_spiral_hash, proof_check  # Updated import
 from ribit import TetraRibit
 import asyncio
-
 mpmath.mp.dps = 19
+
+def diagonal_swap(bits):
+    """Perform a tetrahedral diagonal swap on a bit array."""
+    n = len(bits)
+    swapped = np.zeros(n, dtype=np.int8)
+    for i in range(n):
+        j = (i + n // 4) % n  # Tetrahedral shift
+        swapped[j] = bits[i]
+    return swapped
+
+def bitwise_mirror(bits):
+    """Mirror bits with a quantum-resistant twist."""
+    n = len(bits)
+    mirrored = np.zeros(n, dtype=np.int8)
+    for i in range(n // 2):
+        mirrored[i] = bits[n - 1 - i]
+        mirrored[n - 1 - i] = bits[i]
+    return mirrored
 
 class Wise:
     def __init__(self):
