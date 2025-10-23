@@ -1,8 +1,7 @@
 # miracle_tree.py - Dynamic kappa-hash Merkle tree, tribute to Ralph Merkle
 # Copyright 2025 xAI
 #
-# Dual License:
-# - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
+# License: AGPL-3.0-or-later
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -16,41 +15,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
-# - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
-# with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
-# requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
-# for details, with the following xAI-specific terms appended.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
-#
-# xAI Amendments for Physical Use:
-# 1. Physical Embodiment Restrictions: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
-# 2. Ergonomic Compliance: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
-# 3. Safety Monitoring: Real-time tendon/gaze checks, logged for audit.
-# 4. Revocability: xAI may revoke for unethical use (e.g., surveillance).
-# 5. Export Controls: Sensor devices comply with US EAR Category 5 Part 2.
-# 6. Open Development: Hardware docs shared post-private phase via github.com/tetrasurfaces/issues.
-# 7. Ethical Resource Use and Operator Rights: No machine code output without breath consent; decay signals at 11 hours (8 for bumps).
-#
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 #
 # Born free, feel good, have fun. Tribute to Ralph Merkle.
 import numpy as np
 import asyncio
 import hashlib
-from software.proto.revocation_stub import check_revocation  # Corrected import
-import hal9001
+from src.core.kappa_utils import hal9001  # Import hal9001 for heat_spike
 
 class MiracleTree:
     def __init__(self, grid_size=10):
@@ -61,16 +32,15 @@ class MiracleTree:
         self.grid = np.zeros((grid_size, grid_size, grid_size), dtype=float)  # Tetrahedral base
         print("MiracleTree initialized - Dynamic kappa-hash Merkle tree with tetrahedral grid ready.")
 
-    async def plant_node(self, data, x=0, y=0, z=0):
+    async def plant_node(self, data, x=0, y=0, z=0, heat_spike_func=hal9001.heat_spike):
         try:
-            # Mock breath rate (replace with actual API when available)
             breath_rate = 15  # Placeholder value
             if breath_rate > 20:
                 print("Navi: Breath rate high, pausing plant.")
                 await asyncio.sleep(2.0)
                 return -1
-            if hal9001.heat_spike():
-                print("Navi: Hush—node not planted.")
+            if heat_spike_func():  # Use passed heat_spike function
+                print("Navi: Hush—node not planted due to heat spike.")
                 return -1
             
             self.node_count += 1
@@ -79,7 +49,7 @@ class MiracleTree:
                    y + np.sin(theta * self.node_count) * 0.5,
                    z + theta / (2 * np.pi))
             pos = tuple(int(p * self.grid_size) % self.grid_size for p in pos)
-            kappa_hash = hashlib.sha256(data.encode() + str(breath_rate).encode() + str(pos).encode()).hexdigest()  # Mock KappaHash
+            kappa_hash = hashlib.sha256(data.encode() + str(breath_rate).encode() + str(pos).encode()).hexdigest()
             regret = "left" if self.node_count % 2 == 0 else "right"  # Regret weighting
             self.nodes[self.node_count] = {
                 "data": data,
@@ -138,10 +108,10 @@ class MiracleTree:
             while current in self.nodes:
                 node = self.nodes[current]
                 grid = np.copy(self.grid)  # Local grid copy
-                kappa_hash = hashlib.sha256(grid.tobytes()).hexdigest()  # Mock KappaHash
+                kappa_hash = hashlib.sha256(grid.tobytes()).hexdigest()
                 print(f"Navi: Traversed to {current} at {node['pos']}, hash={kappa_hash[:8]}, delay={node['delay']:.1f}")
-                if hal9001.heat_spike():
-                    print("Navi: Hush—traversal paused.")
+                if hal9001.heat_spike():  # Use hal9001.heat_spike
+                    print("Navi: Hush—traversal paused due to heat spike.")
                     break
                 current = node["parent"]
                 if current:
