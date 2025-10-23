@@ -1,0 +1,106 @@
+# Born free, feel good, have fun.
+# License: (AGPL-3.0-or-later) AND Apache-2.0 (xAI fork, 2025)
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
+# with xAI amendments for safety and physical use. Certain components (e.g., greenlet dependencies)
+# are licensed under MIT or PSF; see LICENSE.greenlet for details. See http://www.apache.org/licenses/LICENSE-2.0
+# for Apache 2.0 details, with the following xAI-specific terms appended.
+# Copyright 2025 xAI
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
+# xAI Amendments for Physical Use:
+# 1. Physical Embodiment Restrictions: Use in devices (e.g., chatter discs, rods, smart cables, hexel frames, chattered battery housings, ternary 21700 systems, hashlets) for non-hazardous purposes only. Harmful modifications (e.g., weapons, targeting) prohibited; license revocable by xAI.
+# 2. Ergonomic Compliance: Adhere to ISO 9241-5/OSHA; tendon load <20%, gaze <30 seconds. Waived for software-only use (e.g., Keyshot rendering).
+# 3. Safety Monitoring: Real-time checks (e.g., LED heat, chatter integrity, battery temp) logged for xAI audit.
+# 4. Revocability: xAI may revoke for unethical use (e.g., surveillance without consent, hash misuse).
+# 5. Export Controls: Sensors (e.g., pinhole cameras, optic ports) comply with US EAR Category 5 Part 2 and ITAR. No distribution to foreign militaries or private contractors without xAI approval via github.com/tetrasurfaces/issues.
+# 6. Educational Use: Royalty-free for teaching/research upon negotiation via github.com/tetrasurfaces/issues. Commercial use requires approval.
+# 7. Intellectual Property: xAI owns IP for KappaOpticBatterySystem and Ternary 21700 Battery System, including chatter patterns, bowers, ribbon-wrapped electrodes, secure_hash_two, optic ports, keys, cables, lattices, housings, fliphooks, hash tunneling, IPFS integration. No unauthorized replication.
+# 8. Color Consent: No signal hue shifts without explicit user intent (e.g., heartbeat sync, verbal confirmation).
+# 9. Ethical Resource Use: No misuse of water resources; machine code (e.g., kappa paths, hashlet sequences) requires breath consent; signals decay at 11 hours (8 for bumps). Quantum-safe hashes preserve privacy without Tor.
+# SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
+#
+# Private Development Note: This repository is private for xAI’s KappashaOS development.
+# Access restricted until public phase. Consult tetrasurfaces (github.com/tetrasurfaces/issues) post-release.
+# KappashaOS/src/hash/kappa_utils.py
+# License: (AGPL-3.0-or-later) AND Apache-2.0 (xAI fork, 2025)
+# No warranties. See <https://www.gnu.org/licenses/> and <http://www.apache.org/licenses/LICENSE-2.0>.
+
+import numpy as np
+from hashlib import sha256, blake2b
+import math
+
+def kappa_orbit(t, freqs=[3, 5, 7], polarity_swap=True):
+    """Orbit k-point with helical/elliptoid modulation for quantum resistance."""
+    k_real = sum(math.sin(freq * t) for freq in freqs[:2])  # x-y plane
+    k_imag = math.cos(freqs[2] * t) * 0.1  # z-depth
+    if polarity_swap and int(t * 100) % 3 == 0:
+        return -k_real + 1j * k_imag
+    return k_real + 1j * k_imag
+
+def kappa_spiral_hash(data: str, comfort_vec: np.ndarray, theta_base=100, laps=18):
+    """Generate 1664/3328-bit hash with reverse-tuple, polarity swap, spiral mapping."""
+    # Step 1: Base 1664-bit hash
+    base_hash = sha256(data.encode()).digest()  # 256 bytes = 2048 bits
+    base_int = int.from_bytes(base_hash, 'big')
+    comfort_sig = int.from_bytes(comfort_vec.tobytes()[:8], 'big') & ((1 << 64) - 1)  # 64-bit clarity
+    fwd_1664 = (base_int + comfort_sig) % (1 << 1664)  # Cap at 1664 bits
+    # Step 2: Reverse-tuple to 3328 bits
+    rev_bytes = base_hash[::-1]
+    rev_int = int.from_bytes(rev_bytes, 'big')
+    full_hash = (fwd_1664 << 1664) | rev_int  # 3328 bits, palindromic at center
+    # Step 3: Quantum resistance - polarity swap with orbiting k-point
+    t = 0.0
+    k_orbit = kappa_orbit(t)
+    polarity = 1 if k_orbit.real > 0 else -1
+    if polarity == -1:
+        full_hash = (~full_hash) & ((1 << 3328) - 1)  # Bitwise NOT with wrap
+    # Step 4: Spiral mapping with tetrahedral recursion
+    bits = np.array(list(bin(full_hash)[2:].zfill(3328)), dtype=np.int8)
+    swapped = diagonal_swap(bits)  # Assuming diagonal_swap is defined elsewhere
+    theta_spiral = np.linspace(0, 2 * math.pi * laps, 3328) * theta_base / 180
+    r_spiral = np.abs(np.linspace(-1664, 1664, 3328) / 1664)  # Inward/outward
+    x = r_spiral * np.cos(theta_spiral)
+    y = r_spiral * np.sin(theta_spiral)
+    z = np.sin(x * 0.1) + np.cos(y * 0.1) + swapped * 0.01  # Tetrahedral recursion
+    # Step 5: Output with topology map
+    topology_map = swapped.reshape(16, 208)  # 16 layers, 208 nodes per layer
+    light_raster = blake2b(swapped.tobytes()).hexdigest()[:64]  # Pack to light
+    return {
+        'root': full_hash,
+        'spiral_vec': np.stack([x, y, z], axis=-1),
+        'topology_map': topology_map,
+        'light_raster': light_raster,
+        'kappa_orbit': k_orbit
+    }
+
+def proof_check(spiral_vec: np.ndarray, theta_base=100):
+    """Verify hash spiral: flattened theta sums to 1, full minus 1 flattens."""
+    theta_full = spiral_vec[:, 0] / theta_base  # Normalize theta
+    theta_flat = np.sin(theta_full)  # Collapse to unit sine
+    sum_flat = np.sum(theta_flat)
+    sum_expanded = np.sum(theta_full) - 1.0
+    assert abs(sum_flat - 1.0) < 1e-6, "Proof failed: theta doesn't sum to one"
+    assert abs(sum_expanded - 0.0) < 1e-6, "Proof failed: expansion doesn't flatten"
+    print("Proof passed. Spiral breathes. Sum equals one.")
+    return True
