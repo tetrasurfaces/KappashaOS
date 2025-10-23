@@ -36,8 +36,8 @@ from scale.scale import left_weight, right_weight  # Import scale functions
 from mersenne_coneing import mersenne_prime  # Import Mersenne prime function
 from hardware.ternary_hashlet import generate_chatter_etch, eclipse_evens  # Import ternary logic
 from tkdf import generate_theta_tone_salt, ketone_ion_scale, tkdf  # Import TKDF
-from src.hash.kappawise import kappa_coord  # Import for speed
-from kappa_wire import KappaWire  # Import optimized wire layer
+from kappawise import kappa_coord  # Import for speed
+from src.hash.kappa_wire import KappaWire  # Import optimized wire layer
 from src.hash.spiral_hash import kappa_spiral_hash, proof_check  # Import spiral hash
 
 # Kappa Spiral for Weft Path with Cosmic Bud Fibonacci
