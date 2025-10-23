@@ -1,22 +1,22 @@
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU Affero General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU Affero General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
 #
-#   You should have received a copy of the GNU Affero General Public License
-#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # - For hardware/embodiment interfaces (if any): Licensed under the Apache License, Version 2.0
-#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
-#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
-#   for details, with the following xAI-specific terms appended.
+# with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
+# requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+# for details, with the following xAI-specific terms appended.
 #
 # Copyright 2025 xAI
 #
@@ -24,7 +24,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,17 +42,15 @@
 # 6. **Open Development**: Hardware docs shared post-private phase.
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
-
 #!/usr/bin/env python3
 # kappasha256.py - Mock 24-round Keccak with kappa, theta, chi modulation.
-
 import hashlib
 import math
 import mpmath
 import asyncio
+import numpy as np
 
 mpmath.mp.dps = 19
-
 PHI_FLOAT = (1 + math.sqrt(5)) / 2
 KAPPA_BASE = 0.3536
 MODULO = 369
@@ -161,14 +159,19 @@ def divide_by_180(hash_hex, key_quotient=None):
         return recovered, flattened
     return flattened
 
-def kappasha256(message: bytes, key: bytes, kappa=0.1, theta=36.9, chi=11):
+def hash_surface(surface_data):
+    """Hash a 3D surface using kappasha256 with surface-specific modulation."""
+    key = hashlib.sha256(b"surface_key").digest()
+    kappa = 0.15  # Surface-specific kappa
+    theta = 36.9  # Surface tilt angle
+    chi = 11      # Surface complexity factor
     state = [[0 for _ in range(GRID_DIM)] for _ in range(GRID_DIM)]
     key_int = int.from_bytes(key, 'big')
     key_lanes = [[(key_int >> (LANE_BITS * (x * GRID_DIM + y))) & ((1 << LANE_BITS) - 1) for y in range(GRID_DIM)] for x in range(GRID_DIM)]
-    padded = pad_message(message)
+    padded = pad_message(surface_data.tobytes() if isinstance(surface_data, np.ndarray) else surface_data.encode())
     rate_bytes = RATE // 8
     theta_rad = math.radians(theta)
-    
+
     for i in range(0, len(padded), rate_bytes):
         chunk = padded[i:i + rate_bytes]
         state = absorb(state, chunk)
@@ -179,7 +182,29 @@ def kappasha256(message: bytes, key: bytes, kappa=0.1, theta=36.9, chi=11):
             state = pi(state)
             state = chi(state)
             state = iota(state, round_idx)
-    
+
+    hash_hex = squeeze(state)
+    return hash_hex
+
+def kappasha256(message: bytes, key: bytes, kappa=0.1, theta=36.9, chi=11):
+    state = [[0 for _ in range(GRID_DIM)] for _ in range(GRID_DIM)]
+    key_int = int.from_bytes(key, 'big')
+    key_lanes = [[(key_int >> (LANE_BITS * (x * GRID_DIM + y))) & ((1 << LANE_BITS) - 1) for y in range(GRID_DIM)] for x in range(GRID_DIM)]
+    padded = pad_message(message)
+    rate_bytes = RATE // 8
+    theta_rad = math.radians(theta)
+
+    for i in range(0, len(padded), rate_bytes):
+        chunk = padded[i:i + rate_bytes]
+        state = absorb(state, chunk)
+        for round_idx in range(ROUNDS):
+            state = kappa_transform(state, key_lanes, round_idx, kappa, theta_rad, chi)
+            state = theta(state)
+            state = rho(state)
+            state = pi(state)
+            state = chi(state)
+            state = iota(state, round_idx)
+
     hash_hex = squeeze(state)
     H = mpmath.mpf(int(hash_hex, 16))
     quotient = mpmath.floor(H / mpmath.pi)
@@ -196,6 +221,9 @@ if __name__ == "__main__":
         while True:
             hash_hex, flattened, quotient = kappasha256(message, key, kappa=0.2, theta=36.9, chi=11)
             print(f"Navi: Hash {hash_hex[:16]} - Flattened {flattened}")
+            surface_data = np.random.rand(5, 5, 3)  # Mock surface
+            surface_hash = hash_surface(surface_data)
+            print(f"Navi: Surface Hash {surface_hash[:16]}")
             tendon_load = np.random.rand() * 0.3
             gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
             if tendon_load > 0.2:
@@ -205,5 +233,4 @@ if __name__ == "__main__":
                 await asyncio.sleep(2.0)
                 gaze_duration = 0.0
             await asyncio.sleep(1.0 / 60)
-
     asyncio.run(navi_test())
