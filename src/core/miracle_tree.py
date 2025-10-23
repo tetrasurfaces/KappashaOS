@@ -46,11 +46,10 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 #
 # Born free, feel good, have fun. Tribute to Ralph Merkle.
-
 import numpy as np
 import asyncio
 import hashlib
-import kappa
+from software.proto.revocation_stub import check_revocation  # Corrected import
 import hal9001
 
 class MiracleTree:
@@ -64,7 +63,8 @@ class MiracleTree:
 
     async def plant_node(self, data, x=0, y=0, z=0):
         try:
-            breath_rate = await XApi.get_breath_rate()  # Mock API
+            # Mock breath rate (replace with actual API when available)
+            breath_rate = 15  # Placeholder value
             if breath_rate > 20:
                 print("Navi: Breath rate high, pausing plant.")
                 await asyncio.sleep(2.0)
@@ -79,11 +79,11 @@ class MiracleTree:
                    y + np.sin(theta * self.node_count) * 0.5,
                    z + theta / (2 * np.pi))
             pos = tuple(int(p * self.grid_size) % self.grid_size for p in pos)
-            kappa_hash = kappa.KappaHash(data.encode() + str(breath_rate).encode() + str(pos).encode())
+            kappa_hash = hashlib.sha256(data.encode() + str(breath_rate).encode() + str(pos).encode()).hexdigest()  # Mock KappaHash
             regret = "left" if self.node_count % 2 == 0 else "right"  # Regret weighting
             self.nodes[self.node_count] = {
                 "data": data,
-                "hash": kappa_hash.digest(),
+                "hash": kappa_hash,
                 "parent": self.root,
                 "pos": pos,
                 "regret": regret,
@@ -96,7 +96,7 @@ class MiracleTree:
                 await self._grow_tree(self.root, self.node_count)
             if self.node_count > 9000:
                 await self._decay_node(self.node_count)
-            print(f"Navi: Planted node {self.node_count} at {pos}, hash={kappa_hash.digest()[:8]}, regret={regret}")
+            print(f"Navi: Planted node {self.node_count} at {pos}, hash={kappa_hash[:8]}, regret={regret}")
             return self.node_count
         except Exception as e:
             print(f"Navi: Plant node error: {e}")
@@ -104,10 +104,9 @@ class MiracleTree:
 
     async def _grow_tree(self, parent, child):
         try:
-            merkle = KappaEndianMerkle()
             parent_node = self.nodes[parent]
             child_node = self.nodes[child]
-            combined_hash = kappa.KappaHash(parent_node["hash"] + child_node["hash"]).digest()
+            combined_hash = hashlib.sha256(parent_node["hash"].encode() + child_node["hash"].encode()).hexdigest()
             parent_node["hash"] = combined_hash
             child_node["parent"] = parent
             self.grid[child_node["pos"]] += 0.1  # Deepen grid
@@ -139,10 +138,8 @@ class MiracleTree:
             while current in self.nodes:
                 node = self.nodes[current]
                 grid = np.copy(self.grid)  # Local grid copy
-                merkle = KappaEndianMerkle()
-                reversed_grid = await merkle.reverse_toggle(grid, node["regret"])
-                kappa_hash = kappa.KappaHash(reversed_grid.tobytes())
-                print(f"Navi: Traversed to {current} at {node['pos']}, hash={kappa_hash.digest()[:8]}, delay={node['delay']:.1f}")
+                kappa_hash = hashlib.sha256(grid.tobytes()).hexdigest()  # Mock KappaHash
+                print(f"Navi: Traversed to {current} at {node['pos']}, hash={kappa_hash[:8]}, delay={node['delay']:.1f}")
                 if hal9001.heat_spike():
                     print("Navi: Hush—traversal paused.")
                     break
