@@ -18,7 +18,7 @@
 
 import numpy as np
 import asyncio
-from spiral_hash import kappa_spiral_hash  # Import spiral hash
+from src.hash.spiral_hash import kappa_spiral_hash  # Import spiral hash
 
 class KappaWire:
     def __init__(self, grid_size=107):
