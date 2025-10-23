@@ -1,6 +1,6 @@
 # -- Kappasha Secure Hashing Algorithm v0.1 -- 
 # Dual license: Apache 2.0 + AGPLv3 (XAI amendments)
-# Kapa-KOS prototype - prime-gap channel hash with ethical light control
+# Kappasha prototype - prime-gap channel hash with ethical light control
 # Side channels: 0.2, 0.4, 0.6 ns - lock/unlock, index gaps
 # XAI Amendments: Color consent required, no advertisements, minimal subliminal cues optional
 # Inspired by Tesla valve light aging, user-driven experience
@@ -18,7 +18,7 @@ REVS = [13, 11, 7, 5, 3, 2]  # backward - 18 laps
 # User consent for color modulation (default off)
 COLOR_CONSENT = False  # Set to True via user input for hue shifts
 
-def kaprekar_gap(n: int, m: int) -> float:
+def kappa_gap(n: int, m: int) -> float:
     # Gap between two primes - returns even-indexed delay
     assert m > n and m in PRIMES, "Must be prime"
     d = (m - n) / PHI  # golden gap
@@ -45,7 +45,7 @@ def is_zero_knot(angle: float) -> bool:
     return abs(math.sin(angle)) < 1e-9  # palindromic zero
 
 # Run it with user consent prompt (simulated here)
-seed = 0xdeadbeef
+seed = 42
 print("Color consent? (y/n): ")  # In real app, user inputs 'y' or 'n'
 # Simulate consent for demo
 COLOR_CONSENT = True  # Change to False for no color shift
