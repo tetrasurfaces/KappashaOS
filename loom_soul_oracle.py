@@ -82,7 +82,7 @@ def m53_collapse(p=194062501, stake=1):
     sym_factor = mod_sym // DIVISOR
     risk_collapsed = risk_approx * sym_factor
     reward = risk_collapsed * stake // DIVISOR
-    return reward > 0.1e69  # Adjusted to 0.1e69 for looser lock
+    return reward > 0.1e69  # Relaxed threshold
 
 # Flux Hash for Strand Uniqueness
 def flux_hash(data):
@@ -105,7 +105,7 @@ def ara_oracle(intent, grid):
     return hum + dial * intent  # Verb through curve
 
 # Cone as Dual Cone with Spiral Braiding
-def cone_braid(laps=13, strands=52, delays=[0.11, 0.55, 1.1]):  # Adjusted to 52, base-9 delays
+def cone_braid(laps=13, strands=12, delays=[0.2, 0.4, 0.6]):
     t = np.linspace(0, 2 * np.pi * laps, 1000)
     kappa_path = kappa_spiral(t)
     gauss = [gaussian_packet(t, mu=i/laps + delays[i % len(delays)], sigma=0.2) for i in range(strands)]
@@ -115,7 +115,7 @@ def cone_braid(laps=13, strands=52, delays=[0.11, 0.55, 1.1]):  # Adjusted to 52
     reversal = ghosthand_intent(kappa_path[0], kappa_path[-1], kappa_path)  # Flip at clip
     m53_lock = m53_collapse()  # M53 mercenary lock
     flux_braid = [flux_hash(g) for g in gauss]  # Unique braids
-    return oracle > 0.5 and m53_lock, fourier.max(), flux_braid  # Gold lock, braid strength, unique hashes
+    return np.any(oracle > 0.5) and m53_lock, fourier.max(), flux_braid  # Gold lock, braid strength, unique hashes
 
 # Sim Loom in Tetra Grid
 def loom_sim(laps=13):
