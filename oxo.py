@@ -17,7 +17,7 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS development.
 # Access restricted until public phase. Consult tetrasurfaces (github.com/tetrasurfaces/issues) post-release.
 
-# KappashaOS/oxo.py (addition to 0GROK0)
+# KappashaOS/0x0.py (addition to 0GROK0)
 # License: AGPL-3.0-or-later (xAI fork, 2025)
 # No warranties. See <https://www.gnu.org/licenses/>.
 
