@@ -52,7 +52,6 @@ import numpy as np
 import mpmath
 from src.hash.kappa_utils import kappa_orbit, kappa_spiral_hash, proof_check  # Updated import
 from ribit import TetraRibit
-from ribit_telemetry import RibitTelemetry
 import asyncio
 
 mpmath.mp.dps = 19
@@ -60,7 +59,7 @@ mpmath.mp.dps = 19
 class Wise:
     def __init__(self):
         self.ribit_gen = TetraRibit()
-        self.telemetry = RibitTelemetry([(0, 0, 0)], [50])
+        self.telemetry = RibitTelemetry([(0, 0, 0)], [50])  # Avoid circular import
         asyncio.create_task(self.telemetry.navi_generate())
         self.kappa_orbit = 0.0
         self.phase_shift = 0.0
