@@ -1,0 +1,26 @@
+# KappashaOS/requirements.txt
+# License: AGPL-3.0-or-later (xAI fork, 2025) / Apache-2.0 for hardware
+# Copyright 2025 xAI
+# Private Development Note: Restricted until public phase. See github.com/tetrasurfaces/issues post-release.
+
+python==3.11
+numpy==1.26.0
+scipy==1.11.0
+matplotlib==3.8.0
+greenlet==3.0.3
+tensorflow==2.15.0
+mpmath==1.3.0
+opencv-python==4.9.0
+flask==3.0.0
+flask-socketio==5.3.6
+# Repo-specific (local install assumed)
+# kappasha256
+# spiral_hash
+# m53_collapse (included in repo)
+# ribit, ribit_telemetry (local modules)
+
+# Notes:
+# - AGPL-3.0-or-later for core software, Apache-2.0 for hardware interfaces with xAI amendments.
+# - No bio-related libs (xAI amendment compliance).
+# - Hardware deps (e.g., opencv) for prism/camera prototypes, ergonomic monitoring TBD.
+# - Update pins post-public phase based on stability.
