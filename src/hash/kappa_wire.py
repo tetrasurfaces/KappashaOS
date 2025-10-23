@@ -14,10 +14,10 @@
 # GNU Affero General Public License for more details.
 #
 # You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
 import asyncio
+
 class KappaWire:
     def __init__(self, grid_size=107):
         self.grid_size = grid_size
@@ -26,36 +26,40 @@ class KappaWire:
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
         print("KappaWire initialized - live wires ready for 107 grid.")
+
     async def navi_place_on_wire(self, x: int, y: int, z: int, encoded: str) -> bool:
-        """Place encoded payload on kappa wire with Navi safety and batching."""
+        """Place encoded payload on kappa wire with Navi safety and enhanced batching."""
         if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
-            batch_size = 10  # Batch for gentleness
-            start_x, end_x = max(0, x - batch_size // 2), min(self.grid_size, x + batch_size // 2)
+            batch_size = 15  # Increased batch for 107 grid
+            start_x, end_x = max(0, x - batch_size // 2), min(self.grid_size, x + batch_size // 2 + 1)
             for bx in range(start_x, end_x):
-                for by in range(max(0, y - batch_size // 2), min(self.grid_size, y + batch_size // 2)):
-                    for bz in range(max(0, z - batch_size // 2), min(self.grid_size, z + batch_size // 2)):
+                for by in range(max(0, y - batch_size // 2), min(self.grid_size, y + batch_size // 2 + 1)):
+                    for bz in range(max(0, z - batch_size // 2), min(self.grid_size, z + batch_size // 2 + 1)):
                         self.wires[bx, by, bz] = encoded
-            self.tendon_load = np.random.rand() * 0.15  # Reduced load
-            self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.8 else 0.0  # Adjusted threshold
+            self.tendon_load = np.random.rand() * 0.1  # Further reduced load
+            self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.9 else 0.0  # Tighter threshold
             if self.tendon_load > 0.2:
                 print("KappaWire: Warning - Tendon overload. Resetting.")
                 self.reset()
             if self.gaze_duration > 30.0:
                 print("KappaWire: Warning - Excessive gaze. Pausing.")
-                await asyncio.sleep(1.0)  # Reduced pause
+                await asyncio.sleep(0.5)  # Reduced pause
                 self.gaze_duration = 0.0
             await asyncio.sleep(0)  # Minimal delay
             print(f"Navi: Placed {encoded[:10]}... on wire batch at ({x}, {y}, {z})")
             return True
         return False
+
     def retrieve_from_wire(self, x: int, y: int, z: int) -> str:
         """Retrieve payload from wire."""
         if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
             return self.wires[x, y, z] or ""
         return ""
+
     def reset(self):
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
+
 if __name__ == "__main__":
     async def navi_test():
         wire = KappaWire()
