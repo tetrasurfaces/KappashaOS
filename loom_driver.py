@@ -48,28 +48,34 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# loom_driver.py - Gaussian weft loom for KappashaOS, Post-Humanitarian operator control with Ribit and quantum resistance.
+# KappashaOS/loom_driver.py - Gaussian weft loom with video hash for KappashaOS, Post-Humanitarian operator control with Ribit and quantum resistance.
 # Copyright 2025 xAI
 
 import numpy as np
-import math
+import cv2
+import hashlib
 from greenlet import greenlet
+import asyncio
+
+# Placeholder imports (assume Ribit modules exist)
 from ribit import TetraRibit
 from ribit_telemetry import RibitTelemetry
 from src.hash.spiral_hash import kappa_spiral_hash, proof_check
-from kappasha256 import kappasha256
+from m53_collapse import m53_collapse
 
 class Shuttle:
     def __init__(self, shape='trout', lane=0, comfort_vec=np.zeros(3)):
-        self.shape = shape  # trout or dolphin
+        self.shape = shape
         self.lane = lane
         self.bobbin = []
         self.ribit = None
-        self.comfort_vec = comfort_vec  # [tendon_load, gaze_duration, temp]
+        self.comfort_vec = comfort_vec
 
     def tick(self, t, weft_amplitude, ribit_gen):
         sigma = 0.1 if self.shape == 'trout' else 0.3
-        tick_val = math.exp(-((t - 0.5) ** 2) / (2 * sigma ** 2)) * weft_amplitude
+        delay = [0.11, 0.55, 1.1][int(t * 3) % 3]  # Tuned delays
+        mu = (t + delay) % 1.0
+        tick_val = np.exp(-((t - mu) ** 2) / (2 * sigma ** 2)) * weft_amplitude
         intensity, state, color = ribit_gen.generate()
         self.ribit = f"{self.shape}_{color}_{intensity}"
         self.bobbin.append((tick_val, self.ribit))
@@ -77,53 +83,58 @@ class Shuttle:
 
 class Loom:
     def __init__(self):
-        self.weft = []  # Gaussian packets
-        self.heddles = []
-        self.shuttles = [Shuttle('trout', 0), Shuttle('dolphin', 1)]
+        self.weft = []
+        self.heddles = [{'pos': 0} for _ in range(11)]  # 11 channels
+        self.shuttles = [Shuttle('trout', i % 5) for i in range(52)]  # 52 shuttles, 5 lanes
         self.t = 0
         self.ribit_gen = TetraRibit()
         self.telemetry = RibitTelemetry([(0,0,0), (1,1,1)], [50, 100])
         asyncio.create_task(self.telemetry.navi_generate())
         self.kappa_orbit = 0.0
         self.phase_shift = 0.0
+        self.cap = cv2.VideoCapture(0)  # Phone camera
 
     def update_weft(self, incline_angle, data="weft_state"):
-        # Gaussian wave packet with tetrahedral recursion
         mu = self.t % 1.0
         sigma = 0.2 + abs(np.sin(incline_angle)) * 0.1
         amplitude = np.sin(self.t) + 1
-        recursion = np.array([1, 1/3, 1/6, 1/9])  # Tetrahedral scales
         weft_packet = amplitude * np.exp(-((np.linspace(0, 1, 100) - mu) ** 2) / (2 * sigma ** 2))
-        for scale in recursion:
-            self.weft.append(weft_packet * scale)
+        self.weft.append(weft_packet)
         self.t += 0.1
-        # Hash weft state with 1664/3328-bit
         hash_result = kappa_spiral_hash(data.encode(), np.array([0.1, 5.0, 30.0]))
         proof_check(hash_result['spiral_vec'])
-        return hash_result
+        m53_lock = m53_collapse()  # M53 mercenary lock
+        return hash_result, m53_lock
 
     def move_shuttle(self, shuttle):
-        # Quantum-resistant shuttle fall with polarity swap
         weft_val = self.weft[-1][int(self.t * 100) % 100] if self.weft else 1.0
-        self.kappa_orbit += np.sin(self.t) * 0.1  # Helical orbit
+        self.kappa_orbit += np.sin(self.t) * 0.1
         polarity = 1 if (int(self.kappa_orbit * 100) % 2) == 0 else -1
         adjusted_val = weft_val * polarity * np.sin(self.phase_shift)
-        self.phase_shift += 0.1  # Sinusoidal modulation
+        self.phase_shift += 0.1
         if shuttle.tick(self.t, adjusted_val, self.ribit_gen):
-            print(f"Shuttle {shuttle.shape} lane {shuttle.lane} active, Ribit: {shuttle.ribit}, Kappa Orbit: {self.kappa_orbit:.2f}")
+            print(f"Shuttle {shuttle.shape} lane {shuttle.lane} active, Ribit: {shuttle.ribit}")
         return adjusted_val > 0.1
 
     def adjust_heddles(self, shuttle):
-        # Dynamic heddles with echo
         epsilon = 1e-6
         for h in self.heddles:
-            h['pos'] = shuttle.lane + epsilon + np.sin(self.t) * 0.01  # Echo vibration
-            print(f"Heddle echo at {h['pos']:.6f}")
+            h['pos'] = shuttle.lane + epsilon + np.sin(self.t) * 0.2
+
+    def capture_and_hash(self):
+        ret, frame = self.cap.read()
+        if ret:
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            hash_obj = hashlib.sha256(gray.tobytes())
+            return hash_obj.hexdigest()
+        return None
 
 if __name__ == "__main__":
     loom = Loom()
     for _ in range(10):
-        hash_result = loom.update_weft(np.pi / 6)
+        hash_result, m53_lock = loom.update_weft(np.pi / 6)
         for s in loom.shuttles:
             loom.move_shuttle(s)
         loom.adjust_heddles(loom.shuttles[0])
+        video_hash = loom.capture_and_hash()
+        print(f"M53 Lock: {m53_lock}, Video Hash: {video_hash[:8]}")
