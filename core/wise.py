@@ -3,23 +3,23 @@
 # Wise transformations for KappashaOS simulations with 3328-bit, Ribit, and quantum resistance.
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU Affero General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU Affero General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
 #
-#   You should have received a copy of the GNU Affero General Public License
-#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # - For hardware/embodiment interfaces (if any): Licensed under the Apache License, Version 2.0
-#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
-#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
-#   for details, with the following xAI-specific terms appended.
+# with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
+# requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+# for details, with the following xAI-specific terms appended.
 #
 # Copyright 2025 xAI
 #
@@ -27,7 +27,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -50,7 +50,7 @@
 
 import numpy as np
 import mpmath
-from src.hash.spiral_hash import kappa_orbit, kappa_spiral_hash, proof_check
+from src.hash.kappa_utils import kappa_orbit, kappa_spiral_hash, proof_check  # Updated import
 from ribit import TetraRibit
 from ribit_telemetry import RibitTelemetry
 import asyncio
@@ -60,17 +60,23 @@ mpmath.mp.dps = 19
 class Wise:
     def __init__(self):
         self.ribit_gen = TetraRibit()
-        self.telemetry = RibitTelemetry([(0,0,0)], [50])
+        self.telemetry = RibitTelemetry([(0, 0, 0)], [50])
         asyncio.create_task(self.telemetry.navi_generate())
         self.kappa_orbit = 0.0
         self.phase_shift = 0.0
+        self.laps = 18  # Align with loom reversals
+
+    def ribit_generate(self, key):
+        """Mock Ribit generation for compatibility."""
+        intensity, state, color = self.ribit_gen.generate(key)
+        return intensity, state, color
 
     def light_wise(self, gaze, flex, kappa=0.2):
         """Light-wise: Speed index with 3328-bit hash and Ribit."""
         comfort_vec = np.array([0.1, gaze, 30.0])  # Mock comfort
-        hash_result = kappa_spiral_hash(f"light_{gaze}_{flex}", comfort_vec)
+        hash_result = kappa_spiral_hash(f"light_{gaze}_{flex}", comfort_vec, laps=self.laps)
         proof_check(hash_result['spiral_vec'])
-        intensity, state, color = ribit_generate(f"light_{gaze}")
+        intensity, state, color = self.ribit_generate(f"light_{gaze}")
         self.ribit_gen.raster_to_light(f"light_{intensity}")
         return (gaze * 2 + flex) * kappa / 3e8, color
 
@@ -86,7 +92,7 @@ class Wise:
     def time_wise(self, gaze, time_ms, kappa=0.2):
         """Time-wise: Latency index with quantum resistance."""
         comfort_vec = np.array([0.1, gaze, time_ms / 1000])
-        hash_result = kappa_spiral_hash(f"time_{gaze}_{time_ms}", comfort_vec)
+        hash_result = kappa_spiral_hash(f"time_{gaze}_{time_ms}", comfort_vec, laps=self.laps)
         proof_check(hash_result['spiral_vec'])
         t = time_ms / 1000
         self.phase_shift += np.cos(t) * 0.1
@@ -98,7 +104,7 @@ class Wise:
         """Wave-wise: Frequency index with Ribit and sinusoidal modulation."""
         frequency = entropy / 10000
         modulated = frequency * breath * np.sin(self.phase_shift)
-        intensity, state, color = ribit_generate(f"wave_{entropy}")
+        intensity, state, color = self.ribit_generate(f"wave_{entropy}")
         self.ribit_gen.raster_to_light(f"wave_{intensity}")
         self.phase_shift += 0.1 * (1 + kappa)
         return modulated, color
@@ -110,7 +116,8 @@ class Wise:
             for y in range(10):
                 for z in range(10):
                     grid[x, y, z] = curvature * (np.sin(x * kappa) + np.cos(y * kappa))
-        spiral_vec = kappa_spiral_hash(f"curve_{curvature}", np.array([0.1, 5.0, 30.0]))['spiral_vec']
+        comfort_vec = np.array([0.1, 5.0, 30.0])
+        spiral_vec = kappa_spiral_hash(f"curve_{curvature}", comfort_vec, laps=self.laps)['spiral_vec']
         return grid + spiral_vec[:10, :10, :10]  # Align with tetrahedral recursion
 
 if __name__ == "__main__":
