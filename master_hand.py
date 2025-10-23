@@ -1,5 +1,5 @@
 # Born free, feel good, have fun.
-
+# master_hand.py
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 # This program is free software: you can redistribute it and/or modify
@@ -18,14 +18,12 @@
 # - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
 # with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
 # for details, with the following xAI-specific terms appended.
-
 # Copyright 2025 xAI
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,7 +31,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # SPDX-License-Identifier: Apache-2.0
-
 # xAI Amendments for Physical Use:
 # 1. Physical Embodiment Restrictions: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
 # 2. Ergonomic Compliance: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
@@ -44,11 +41,9 @@
 # 7. No machine code output (e.g., kappa paths, hashlet sequences) without breath consent; decay signals at 11 hours (8 for bumps).
 # 8. Color Consent: No signal may change hue without explicit user intent (e.g., heartbeat sync or verbal confirmation).
 # 9. Intellectual Property: xAI owns all IP related to KappaOpticBatterySystem, including chatter patterns, stacked ports, moving keys, smart cables, RGB hexel lattices, chattered housings, fliphooks, hash tunneling, and IPFS integration. No unauthorized replication.
-
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 #
 # SPDX-License-Identifier: (AGPL-3.0-or-later) AND Apache-2.0
-
 import numpy as np
 import asyncio
 import random
@@ -56,30 +51,26 @@ import hashlib
 import struct
 import multiprocessing as mp
 from queue import Empty
-from kappasha256 import kappasha256
-from KappaSHA1664 import kappasha1664
-from secure_hash_two import secure_hash_two
+from src.hash.kappasha256 import kappasha256
+from src.hash.KappaSHA1664 import kappasha1664
+from src.hash.secure_hash_two import secure_hash_two
 from ribit_telemetry import RibitTelemetry
 from echo import Echo
 from rhombus_voxel import RhombusVoxel
-from porosity_hashing import porosity_hashing
-from kappaendian import KappaEndian
-import kappa
-import hal9001
+from src.hash.porosity_hashing import porosity_hashing
+from src.core.kappa_core import create_kappa  # Updated import
+from src.core.hal9001 import hal9001
 from blockclockspeed_fleet import node_loop
 
 # Mock classes for missing dependencies
 class GyroGimbal:
     def __init__(self):
         self.angles = {'x': 0.0, 'y': 0.0, 'z': 0.0, 'curl_axis': 0.0}
-    
     def tilt(self, axis, angle):
         self.angles[axis] += angle
-    
     def stabilize(self):
         for axis in self.angles:
             self.angles[axis] *= 0.9
-    
     def reset(self):
         self.angles = {'x': 0.0, 'y': 0.0, 'z': 0.0, 'curl_axis': 0.0}
 
@@ -87,7 +78,6 @@ class ThoughtCurve:
     def __init__(self):
         self.current_step = 0
         self.max_steps = 100
-    
     def spiral_tangent(self, prev_point, curr_point):
         try:
             dx = curr_point[0] - prev_point[0]
@@ -101,10 +91,8 @@ class ThoughtCurve:
 class TetraVibe:
     def pulse(self, intensity):
         print(f"TetraVibe: Pulsed at intensity {intensity}")
-    
     def friction_vibe(self, p1, p2, kappa):
         return [kappa * (p2[0] - p1[0]), 0.0]
-    
     def gyro_gimbal_rotate(self, points, angles):
         return points  # Mock rotation
 
@@ -121,7 +109,7 @@ class MasterHand:
         self.gimbal = GyroGimbal()
         self.curve = ThoughtCurve()
         self.voxel = RhombusVoxel(grid_size=10, kappa=kappa, rhombus_angle=60)
-        self.endian = KappaEndian(device_hash="master_hand_001")
+        self.endian = KappaEndianBase(device_hash="master_hand_001")  # Updated to base class
         self.price_history = []
         self.vibe_model = TetraVibe()
         self.kappa = kappa
@@ -131,6 +119,7 @@ class MasterHand:
         self.ribit = RibitTelemetry([], [])
         self.echo = Echo()
         self.gossip_queue = mp.Queue()  # For console tree and fleet orchestration
+        self.kappa_instance = create_kappa(grid_size=kappa_grid, device_hash="master_hand_kappa_001")  # Use factory
         print("MasterHand initialized - Nav3d-integrated, rhombus voxel grid, console trees, IPFS fleet-ready.")
 
     async def navi_nudge(self):
@@ -145,18 +134,14 @@ class MasterHand:
                     self.move(twitch)
                     self.echo.record(f"move by {twitch:.2f}")
                     print(f"Nav3d: Hey! Move by {twitch:.2f}")
-
                 gyro_data = np.array([np.random.rand() * 0.2 - 0.1, np.random.rand() * 0.2 - 0.1, 0.0])
                 await self.adjust_kappa(gyro_data)
-
                 intensity, state, color = self.ribit.generate()
                 print(f"Nav3d: Ribit - Intensity {intensity}, State {state}, Color {color}")
-
                 grid, paths = await self.voxel.generate_voxel_grid()
                 if len(paths) > 9000:  # Bump logic
                     await self.voxel.output_kappa_paths()
                     self.echo.record(f"bump paths {len(paths)}")
-
                 if self.curve.current_step < self.curve.max_steps:
                     tangent, _ = self.curve.spiral_tangent(
                         self.price_history[-1] if self.price_history else (0, 0),
@@ -165,13 +150,11 @@ class MasterHand:
                     if tangent:
                         self.vibe_model.pulse(3)
                         print("Nav3d: Path hedge - unwind detected")
-
                 try:
                     gossip = self.gossip_queue.get(timeout=0.05)
                     self.echo.record(f"gossip received: {gossip[:16]}")
                 except Empty:
                     pass
-
                 self.tendon_load = np.random.rand() * 0.3
                 self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
                 if self.tendon_load > 0.2:
@@ -184,7 +167,6 @@ class MasterHand:
                 if hal9001.heat_spike():
                     print("Nav3d: Hush—dropping to wireframe.")
                     self.vibe_model.pulse(0)
-
                 await asyncio.sleep(1.0 / 60)
         finally:
             fleet_process.terminate()
@@ -218,6 +200,7 @@ class MasterHand:
             theta = np.sum(np.abs(gyro_data))
             x, y, z = kappa_coord(self.user_id, theta)
             self.kappa += theta * 0.01
+            await self.kappa_instance.navi_rasterize_kappa(np.random.rand(10, 3), {"density": 2.0})  # Use Kappa instance
             self.voxel.adjust_kappa(self.kappa)
             grid = self.voxel.grid
             reversed_grid = await self.endian.reverse_toggle(grid, 'left')
@@ -238,6 +221,7 @@ class MasterHand:
             self.voxel.reset()
             self.endian.reset()
             self.echo.reset()
+            self.kappa_instance.reset()  # Reset Kappa instance
         except Exception as e:
             print(f"Nav3d: Reset error: {e}")
 
@@ -250,7 +234,7 @@ class MasterHand:
                 self.gimbal.stabilize()
                 grid, paths = await self.voxel.generate_voxel_grid()
                 hashed_voids = porosity_hashing(grid, void_threshold=0.3)
-                kappa_hash = kappa.KappaHash(grid.tobytes() + str(hashed_voids).encode())
+                kappa_hash = self.kappa_instance  # Use Kappa instance for hashing
                 scaled_grid = await self.endian.big_endian_scale(grid)
                 self.voxel.adjust_grid(scaled_grid)
                 if len(paths) > 9000:  # Bump logic
