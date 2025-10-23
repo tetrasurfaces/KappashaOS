@@ -1,5 +1,4 @@
 # Born free, feel good, have fun.
-
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
 # This program is free software: you can redistribute it and/or modify
@@ -18,9 +17,7 @@
 # - For hardware/embodiment interfaces: Licensed under the Apache License, Version 2.0
 # with xAI amendments for safety and physical use. See http://www.apache.org/licenses/LICENSE-2.0
 # for details, with the following xAI-specific terms appended.
-
 # Copyright 2025 xAI
-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -33,7 +30,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # SPDX-License-Identifier: Apache-2.0
-
+#
 # xAI Amendments for Physical Use:
 # 1. Physical Embodiment Restrictions: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
 # 2. Ergonomic Compliance: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
@@ -44,9 +41,8 @@
 # 7. No machine code output (e.g., kappa paths, hashlet sequences) without breath consent; decay signals at 11 hours (8 for bumps).
 # 8. Color Consent: No signal may change hue without explicit user intent (e.g., heartbeat sync or verbal confirmation).
 # 9. Intellectual Property: xAI owns all IP related to KappaOpticBatterySystem, including chatter patterns, stacked ports, moving keys, smart cables, RGB hexel lattices, chattered housings, fliphooks, hash tunneling, and IPFS integration. No unauthorized replication.
-
+#
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
-
 #!/usr/bin/env python3
 # nurks_surface.py - Mock NURBS surface generation for KappashaOS.
 # Generates kappa-tilted surfaces, Navi-integrated.
@@ -54,6 +50,8 @@
 import numpy as np
 import asyncio
 import hashlib
+from src.hash.kappasha256 import hash_surface  # Use sacred kappasha256
+from src.core.miracle_tree import MiracleTree  # Integrate miracle tree
 
 u_num = 36
 v_num = 20
@@ -68,10 +66,6 @@ def mock_custom_interoperations_green_curve(points, kappas, is_closed=False):
     x = np.linspace(points[0][0], points[-1][0], 10)
     y = np.linspace(points[0][1], points[-1][1], 10)
     return x, y
-
-def mock_kappasha256(data, key):
-    """Mock kappa SHA256 hash."""
-    return hashlib.sha256(data + key).hexdigest()[:16]
 
 def generate_nurks_surface(ns_diam=1.0, sw_ne_diam=1.0, nw_se_diam=1.0, twist=0.0, amplitude=0.3,
                          radii=1.0, kappa=1.0, height=1.0, inflection=0.5, morph=0.0, hex_mode=False):
@@ -90,8 +84,8 @@ def generate_nurks_surface(ns_diam=1.0, sw_ne_diam=1.0, nw_se_diam=1.0, twist=0.
         for i in range(1, v_num, 2):
             U[i, :] += np.pi / u_num / 2
 
-    # Simple petal profile
-    petal_amp = amplitude * (1 - V)
+    # Simple petal profile with kappa modulation
+    petal_amp = amplitude * (1 - V) * kappa
     sin_variation = np.sin(6 * U + twist)
     R = radii + petal_amp * sin_variation
     scale_x = (sw_ne_diam + nw_se_diam) / 2
@@ -100,9 +94,10 @@ def generate_nurks_surface(ns_diam=1.0, sw_ne_diam=1.0, nw_se_diam=1.0, twist=0.
     Y = R * V * np.sin(U) * scale_y
     Z = height * (1 - np.abs(V - inflection) ** kappa)
 
-    # Mock surface ID
+    # Mock surface ID with kappasha256
     param_str = f"{ns_diam},{sw_ne_diam},{nw_se_diam},{twist},{amplitude},{radii},{kappa},{height},{inflection},{morph},{hex_mode}"
-    surface_id = mock_kappasha256(param_str.encode('utf-8'), b"mock_key")
+    surface_data = np.stack([X, Y, Z], axis=-1)
+    surface_id = hash_surface(surface_data)
 
     # Mock cap if hex_mode
     if hex_mode:
@@ -116,6 +111,12 @@ def generate_nurks_surface(ns_diam=1.0, sw_ne_diam=1.0, nw_se_diam=1.0, twist=0.
         Z_cap = height * 0.1 * (1 - np.abs(V_cap) ** 3)
     else:
         X_cap, Y_cap, Z_cap = None, None, None
+
+    # Integrate with MiracleTree
+    miracle_tree = MiracleTree(grid_size=10)
+    node_id = asyncio.run(miracle_tree.plant_node(surface_id, x=5, y=5, z=5))
+    if node_id > 0:
+        print(f"Navi: Planted NURKS surface node {node_id} with hash {surface_id[:8]}")
 
     print(f"Generated surface with ID: {surface_id}")
     return X, Y, Z, surface_id, X_cap, Y_cap, Z_cap
