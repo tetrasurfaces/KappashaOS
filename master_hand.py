@@ -234,7 +234,7 @@ class MasterHand:
                 self.gimbal.stabilize()
                 grid, paths = await self.voxel.generate_voxel_grid()
                 hashed_voids = porosity_hashing(grid, void_threshold=0.3)
-                kappa_hash = self.kappa_instance  # Use Kappa instance for hashing
+                kappa_hash = await self.kappa_instance.navi_unflatten_to_stl(self.kappa_instance.flatten_to_delaunay(grid))  # Use Kappa for hash
                 scaled_grid = await self.endian.big_endian_scale(grid)
                 self.voxel.adjust_grid(scaled_grid)
                 if len(paths) > 9000:  # Bump logic
@@ -244,7 +244,7 @@ class MasterHand:
                 if hedge_action == 'unwind':
                     self.kappa += 0.05
                     print(f"Nav3d: Hedge unwind - Kappa to {self.kappa:.2f}")
-                light_hash = self.raster_to_light(kappa_hash.digest())
+                light_hash = self.raster_to_light(kappa_hash)
                 intensity, state, color = self.ribit.generate()
                 print(f"Nav3d: Ribit - Intensity {intensity}, State {state}, Color {color}")
                 tangent, _ = self.curve.spiral_tangent(
@@ -257,9 +257,9 @@ class MasterHand:
                 self.echo.record(f"flex kappa {self.kappa:.2f}")
                 # Push to Bitcoin for BIP
                 bitcoin = BitcoinAPI()
-                tx = bitcoin.create_tx(op_return=kappa_hash.digest())
+                tx = bitcoin.create_tx(op_return=kappa_hash.encode())
                 bitcoin.broadcast(tx)
-                print(f"Nav3d: Pushed to Bitcoin. Hash: {kappa_hash.digest()[:8]}")
+                print(f"Nav3d: Pushed to Bitcoin. Hash: {kappa_hash[:8]}")
             return curl
         except Exception as e:
             print(f"Nav3d: Gimbal flex error: {e}")
