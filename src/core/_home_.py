@@ -43,7 +43,7 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-# home.py - Safe origin room for Blossom: homing index, vintage cork, no-delete zone with ramp cipher, kappa wires, and ephemeral hashing.
+# _home_.py - Safe origin room for Blossom: homing index, vintage cork, no-delete zone with ramp cipher, kappa wires, and ephemeral hashing.
 # Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
 # Copyright 2025 xAI
 # Born free, feel good, have fun.
