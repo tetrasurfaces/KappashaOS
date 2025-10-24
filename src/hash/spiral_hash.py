@@ -2,23 +2,23 @@
 # spiral_hash.py - Kappa Spiral Hashing for KappachaOS with 1664/3328-bit quantum-resistant hash.
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
-#   This program is free software: you can redistribute it and/or modify
-#   it under the terms of the GNU Affero General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
-#   (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-#   This program is distributed in the hope that it will be useful,
-#   but WITHOUT ANY WARRANTY; without even the implied warranty of
-#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#   GNU Affero General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
 #
-#   You should have received a copy of the GNU Affero General Public License
-#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
 #
 # - For hardware/embodiment interfaces (if any): Licensed under the Apache License, Version 2.0
-#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
-#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
-#   for details, with the following xAI-specific terms appended.
+# with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
+# requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+# for details, with the following xAI-specific terms appended.
 #
 # Copyright 2025 xAI
 #
@@ -26,7 +26,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,10 +46,9 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 # Born free, feel good, have fun.
-
 import numpy as np
 from hashlib import sha256, blake2b
-from wise import diagonal_swap, bitwise_mirror
+from core.wise import diagonal_swap, bitwise_mirror
 import math
 
 def kappa_orbit(t, freqs=[3, 5, 7], polarity_swap=True):
@@ -67,33 +66,32 @@ def kappa_spiral_hash(data: str, comfort_vec: np.ndarray, theta_base=100, laps=1
     base_int = int.from_bytes(base_hash, 'big')
     comfort_sig = int.from_bytes(comfort_vec.tobytes()[:8], 'big') & ((1 << 64) - 1)  # 64-bit clarity
     fwd_1664 = (base_int + comfort_sig) % (1 << 1664)  # Cap at 1664 bits
-
     # Step 2: Reverse-tuple to 3328 bits
     rev_bytes = base_hash[::-1]
     rev_int = int.from_bytes(rev_bytes, 'big')
     full_hash = (fwd_1664 << 1664) | rev_int  # 3328 bits, palindromic at center
-
     # Step 3: Quantum resistance - polarity swap with orbiting k-point
     t = 0.0
     k_orbit = kappa_orbit(t)
     polarity = 1 if k_orbit.real > 0 else -1
     if polarity == -1:
         full_hash = (~full_hash) & ((1 << 3328) - 1)  # Bitwise NOT with wrap
-
     # Step 4: Spiral mapping with tetrahedral recursion
     bits = np.array(list(bin(full_hash)[2:].zfill(3328)), dtype=np.int8)
     swapped = diagonal_swap(bits)  # Tetrahedral twist
     center_idx = 1664
-    theta_spiral = np.linspace(0, 2 * math.pi * laps, 3328) * theta_base / 180
-    r_spiral = np.abs(np.linspace(-1664, 1664, 3328) / 1664)  # Inward/outward
+    theta_spiral = np.linspace(0, 2 * math.pi, 3328) * theta_base / 180 / laps  # Simplified theta per lap
+    r_spiral = np.abs(np.linspace(-1, 1, 3328))  # Normalized inward/outward
     x = r_spiral * np.cos(theta_spiral)
     y = r_spiral * np.sin(theta_spiral)
     z = np.sin(x * 0.1) + np.cos(y * 0.1) + swapped * 0.01  # Tetrahedral recursion
-
+    # Cap magnitudes to prevent overflow
+    x = np.clip(x, -1e3, 1e3)  # Reduced cap
+    y = np.clip(y, -1e3, 1e3)
+    z = np.clip(z, -1e3, 1e3)
     # Step 5: Output with topology map
     topology_map = swapped.reshape(16, 208)  # 16 layers, 208 nodes per layer
     light_raster = blake2b(swapped.tobytes()).hexdigest()[:64]  # Pack to light
-
     return {
         'root': full_hash,
         'spiral_vec': np.stack([x, y, z], axis=-1),
@@ -102,14 +100,15 @@ def kappa_spiral_hash(data: str, comfort_vec: np.ndarray, theta_base=100, laps=1
         'kappa_orbit': k_orbit
     }
 
-def proof_check(spiral_vec: np.ndarray, theta_base=100):
-    """Verify hash spiral: flattened theta sums to 1, full minus 1 flattens."""
-    theta_full = spiral_vec[:, 0] / theta_base  # Normalize theta
+def proof_check(spiral_vec: np.ndarray, theta_base=100, laps=18):
+    """Verify hash spiral: flattened theta sums to 1, full minus laps flattens."""
+    theta_full = np.abs(spiral_vec[:, 0]) / (theta_base / laps)  # Use abs for positivity
     theta_flat = np.sin(theta_full)  # Collapse to unit sine
     sum_flat = np.sum(theta_flat)
-    sum_expanded = np.sum(theta_full) - 1.0
-    assert abs(sum_flat - 1.0) < 1e-6, "Proof failed: theta doesn't sum to one"
-    assert abs(sum_expanded - 0.0) < 1e-6, "Proof failed: expansion doesn't flatten"
+    sum_expanded = np.sum(theta_full) - laps  # Adjusted for laps
+    print(f"Debug: sum_flat = {sum_flat}, sum_expanded = {sum_expanded}")  # Debug theta sums
+    assert abs(sum_flat - 1.0) < 1e-6, f"Proof failed: theta doesn't sum to one, sum={sum_flat}"
+    assert abs(sum_expanded - 0.0) < 1e-6, f"Proof failed: expansion doesn't flatten, sum={sum_expanded}"
     print("Proof passed. Spiral breathes. Sum equals one.")
     return True
 
