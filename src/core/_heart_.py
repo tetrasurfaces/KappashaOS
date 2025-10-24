@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-# _heart_.py - Heart metrics for KapachaOS, integrating safety, ethics, and intent.
-#
 # Copyright 2025 xAI
 # AGPL-3.0-or-later
 # See above for full license details.
