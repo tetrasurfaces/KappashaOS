@@ -93,7 +93,7 @@ class SHA1664:
 class EphemeralBastion:
     def __init__(self, node_id: str):
         self.node_id = node_id
-        self.ternary_state = 0  # 0: pong, 1: ping, e: earth
+        self.ternary_state = 0
 
     def set_ternary_state(self, state: any):
         self.ternary_state = state
@@ -117,9 +117,10 @@ class Home:
         self.kappa_wire = KappaWire(self.grid_size)
         self.sha = SHA1664()
         self.bastion = EphemeralBastion("home-node")
+        self.heart = HeartMetrics()  # Add heart metrics
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        self.blooms = []  # Store bloom memories
+        self.blooms = []
         print("Home initialized - ramp cipher, kappa wires, hashlet, SHA1664, bastion active.")
 
     def _hash_origin(self):
@@ -132,38 +133,14 @@ class Home:
         entropy = np.random.uniform(0, 1)
         if entropy > 0.69:
             await self.navi_cork_state(entropy)
-        self.tendon_load = np.random.rand() * 0.3
-        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-        if self.tendon_load > 0.2:
-            print("Home: Warning - Tendon overload. Resetting.")
-            self.reset()
-        if self.gaze_duration > 30.0:
-            print("Home: Warning - Excessive gaze. Pausing.")
-            await asyncio.sleep(2.0)
-            self.gaze_duration = 0.0
-        await asyncio.sleep(0)
-        print(f"Navi: Home loaded - origin hash: {self.origin_hash[:10]}... Items: {self.items}")
-
-    async def navi_cork_state(self, grade):
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        state_data = f"grid:{self.grid.flatten()[:10]}... items:{self.items}"
-        hash_tag = self.sha.hash_transaction(f"{state_data}-{timestamp}-{grade}")
-        with open(f"{self.vintage_dir}/{hash_tag}.txt", "w") as f:
-            f.write(f"Vintage home state: {state_data} Grade: {grade:.2f}")
-        self.tendon_load = np.random.rand() * 0.3
-        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-        if self.tendon_load > 0.2:
-            print("Home: Warning - Tendon overload. Resetting.")
-            self.reset()
-        if self.gaze_duration > 30.0:
-            print("Home: Warning - Excessive gaze. Pausing.")
-            await asyncio.sleep(2.0)
-            self.gaze_duration = 0.0
-        await asyncio.sleep(0)
-        print(f"Navi: Home state corked: {hash_tag[:10]}...")
+        metrics = self.heart.update_metrics("navi_load")
+        self.tendon_load = metrics["tendon_load"]
+        self.gaze_duration = metrics["gaze_duration"]
+        if not metrics["consent_flag"]:
+            self.heart.reset_safety()
+        print(f"Navi: Home loaded - origin hash: {self.origin_hash[:10]}... Items: {self.items}, Metrics: {metrics}")
 
     async def navi_index_grid(self, x, y, z, data):
-        """Index with ramp encode on kappa wire, SHA1664 hash, bastion validation."""
         if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
             hash_str = self.sha.hash_transaction(data)
             if not self.bastion.validate(hash_str):
@@ -177,17 +154,12 @@ class Home:
                 self.blooms.append((hash_str[:10], rgb, 0.1, time.time()))
                 self.bastion.set_ternary_state('earth' if 'seed' in data else 'ping')
                 self.sha.receive_gossip({'hash': hash_str[:10], 'pos': (x, y, z)}, self.bastion.node_id)
-                self.tendon_load = np.random.rand() * 0.3
-                self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
-                if self.tendon_load > 0.2:
-                    print("Home: Warning - Tendon overload. Resetting.")
-                    self.reset()
-                if self.gaze_duration > 30.0:
-                    print("Home: Warning - Excessive gaze. Pausing.")
-                    await asyncio.sleep(2.0)
-                    self.gaze_duration = 0.0
-                await asyncio.sleep(0)
-                print(f"Navi: Indexed ({x}, {y}, {z}) with encoded {encoded[:10]}... RGB={rgb}, Ternary={self.bastion.ternary_state}")
+                metrics = self.heart.update_metrics(data)
+                self.tendon_load = metrics["tendon_load"]
+                self.gaze_duration = metrics["gaze_duration"]
+                if not metrics["consent_flag"]:
+                    self.heart.reset_safety()
+                print(f"Navi: Indexed ({x}, {y}, {z}) with encoded {encoded[:10]}... RGB={rgb}, Metrics: {metrics}")
                 return encoded
         return None
 
@@ -262,10 +234,9 @@ if __name__ == "__main__":
     async def navi_test():
         home = Home()
         await home.navi_load()
-        await home.navi_index_grid(5, 5, 5, "test data")
+        await home.navi_index_grid(5, 5, 5, "test_data")
         await home.navi_cork_state(0.8)
         blooms = await home.bloom_consensus(35701357)
         await home.route(35701357, 50)
         home.play()
-
     asyncio.run(navi_test())
