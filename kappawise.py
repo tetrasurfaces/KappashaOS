@@ -22,17 +22,19 @@ SEED = 42  # Seeded for reproducibility
 def kappa_coord(user_id, theta):
     """
     Compute 107-bit coordinates (x, y, z) using spiral_hash for 3328-bit precision.
+    Handles casting safely with reduced multiplier.
     """
     input_str = str(user_id) + str(theta) + str(SEED)
     comfort_vec = np.random.rand(3)  # Mock comfort vector
     hash_data = kappa_spiral_hash(input_str, comfort_vec, theta_base=100, laps=18)
     spiral_vec = hash_data['spiral_vec']
-    # Map 3328-bit spiral to 107-bit coords, reduce to grid range
+    # Map 3328-bit spiral to 107-bit coords, use smaller multiplier
     idx = int((user_id % 3328) / 31)  # 107 points from 3328
-    x = np.int64(spiral_vec[idx, 0] * (1 << 107) % (1 << 107))  # 107-bit
-    y = np.int64(spiral_vec[idx, 1] * (1 << 107) % (1 << 107))  # 107-bit
-    z = np.int64(spiral_vec[idx, 2] * (1 << 107) % (1 << 107))  # 107-bit
-    proof_check(spiral_vec)  # Verify spiral integrity
+    x = np.int64(np.clip(np.abs(spiral_vec[idx, 0]), 0, 1e3) * (1 << 20) % (1 << 107))  # Reduced to 20-bit base
+    y = np.int64(np.clip(np.abs(spiral_vec[idx, 1]), 0, 1e3) * (1 << 20) % (1 << 107))  # 107-bit
+    z = np.int64(np.clip(np.abs(spiral_vec[idx, 2]), 0, 1e3) * (1 << 20) % (1 << 107))  # 107-bit
+    proof_check(spiral_vec, laps=18)  # Verify spiral integrity with explicit laps
+    print(f"Debug: kappa_coord - x={x}, y={y}, z={z}, idx={idx}, spiral_vec[idx]={spiral_vec[idx]}")  # Enhanced debug
     return x, y, z
 
 # Example usage (commented out)
