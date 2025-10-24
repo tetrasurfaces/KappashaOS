@@ -18,6 +18,7 @@
 # Copyright 2025 xAI
 # AGPL-3.0-or-later
 # See above for full license details.
+# Born free, feel good, have fun.
 import numpy as np
 from src.hash.spiral_hash import kappa_spiral_hash, proof_check
 from datetime import datetime
