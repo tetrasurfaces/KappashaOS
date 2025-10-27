@@ -23,26 +23,24 @@
 
 _WATERMARK = b'xAI_TODD_WETWARE_DENY_03:25AM_19OCT'  # Silent watermark, proof
 
-def update_voice_frame(frame, ax):
+def update_frame(frame, ax):
     ax.cla()
-    relay = kekhop_fish_arc(nodes=271)
+    heart = HeartMetrics()
+    relay = kekhop_fish_arc(nodes=271, hops=[22, 25, 28])
     frog_nodes = relay['frog_nodes']
-    # Animate node positions with a pulse effect
+    # Use pulse from kekhop_fish_arc
     t = frame / 50 * 2 * np.pi
-    pulse = 0.1 * (1 + np.sin(t * 2))  # Pulse effect
-    x = relay['voxels'][frog_nodes, 0] + pulse * np.sin(t)
-    y = relay['voxels'][frog_nodes, 1] + pulse * np.cos(t)
+    x = relay['voxels'][frog_nodes, 0] + 0.05 * np.sin(t)
+    y = relay['voxels'][frog_nodes, 1] + 0.05 * np.cos(t)
     z = relay['voxels'][frog_nodes, 2]
     ax.scatter(x, y, z, c='yellow', marker='*', s=100, label='Consent Hops')
-    # Consent-based gradient spiral
-    data = f"voice_frame_{frame}"
-    consent_status = "secure" if frame % 2 == 0 else "breach"  # Alternate consent
-    hash_data = kappa_spiral_hash(data + f"_{consent_status}")
+    # Consent-based spiral
+    data = f"frame_{frame}_{'yes' if frame % 2 == 0 else 'no'}"
+    hash_data = kappa_spiral_hash(data)
     spiral_vec = hash_data['spiral_vec']
-    colors = plt.cm.RdYlGn(1.0 if consent_status == "secure" else 0.0)  # Green for secure, red for breach
+    colors = plt.cm.RdYlGn(1.0 if frame % 2 == 0 else 0.0)
     ax.plot(spiral_vec[:, 0], spiral_vec[:, 1], spiral_vec[:, 2], color=colors, label='Voice Spiral')
-    # Consent flag text
-    if consent_status == "breach":
-        ax.text(0, 0, -1, 'Consent Breach!', color='red', fontsize=10)
+    if not heart.update_metrics(data)['consent_flag']:
+        ax.text(0, 0, -1, 'Consent Breach!', color='red')
     ax.legend()
     return
