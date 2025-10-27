@@ -28,8 +28,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.animation import FuncAnimation
 from src.hash.spiral_hash import kappa_spiral_hash
-from _heart_ import HeartMetrics
-from ternaryhashlet import kekhop_fish_arc
+from src.core._heart_ import HeartMetrics
+from hardware.ternary_hashlet import kekhop_fish_arc
 
 def init_animation(fig, ax):
     ax.set_xlim(-1, 1)
@@ -38,51 +38,28 @@ def init_animation(fig, ax):
     ax.set_title("Kek Reversal Fish Arcs with Parakappa")
     return
 
-def update_frame(frame, ax):
-    ax.cla()
-    heart = HeartMetrics()
-    # Base spiral
-    theta = np.linspace(0, 2 * np.pi * frame / 50, 100)
-    r = 0.01 * np.exp(0.3536 * theta)
-    x, y, z = r * np.cos(theta), r * np.sin(theta), np.sin(theta * 0.1) * np.exp(0.1 * frame / 50)
-    ax.plot(x, y, z, color='green', label='Thirds Spiral')
-    # Fish arcs
-    hops = [22, 25, 28]
-    for i, hop in enumerate(hops):
-        arc_start = i * 2 * np.pi / 3
-        arc_end = arc_start + 2 * np.pi / 3
-        theta_arc = np.linspace(arc_start, arc_end, 100)
-        r_arc = hop / 100 * np.exp(0.3536 * theta_arc)
-        x_arc, y_arc, z_arc = r_arc * np.cos(theta_arc), r_arc * np.sin(theta_arc), np.sin(theta_arc * 0.1) * np.exp(0.1 * frame / 50)
-        ax.plot(x_arc, y_arc, z_arc, color=plt.cm.viridis(i / 3), label=f'Fish Arc Hop {hop}')
-    # Reversal U-turn (dynamic based on consent)
-    consent_seq = "yes" if frame % 2 == 0 else "no"  # Alternate consent
-    u_x = np.linspace(0.5, -0.5 if consent_seq == "no" else 0.5, 50)
-    u_y = np.zeros(50)
-    u_z = np.sin(u_x * np.pi * 0.5) * np.exp(0.3536 * frame / 50)
-    ax.plot(u_x, u_y, u_z, color='red', label='Reversal U')
-    # Master voxel with Parakappa skew
-    master_voxel = np.array([1, 1, 1])
-    skew = 0.3536
-    master_voxel[2] *= skew
-    ax.scatter(master_voxel[0], master_voxel[1], master_voxel[2], color='yellow', s=100, label='Parakappa Skew')
-    # Kekhop with Starlink relay
-    relay = kekhop_fish_arc(nodes=271, hops=[22, 25, 28])
-    frog_nodes = relay['frog_nodes']
-    ax.scatter(relay['voxels'][frog_nodes, 0], relay['voxels'][frog_nodes, 1], relay['voxels'][frog_nodes, 2], c='yellow', marker='*', s=100, label='Frog Hotspots')
-    # Hash with consent-based data
-    data = f"frame_{frame}_{consent_seq}"
-    hash_data = kappa_spiral_hash(data, np.random.rand(3))
-    spiral_vec = hash_data['spiral_vec']
-    ax.plot(spiral_vec[:, 0], spiral_vec[:, 1], spiral_vec[:, 2], color='blue', label='Hash Arc')
-    metrics = heart.update_metrics(data)
-    if not metrics['consent_flag']:
-        ax.text(0, 0, -1, 'Consent Breach!', color='red')
-    ax.legend()
-    return
+import numpy as np
+from _heart_ import HeartMetrics
 
-if __name__ == "__main__":
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ani = FuncAnimation(fig, update_frame, frames=50, fargs=(ax,), interval=50)
-    plt.show()
+def kekhop_fish_arc(nodes=271, hops=[22, 25, 28]):
+    heart = HeartMetrics()
+    # Base spiral parameters
+    theta = np.linspace(0, 2 * np.pi, nodes)
+    r_base = 0.5 * np.exp(0.3536 * theta)
+    # Consent-driven pulse (from HeartMetrics)
+    consent_data = f"frame_{np.random.randint(0, 50)}_check"
+    metrics = heart.update_metrics(consent_data)
+    pulse = 0.1 * (1 + np.sin(metrics['heart_rate'] * 2 * np.pi / 50))  # Pulse based on heart rate
+    consent_factor = 1.5 if metrics['consent_flag'] else 0.5  # Tighter hops on breach
+    # Generate voxels
+    x = r_base * np.cos(theta) * consent_factor
+    y = r_base * np.sin(theta) * consent_factor
+    z = np.sin(theta * 0.1) * pulse
+    voxels = np.column_stack((x, y, z))
+    # Define frog nodes (key hops)
+    frog_nodes = []
+    for i, hop in enumerate(hops):
+        idx = int((i + 1) * nodes / (len(hops) + 1))
+        frog_nodes.append(idx % nodes)
+    frog_nodes = np.array(frog_nodes)
+    return {'voxels': voxels, 'frog_nodes': frog_nodes}
