@@ -41,26 +41,23 @@ def init_animation(fig, ax):
 def update_frame(frame, ax):
     ax.cla()
     heart = HeartMetrics()
-    # Base spiral with Kek hops
+    # Base spiral
     theta = np.linspace(0, 2 * np.pi * frame / 50, 100)
     r = 0.01 * np.exp(0.3536 * theta)
-    x = r * np.cos(theta)
-    y = r * np.sin(theta)
-    z = np.sin(theta * 0.1) * np.exp(0.1 * frame / 50)  # Exponential depth
+    x, y, z = r * np.cos(theta), r * np.sin(theta), np.sin(theta * 0.1) * np.exp(0.1 * frame / 50)
     ax.plot(x, y, z, color='green', label='Thirds Spiral')
-    # Fish arcs with Kek hops (22, 25, 28)
+    # Fish arcs
     hops = [22, 25, 28]
     for i, hop in enumerate(hops):
         arc_start = i * 2 * np.pi / 3
         arc_end = arc_start + 2 * np.pi / 3
         theta_arc = np.linspace(arc_start, arc_end, 100)
         r_arc = hop / 100 * np.exp(0.3536 * theta_arc)
-        x_arc = r_arc * np.cos(theta_arc)
-        y_arc = r_arc * np.sin(theta_arc)
-        z_arc = np.sin(theta_arc * 0.1) * np.exp(0.1 * frame / 50)
+        x_arc, y_arc, z_arc = r_arc * np.cos(theta_arc), r_arc * np.sin(theta_arc), np.sin(theta_arc * 0.1) * np.exp(0.1 * frame / 50)
         ax.plot(x_arc, y_arc, z_arc, color=plt.cm.viridis(i / 3), label=f'Fish Arc Hop {hop}')
-    # Reversal U-turn
-    u_x = np.linspace(0.5, -0.5, 50)
+    # Reversal U-turn (dynamic based on consent)
+    consent_seq = "yes" if frame % 2 == 0 else "no"  # Alternate consent
+    u_x = np.linspace(0.5, -0.5 if consent_seq == "no" else 0.5, 50)
     u_y = np.zeros(50)
     u_z = np.sin(u_x * np.pi * 0.5) * np.exp(0.3536 * frame / 50)
     ax.plot(u_x, u_y, u_z, color='red', label='Reversal U')
@@ -73,8 +70,8 @@ def update_frame(frame, ax):
     relay = kekhop_fish_arc(nodes=271, hops=[22, 25, 28])
     frog_nodes = relay['frog_nodes']
     ax.scatter(relay['voxels'][frog_nodes, 0], relay['voxels'][frog_nodes, 1], relay['voxels'][frog_nodes, 2], c='yellow', marker='*', s=100, label='Frog Hotspots')
-    # Hash and ethics tie
-    data = f"frame_{frame}_mars"
+    # Hash with consent-based data
+    data = f"frame_{frame}_{consent_seq}"
     hash_data = kappa_spiral_hash(data, np.random.rand(3))
     spiral_vec = hash_data['spiral_vec']
     ax.plot(spiral_vec[:, 0], spiral_vec[:, 1], spiral_vec[:, 2], color='blue', label='Hash Arc')
