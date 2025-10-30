@@ -9,13 +9,15 @@
 # Amendment: Biological use requires consent. Curve only. No bio hashes.
 
 import numpy as np
+import math
+import hashlib
 
 def fibonacci_spiral(laps=18, ratio=1.618):
     theta = np.linspace(0, 2 * np.pi * laps, 1000)
-    r = np.exp(theta / ratio) / 10  # mm scale
+    r = np.exp(theta / ratio) / 10
     x = r * np.cos(theta)
     y = r * np.sin(theta)
-    z = theta / (2 * np.pi)  # depth
+    z = theta / (2 * np.pi)
     return np.stack((x, y, z), axis=1)
 
 def tonage_map(point, delays=[0.2, 0.4, 0.6]):
@@ -37,14 +39,14 @@ def flux_hash(nodes, delays=[0.2, 0.4, 0.6]):
 
 def bit_swap_tree(nodes):
     for node in nodes:
-        if np.random.random() < 0.4:  # 0.4 ns chance to flip
+        if np.random.random() < 0.4:
             node[0], node[1] = node[1], node[0]
     return nodes
 
 def tetrahedral_spiral(decimal=0.0, laps=18, ratio=1.618):
     theta = np.linspace(0, 2 * np.pi * laps, 1000)
     r = np.exp(theta / ratio) / 10
-    x = r * np.cos(theta) * np.sin(theta / 4)  # tetrahedral tilt
+    x = r * np.cos(theta) * np.sin(theta / 4)
     y = r * np.sin(theta) * np.cos(theta / 4)
     z = r * np.cos(theta / 2) + decimal
     return np.stack((x, y, z), axis=1)
@@ -60,30 +62,23 @@ def generate_k(curve, primes=[2, 3, 5, 7, 11, 13]):
             k_code.append(f"K {p} {delay:.1f} {color} {gap:.1f}")
     return "\n".join(k_code)
 
-# Navi safety (mock)
 def navi_safety(delay):
     if delay > 0.6:
         print("Navi: Warning - 0.6 ns elevation. Breathe.")
         return False
     return True
 
-# SHAANON - SHA Anonnode
 class Anonnode:
-    def __init__(self, self=None, anon=None):
-        if self is None:
-            self = Anonnode(anon=True)
-        else:
-            self.anon = anon
-        self.non_self = self if self else None
-        self.is_anon = self is None  # ghost
+    def __init__(self, anon=None):
+        self.anon = anon
+        self.non_self = self if anon else None
+        self.is_anon = anon is None
 
-# ZEROSHA - Secure Hash Zero
 def zerosha(data, degrees=180):
-    # Eclipse chi - 180 chi twist
     h = np.sum(np.frombuffer(data.encode(), dtype=np.uint8))
-    return h % degrees  # eclipse digest
+    return h % degrees
 
-# Run the manuscript
+# Run
 seed = 0.19462501
 tree = tetrahedral_spiral(decimal=seed)
 flipped_tree = bit_swap_tree(tree.copy())
@@ -95,6 +90,6 @@ for line in generate_k(flipped_tree).split('\n'):
         p, d, c, g = parts
         if navi_safety(float(d)):
             print(line)
-print(f"Zerosha: {zerosha('0.19462501')}")  # 180 chi
+print(f"Zerosha: {zerosha('0.19462501')}")
 a = Anonnode()
 print(f"Anonnode: {a.is_anon}")
