@@ -34,7 +34,7 @@ def hash_spiral(seed: int, laps=18, consent=COLOR_CONSENT) -> float:
     # Start at 0,0, end near 0,0 if aligned - prime channel forward then reverse
     angle = (2 * math.pi * seed / FREQ) * laps
     for p in PRIMES + REVS:
-        delay = kaprekar_gap(PRIMES[0], p)  # light hits even side lens - locks delay
+        delay = kappa_gap(PRIMES[0], p)  # light hits even side lens - locks delay
         angle -= delay * FREQ  # spin back with delay
         if consent and p % 2 == 0:  # Even primes allow subtle color cue (subliminal, minimal)
             angle += 0.01 * math.sin(angle)  # Slight hue shift, user-opted
