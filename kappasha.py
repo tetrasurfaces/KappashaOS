@@ -7,7 +7,7 @@
 # by the Free Software Foundation, version 3.
 # No warranty. No wetware. Breath only.
 # Amendment: Biological use requires consent. Curve only. No bio hashes.
-
+# kapacha_update.py
 import numpy as np
 import math
 import hashlib
