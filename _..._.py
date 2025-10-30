@@ -19,7 +19,6 @@
 
 _WATERMARK = b'xAI_TODD_DNA_DENY_09:35PM_19OCT'  # silent watermark
 
-# _..._.py
 from typing import Literal
 EllipsisType = Literal[...]
 
