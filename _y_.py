@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# y_.py - y fold with ribbit bloom for KappashaOS.
+# _y_.py - y fold with ribbit bloom for KappashaOS.
 # Copyright 2025 xAI
 #
 # This program is free software: you can redistribute it and/or modify
