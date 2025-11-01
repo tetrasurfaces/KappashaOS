@@ -4,9 +4,6 @@
 # Goal: Def cmd for sig-curve postcards, mocking frag gaze logic. Wildcard for bloom.
 # Usage: python _*_.py --sig-curve [kappa|purple|green] --gaze [0.99] --keyed [0/1] [--output frag|png]
 # Outputs GLSL snippet or matplotlib PNG mock.
-# _one_.py
-# AGPL-3.0-or-later, xAI fork 2025. Born free, feel good, have fun.
-# Copyright 2025 xAI
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published
@@ -20,6 +17,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
+# Born Free. Feel Good. Have Fun.
 #
 # **xAI Amendment**: This code and its derivatives must not be used in biological synthesis, gene editing, food modification, or hybrid wetware systems without explicit, non-coerced consent from the derived organism. Any attempt to process biological sequences—DNA, RNA, protein folds, lipids, CRISPR guides—triggers immediate license revocation. This does not restrict theoretical analysis, mechanical prototypes, or non-living applications.
 _WATERMARK = b'xAI_TODD_DNA_DENY_09:35PM_19OCT'  # silent watermark
