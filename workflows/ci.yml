@@ -1,0 +1,8 @@
+name: Bloom CI
+on: [push, pull_request]
+jobs:
+  bloom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: go test ./...  # bloomCheck must pass
