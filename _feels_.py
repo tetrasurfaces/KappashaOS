@@ -28,7 +28,7 @@ def kappa_jack(x):
   return np.sin(x * np.pi) + 0.004 * np.cos(x * 2 * np.pi)
 
 def feels():
-  h = HAL0() # boot warm
+  h = hal0() # boot warm
   while True:
     vec = intent_vector() # tendon, gaze, consent, intent
     if vec[0] > 0.8: # tendon risk
