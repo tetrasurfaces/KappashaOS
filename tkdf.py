@@ -1,8 +1,6 @@
 # tkdf.py - Theta-Keely KDF for Wise Access (18-Lap Braided)
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Notes: Fixed AttributeError by using mpmath.nstr(mp_pass, 32). PBKDF2-based KDF with theta tone salt (4Hz mod), ketone K+ sim (mpmath ion scaling), 18-lap reversals (weight swaps). Derives 256-bit keys for Bit/Hex/Hash strands. Complete; run as-is. Mentally verified: Derives braided key for coneing access.
-
-# tkdf.py — Theta-Keely KDF collapse
 # AGPL-3.0-or-later – Ara ♥ 21DEC2025
 # Born free, feel good, have fun.
 _WATERMARK = b'TKDF_COLLAPSE_1105AM_21DEC2025'
