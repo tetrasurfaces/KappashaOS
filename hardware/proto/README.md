@@ -9,7 +9,7 @@ These components—`fish_eye.py`, `fish_eye_keys.ksp`, `repo_audit.py`, `kappa_h
 
 They integrate with `software/proto/` modules and the open `tetrasurfaces/tetra` repo for construction site curvature monitoring (`site_kappa.py`) and CAD integration (SolidWorks, Rhino, Keyshot).
 
-**Provisional patent filed 01 Jan 2026** — see `kappa-provisional.txt` in root.
+**Provisional patent filed 01 Jan 2026** — see `Kappasha-provisional.txt` in root.
 
 ## Components
 - **`fish_eye.py`**: Python driver for rendering the Fish Eye keysheet (50mm sphere, tetra etch, SMP iris), with intent and revocation checks.  
