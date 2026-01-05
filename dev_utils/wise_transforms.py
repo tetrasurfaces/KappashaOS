@@ -51,9 +51,9 @@
 import hashlib
 import numpy as np
 import mpmath
-from src.hash.spiral_hash import kappa_orbit
-from ribit import TetraRibit
-from ribit_telemetry import RibitTelemetry
+from KappashaOS.src.hash.spiral_hash import kappa_orbit
+from KappashaOS.ribit import TetraRibit
+from KappashaOS.ribit_telemetry import RibitTelemetry
 
 mpmath.mp.dps = 19
 
