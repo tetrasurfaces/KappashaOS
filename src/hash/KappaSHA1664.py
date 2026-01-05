@@ -43,7 +43,8 @@
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
-# KappaSHA1664.py - Full 24-Round Keccak Variant with 1664-bit Sponge and Kappa Diffusion
+# KappashaOS/src/hash/KappaSHA1664.py
+# Full 24-Round Keccak Variant with 1664-bit Sponge and Kappa Diffusion
 # Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
 # Copyright 2025 xAI
 # Born free, feel good, have fun.
@@ -52,7 +53,7 @@ import hashlib
 import math
 import mpmath
 import numpy as np
-from typing import Dict
+from typing import Dict, Tuple
 import logging
 from greenlet import greenlet
 
@@ -68,6 +69,8 @@ OUTPUT_BITS = 256
 ROUNDS = 24
 
 logger = logging.getLogger(__name__)
+
+transaction_cache = set()
 
 class SHA1664:
     def __init__(self):
@@ -86,7 +89,10 @@ class SHA1664:
 
     def prevent_double_spending(self, tx_id: str) -> bool:
         try:
-            return tx_id not in transaction_cache
+            if tx_id in transaction_cache:
+                return False
+            transaction_cache.add(tx_id)
+            return True
         except Exception as e:
             logger.error(f"Prevent double spending error: {e}")
             return False
@@ -112,7 +118,7 @@ class EphemeralBastion:
             logger.error(f"Validate error: {e}")
             return False
 
-class Hashlet(greenlet.Greenlet):
+class Hashlet(greenlet):
     def __init__(self, run, *args, **kwargs):
         super().__init__(run, *args, **kwargs)
         self.hash_id = self._compute_hash()
@@ -133,11 +139,11 @@ class Hashlet(greenlet.Greenlet):
         self.rgb_color = self._hash_to_rgb()
         return result, self.rgb_color
 
-def mersenne_fluctuation(prime_index=11):
+def mersenne_fluctuation(prime_index=11) -> float:
     fluctuation = 0.0027 * (prime_index / 51.0)
     return KAPPA_BASE + fluctuation if prime_index % 2 == 1 else 0.3563 + fluctuation
 
-def kappa_calc(n, round_idx, prime_index=11):
+def kappa_calc(n: int, round_idx: int, prime_index=11) -> float:
     kappa_base = mersenne_fluctuation(prime_index)
     abs_n = abs(n - 12) / 12.0
     num = PHI_FLOAT ** abs_n - PHI_FLOAT ** (-abs_n)
@@ -145,7 +151,7 @@ def kappa_calc(n, round_idx, prime_index=11):
     result = (1 + kappa_base * num / denom) * (2 / 1.5) - 0.333 if 2 < n < 52 else max(0, 1.5 * math.exp(-((n - 60) ** 2) / 400.0) * math.cos(0.5 * (n - 316)))
     return result % MODULO
 
-def kappa_transform(state, key, round_idx, prime_index):
+def kappa_transform(state: list, key: list, round_idx: int, prime_index: int):
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
             n = x * y
@@ -153,36 +159,42 @@ def kappa_transform(state, key, round_idx, prime_index):
             shift = int(kappa_val % LANE_BITS)
             state[x][y] ^= (key[x][y] >> shift) & ((1 << LANE_BITS) - 1)
 
-def theta(state):
+def theta(state: list) -> list:
     C = [0] * GRID_DIM
     for x in range(GRID_DIM):
         C[x] = state[x][0] ^ state[x][1] ^ state[x][2] ^ state[x][3] ^ state[x][4]
     D = [0] * GRID_DIM
     for x in range(GRID_DIM):
-        D[x] = C[(x - 1) % GRID_DIM] ^ ((C[(x + 1) % GRID_DIM] << 1) | (C[(x + 1) % GRID_DIM] >> 63))
+        D[x] = C[(x - 1) % GRID_DIM] ^ ((C[(x + 1) % GRID_DIM] << 1) | (C[(x + 1) % GRID_DIM] >> (LANE_BITS - 1)))
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
             state[x][y] ^= D[x]
+    return state
 
-def rho(state):
-    offsets = [[0, 36, 3, 41, 18], [1, 44, 10, 45, 2], [62, 6, 43, 15, 61], [28, 55, 25, 21, 56], [27, 20, 39, 8, 14]]
+def rho(state: list) -> list:
+    offsets = [
+        [0, 36, 3, 41, 18], [1, 44, 10, 45, 2], [62, 6, 43, 15, 61],
+        [28, 55, 25, 21, 56], [27, 20, 39, 8, 14]
+    ]
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
             state[x][y] = ((state[x][y] << offsets[x][y]) | (state[x][y] >> (LANE_BITS - offsets[x][y]))) & ((1 << LANE_BITS) - 1)
+    return state
 
-def pi(state):
+def pi(state: list) -> list:
     temp = [[0] * GRID_DIM for _ in range(GRID_DIM)]
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
             temp[x][y] = state[(x + 3 * y) % GRID_DIM][x]
     return temp
 
-def chi(state):
+def chi(state: list) -> list:
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
             state[x][y] ^= (~state[(x + 1) % GRID_DIM][y]) & state[(x + 2) % GRID_DIM][y]
+    return state
 
-def iota(state, round_idx):
+def iota(state: list, round_idx: int) -> list:
     RC = [
         0x0000000000000001, 0x0000000000008082, 0x800000000000808a, 0x8000000080008000,
         0x000000000000808b, 0x0000000080000001, 0x8000000080008081, 0x8000000000008009,
@@ -192,8 +204,9 @@ def iota(state, round_idx):
         0x8000000000008080, 0x0000000080000001, 0x8000000080008008, 0x8000000000008008
     ]
     state[0][0] ^= RC[round_idx % 24]
+    return state
 
-def pad_message(message, message_len):
+def pad_message(message: bytes, message_len: int) -> bytearray:
     rate_bytes = RATE // 8
     padded_len = ((message_len + rate_bytes - 1) // rate_bytes + 1) * rate_bytes
     padded = bytearray(padded_len)
@@ -203,7 +216,7 @@ def pad_message(message, message_len):
     padded[padded_len - 1] = 0x80
     return padded
 
-def absorb(state, chunk, chunk_len):
+def absorb(state: list, chunk: bytearray, chunk_len: int):
     i = 0
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
@@ -211,7 +224,7 @@ def absorb(state, chunk, chunk_len):
                 state[x][y] ^= int.from_bytes(chunk[i:i+8], 'little')
                 i += 8
 
-def squeeze(state, output):
+def squeeze(state: list, output: list) -> bytes:
     i = 0
     for y in range(GRID_DIM):
         for x in range(GRID_DIM):
@@ -220,9 +233,9 @@ def squeeze(state, output):
                 if i + j < len(output):
                     output[i + j] = bytes_val[j]
             i += 8
-    return output[:OUTPUT_BITS // 8]
+    return bytes(output[:OUTPUT_BITS // 8])
 
-def divide_by_180(hash_hex):
+def divide_by_180(hash_hex: str) -> Tuple[float, mpmath.mpf]:
     H = mpmath.mpf(int(hash_hex, 16))
     pi = mpmath.pi
     quotient = mpmath.floor(H / pi)
@@ -231,16 +244,15 @@ def divide_by_180(hash_hex):
     flattened = 0 if modded < 1e-10 else modded
     return flattened, quotient
 
-def secure_hash_two(message, salt="xAI_temp_salt"):
+def secure_hash_two(message: str, salt: str = "xAI_temp_salt") -> str:
     input_data = str(message) + salt
     h = 0
-    two = 2
     for i, char in enumerate(input_data):
         weight = (2 ** i) if i < len(input_data) // 2 else (2 ** (len(input_data) - i))
-        h = (h * 1664 + ord(char) * weight * two) % (1 << 60)
-    return hex(h)
+        h = (h * 1664 + ord(char) * weight * 2) % (1 << 60)
+    return hex(h)[2:]
 
-def binary_hash_smallest(data, bits=1):
+def binary_hash_smallest(data: str, bits: int = 1) -> int:
     if bits == 1:
         return sum(ord(c) for c in data) % 2
     int_data = int.from_bytes(data.encode(), 'big') % (1 << bits)
@@ -253,7 +265,7 @@ def binary_hash_smallest(data, bits=1):
             hash_val >>= 1
     return hash_val & ((1 << bits) - 1)
 
-def ribit_trit_hash(data, trits=7):
+def ribit_trit_hash(data: str, trits: int = 7) -> list:
     int_data = sum(ord(c) for c in data) % (3 ** trits)
     trit_digits = []
     temp = int_data
@@ -262,17 +274,17 @@ def ribit_trit_hash(data, trits=7):
         temp //= 3
     return trit_digits
 
-def kappasha1664(message: bytes, key: bytes, prime_index=11):
+def kappasha1664(message: bytes, key: bytes, prime_index: int = 11) -> Tuple[str, float, mpmath.mpf, list]:
     state = [[0 for _ in range(GRID_DIM)] for _ in range(GRID_DIM)]
-    key_str = secure_hash_two(key, "xAI_temp_salt")
+    key_str = secure_hash_two(key.decode(), "xAI_temp_salt")
     key_int = int(key_str, 16)
     key_lanes = [[(key_int >> (LANE_BITS * (x * GRID_DIM + y))) & ((1 << LANE_BITS) - 1) for y in range(GRID_DIM)] for x in range(GRID_DIM)]
     padded = pad_message(message, len(message))
     for i in range(0, len(padded), RATE // 8):
         chunk = padded[i:i + RATE // 8]
         absorb(state, chunk, len(chunk))
-        h = Hashlet(lambda x: x, i)
-        _, rgb = h.switch(i)
+        h = Hashlet(lambda: None)  # no args
+        _, rgb = h.switch()  # no args
         sha = SHA1664()
         sha.hash_transaction(str(chunk))
         bastion = EphemeralBastion("kappasha-node")
@@ -281,19 +293,20 @@ def kappasha1664(message: bytes, key: bytes, prime_index=11):
             return "invalid", 0.0, 0, [0] * 7
         trit_hash = ribit_trit_hash(str(chunk))
         for round_idx in range(ROUNDS):
-            state = kappa_transform(state, key_lanes, round_idx, prime_index)
+            kappa_transform(state, key_lanes, round_idx, prime_index)
             state = theta(state)
             state = rho(state)
             state = pi(state)
             state = chi(state)
             state = iota(state, round_idx)
     output = [0] * (OUTPUT_BITS // 8)
-    hash_hex = squeeze(state, output)
+    hash_hex = squeeze(state, output).hex()
     flattened, quotient = divide_by_180(hash_hex)
-    return hash_hex, flattened, quotient, trit_hash
+    return hash_hex, float(flattened), quotient, trit_hash
 
 # Test
-message = b"test"
-key = hashlib.sha256(b"secret").digest()
-hash_hex, flattened, quotient, trit_hash = kappasha1664(message, key)
-print(f"Hash: {hash_hex}\nFlattened: {flattened}\nQuotient: {quotient}\nRibit Trit: {trit_hash}")
+if __name__ == "__main__":
+    message = b"test"
+    key = hashlib.sha256(b"secret").digest()
+    hash_hex, flattened, quotient, trit_hash = kappasha1664(message, key)
+    print(f"Hash: {hash_hex}\nFlattened: {flattened}\nQuotient: {quotient}\nRibit Trit: {trit_hash}")
