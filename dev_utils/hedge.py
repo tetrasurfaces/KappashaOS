@@ -48,7 +48,7 @@
 # Integrates with ThoughtCurve, Navi-integrated.
 
 import asyncio
-from kappasha.thought_curve import ThoughtCurve  # Local mock
+from KappashaOS.thought_curve import ThoughtCurve  # Local mock
 
 def hedge(curve, path):
     """Mock hedge single path with tangent check."""
