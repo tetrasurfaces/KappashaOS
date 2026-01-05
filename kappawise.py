@@ -16,7 +16,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 import hashlib
 import numpy as np
-from src.hash.spiral_hash import kappa_spiral_hash, proof_check  # Import spiral hash
+from KappashaOS.src.hash.spiral_hash import kappa_spiral_hash, proof_check  # Import spiral hash
 
 SEED = 42  # Seeded for reproducibility
 def kappa_coord(user_id, theta):
