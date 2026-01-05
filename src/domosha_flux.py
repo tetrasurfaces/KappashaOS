@@ -50,7 +50,7 @@
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 # Born free, feel good, have fun.
 
-from domosha import Domosha  # Modular core import
+from KappashaOS.src.hash.domosha import Domosha  # Modular core import
 import numpy as np
 import tensorflow as tf
 
@@ -69,7 +69,13 @@ def weave_kappa_blades(t, collapsed):
 def amusement_factor(woven):
     return np.var(woven)
 
-class DomoshaFlux(Domosha):  # Inherit core
+class DomoshaFlux(Domosha):
+    def __init__(self, tensor, kappa=1.2):
+        super().__init__(kappa=kappa)
+        self.pulse = np.mean(tensor) if hasattr(tensor, 'ndim') else float(tensor)
+        self.kappa = np.mean(kappa) if hasattr(kappa, '__len__') else float(kappa)
+        print(f"Domosha up—3 lenses, kappa={self.pulse:.2f}")
+
     def spiral_prime_lock(self, num_primes=50):
         primes = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97][:num_primes]
         h = 1 / (self.phi * self.kappa)
@@ -81,7 +87,6 @@ class DomoshaFlux(Domosha):  # Inherit core
     def simulate_obscura_flux(self, r, theta, rpm=20, blades=10, state='e'):
         t = np.linspace(0, 1, 100)
         flux = np.zeros_like(t)
-        entropy = np.random.uniform(0.4, 0.8)
         for i in range(self.num_lenses):
             muse_t, packet = mersenne_gaussian_packet()
             collapsed = collapse_wavepacket(muse_t, packet)
@@ -110,7 +115,7 @@ class DomoshaFlux(Domosha):  # Inherit core
         flux = tensor
         r, theta, _ = self.spiral_prime_lock()
         obscura = self.simulate_obscura_flux(r, theta, state=state)
-        mean_obscura = tf.reduce_mean(tf.constant(obscura, dtype=tf.float32))  # Mean blend safe
+        mean_obscura = tf.reduce_mean(tf.constant(obscura, dtype=tf.float32))
         flux += mean_obscura * 0.1
         for i in range(self.num_lenses):
             t, packet = mersenne_gaussian_packet()
@@ -124,11 +129,14 @@ class DomoshaFlux(Domosha):  # Inherit core
             flux = self.eclipse_evens(flux, state)
         return flux
 
-# Test import/modular
+    def __str__(self):
+        return f"3-6-9 pulse: alive (kappa={self.pulse:.2f})"
+
+# Test
 if __name__ == "__main__":
-    domo = DomoshaFlux()
-    image = tf.random.uniform((10,10,3), dtype=tf.float32)  # Small mock
-    grid, note, hval = domo.domusha_hash("thank you", image)
+    tension = np.random.rand(10,10,10)
+    domo = DomoshaFlux(tension)
+    image = tf.random.uniform((10,10,3), dtype=tf.float32)
     flux = domo.simulate_daisy_chain(image)
-    print(f"Grid: {grid.shape}, Note: {note}, Hash: {hval[:16]}...")
+    print(domo)
     print("Flux sample:", flux.numpy().flatten()[:5])
