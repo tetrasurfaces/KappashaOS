@@ -44,9 +44,10 @@
 #!/usr/bin/env python3
 # ribit_telemetry.py - Mock ribit telemetry for KappashaOS.
 # Generates random telemetry data, Navi-integrated.
+
 import numpy as np
 import asyncio
-from core.transform_utils import bitwise_transform, hexwise_transform, hashwise_transform  # Updated import
+from KappashaOS.core.transform_utils import bitwise_transform, hexwise_transform, hashwise_transform  # Updated import
 
 class RibitTelemetry:
     def __init__(self, coords, entropies):
