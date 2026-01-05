@@ -51,8 +51,8 @@ import numpy as np
 import asyncio
 import hashlib
 import time
-from master_hand import MasterHand
-from dev_utils.wise_transforms import bitwise_transform, hexwise_transform, hashwise_transform
+from KappashaOS.master_hand import MasterHand
+from KappashaOS.dev_utils.wise_transforms import bitwise_transform, hexwise_transform, hashwise_transform
 
 class Sym:
     def __init__(self):
