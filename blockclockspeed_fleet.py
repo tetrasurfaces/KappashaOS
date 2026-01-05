@@ -52,37 +52,40 @@
 # Async, Nav3d-integrated.
 # Copyright 2025 xAI | AGPL-3.0-or-later AND Apache-2.0
 
+import hashlib
 import numpy as np
 import asyncio
 import multiprocessing as mp
 from queue import Empty
-from hashloop import hashloop # Import hashloop from prior
-from xapi import XApi # Mock XApi for breath rate
+from hashlet.src.utils.salt_loop import bloom_salt # Import hashloop from prior
+from greenlet import greenlet
+class XApi:
+    @staticmethod
+    async def get_breath_rate():
+        return 12.0 + np.random.uniform(-4, 8)  # mock breath
+
 class BlockclockspeedFleet:
     def __init__(self, fleet_size=256):
         self.fleet_size = fleet_size
         self.gossip_queue = mp.Queue()
         self.salt = "blossom"
         self.tasks = [asyncio.create_task(self.node_loop(i)) for i in range(fleet_size)]
+
     async def node_loop(self, node_id):
-        """Node loop for fleet simulation with IPFS vectorization."""
         generator = hashloop(salt=self.salt)
         latencies = []
         coords_accum = []
         kappas = []
-        breath_rate = 12.0 # Mock initial breath rate
+        breath_rate = 12.0
         x_client = XApi()
         while True:
             try:
-                # Mock IPFS SVG fetch
-                svg_data = await x_client.fetch_ipfs_svg(f"Qm{node_id:03x}") # Mock IPFS hash
-                grid = np.random.rand(10, 10, 10).astype(np.uint8) # Mock voxel grid
+                svg_data = await x_client.fetch_ipfs_svg(f"Qm{node_id:03x}")
+                grid = np.random.rand(10, 10, 10).astype(np.uint8)
                 kappa_hash = hashlib.sha256(svg_data.encode() + grid.tobytes()).digest()
-                # Breath-driven modulation
                 breath_rate = await x_client.get_breath_rate()
                 rgb = np.array([1.0, 0.0, 0.0]) if breath_rate > 20 else np.array([0.0, 1.0, 0.0])
                 kappa_hash = hashlib.sha256(kappa_hash + rgb.tobytes()).hexdigest()
-                # Fleet gossip
                 try:
                     A = self.gossip_queue.get(timeout=0.05) if node_id % 2 == 0 else 'mock_prev'
                 except Empty:
@@ -94,18 +97,12 @@ class BlockclockspeedFleet:
                     C = 'mock_next'
                 final_input = A + B + C + kappa_hash
                 final_hash = hashlib.sha256(final_input.encode()).hexdigest()
-                # Coord and kappa calc
                 coord = (node_id % 10, (node_id // 10) % 10, node_id // 100)
                 coords_accum.append(coord[:2])
                 if len(coords_accum) > 2:
                     points = np.array(coords_accum)
                     kappa_mean = np.mean(np.diff(points, axis=0))
                     kappas.append(kappa_mean)
-                # HXSH relay to Mars
-                my_hash = f"node{node_id}"
-                their_hash = "mars_relay"
-                await asyncio.sleep(0.1) # Mock hxsh
-                # Log and latency
                 log_text = f"> Node {node_id} Tick {node_id}: {final_hash[:16]} at {coord}"
                 print(log_text)
                 start = time.time()
@@ -119,46 +116,44 @@ class BlockclockspeedFleet:
                 if hal9001.heat_spike():
                     print("Nav3d: Hush—fleet paused.")
                     await asyncio.sleep(60)
-                await asyncio.sleep(max(60.0, median_c * self.fleet_size / 256)) # Scale sleep by fleet size
+                await asyncio.sleep(max(60.0, median_c * self.fleet_size / 256))
             except Exception as e:
                 print(f"Nav3d: Node {node_id} error: {e}")
-class TeleHashlet(greenlet.Greenlet):
+
+class TeleHashlet(greenlet):
     def __init__(self, run, kappa: float = 1.2, theta: float = 137.5):
-        """Initialize hashlet with Fibonacci spiral, Platonic tetra grid."""
         super().__init__(run)
         self.kappa = kappa
-        self.theta = theta / 180.0 # Golden angle normalized
-        self.fib = [1, 1, 2, 3, 5, 8, 13] # Fibonacci growth
-        self.mersenne = [3, 7, 31] # Prime exponents
-        self.tetra_grid = np.zeros((4, 4, 4)) # Platonic tetrahedral placeholder
-        self.brownian = lambda t: np.cumsum(np.random.randn(int(t))) # Wiener walk
+        self.theta = theta / 180.0
+        self.fib = [1, 1, 2, 3, 5, 8, 13]
+        self.mersenne = [3, 7, 31]
+        self.tetra_grid = np.zeros((4, 4, 4))
+        self.brownian = lambda t: np.cumsum(np.random.randn(int(t)))
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
         print(f"TeleHashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}")
     def _compute_hash(self) -> str:
-        """Compute SHA256 hash with object ID and random seed."""
         data = f"{id(self)}:{np.random.rand()}"
         return hashlib.sha256(data.encode()).hexdigest()
     def _hash_to_rgb(self) -> str:
-        """Convert hash to RGB hex, Fibonacci-weighted."""
         hash_int = int(self.hash_id, 16) % 0xFFFFFF
         scale = self.fib[min(len(self.fib) - 1, int(hash_int % len(self.fib)))]
-        return f"#{int(hash_int * scale * self.kappa):06x}"
+        color_val = int(hash_int * scale * self.kappa) % 0xFFFFFF
+        return f"#{color_val:06x}"
     def switch(self, *args, **kwargs):
         result = super().switch(*args, **kwargs)
         self.hash_id = self._compute_hash()
         self.rgb_color = self._hash_to_rgb()
-        return result, self.rgb_color # Yield result + RGB hex
+        return result, self.rgb_color
+
 def deepen_layer(layer):
-    time.sleep(0.1) # Mock work
-    return np.sin(layer) * 0.5 # Mock curvature
-# Test integrate
-layer = np.random.rand(10, 10)
-h = TeleHashlet(deepen_layer, layer)
-result, rgb_hex = h.switch()
-print(f"Deepened layer mean {result.mean():.2f}, RGB hex {rgb_hex}")
-def main():
-    fleet = BlockclockspeedFleet()
-    asyncio.run(fleet.node_loop(0)) # Run one node for test
+    time.sleep(0.1)
+    return np.sin(layer) * 0.5
+
 if __name__ == "__main__":
-    main()
+    layer = np.random.rand(10, 10)
+    h = TeleHashlet(deepen_layer, layer)
+    result, rgb_hex = h.switch()
+    print(f"Deepened layer mean {result.mean():.2f}, RGB hex {rgb_hex}")
+    fleet = BlockclockspeedFleet(fleet_size=4)  # small for test
+    asyncio.run(asyncio.gather(*fleet.tasks))
