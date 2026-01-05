@@ -51,16 +51,17 @@ import hashlib
 import struct
 import multiprocessing as mp
 from queue import Empty
-from src.hash.kappasha256 import kappasha256
-from src.hash.KappaSHA1664 import kappasha1664
-from src.hash.secure_hash_two import secure_hash_two
-from ribit_telemetry import RibitTelemetry
-from echo import Echo
-from rhombus_voxel import RhombusVoxel
-from src.hash.porosity_hashing import porosity_hashing
-from src.core.kappa_core import create_kappa  # Updated import
-from src.core.hal9001 import hal9001
-from blockclockspeed_fleet import node_loop
+from KappashaOS.src.hash.kappasha256 import kappasha256
+from KappashaOS.src.hash.KappaSHA1664 import kappasha1664
+from KappashaOS.src.hash.secure_hash_two import secure_hash_two
+from KappashaOS.ribit_telemetry import RibitTelemetry
+from KappashaOS.echo import Echo
+from KappashaOS.rhombus_voxel import RhombusVoxel
+from KappashaOS.src.hash.porosity_hashing import porosity_hashing
+from KappashaOS.src.core.hal9001 import hal9001
+from KappashaOS.blockclockspeed_fleet import BlockclockspeedFleet
+from KappashaOS.src.core.kappa_factory import create_kappa
+from KappashaOS.src.core.kappaendian_base import KappaEndianBase
 
 # Mock classes for missing dependencies
 class GyroGimbal:
@@ -119,7 +120,7 @@ class MasterHand:
         self.ribit = RibitTelemetry([], [])
         self.echo = Echo()
         self.gossip_queue = mp.Queue()  # For console tree and fleet orchestration
-        self.kappa_instance = create_kappa(grid_size=kappa_grid, device_hash="master_hand_kappa_001")  # Use factory
+        self.kappa_instance = create_kappa(grid_size=kappa_grid)  # drop device_hash
         print("MasterHand initialized - Nav3d-integrated, rhombus voxel grid, console trees, IPFS fleet-ready.")
 
     async def navi_nudge(self):
