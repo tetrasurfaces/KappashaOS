@@ -55,17 +55,22 @@
 import numpy as np
 import asyncio
 import hashlib
-from ramp import RampCipher
-from kappa_wire import KappaWire
-from loom_os import LoomOS
-from grokwalk import GrokWalk
-from oracle import Oracle
-from kappa import Kappa
-from blockclockspeed import simulate_block_time
-from kappasha256 import kappasha256
-from ribit import TetraRibit
-from ribit_telemetry import RibitTelemetry
-from src.hash.spiral_hash import kappa_spiral_hash, proof_check
+from KappashaOS.src.hash.ramp import RampCipher
+from KappashaOS.src.hash.kappa_wire import KappaWire
+from KappashaOS.src.hash.loom.loom_os import LoomOS
+from KappashaOS.src.code.grokwalk import GrokWalk
+from KappashaOS.oracle import Oracle
+from KappashaOS.src.core.kappa_core import Kappa
+from KappashaOS.blockclockspeed import simulate_block_time
+import os
+import sys
+from datetime import datetime
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'KappashaOS')))
+from KappashaOS.src.hash.kappasha_256 import hash_surface
+from KappashaOS.ribit import TetraRibit
+from KappashaOS.ribit_telemetry import RibitTelemetry
+from KappashaOS.src.hash.spiral_hash import kappa_spiral_hash, proof_check
+from KappashaOS.master_hand import MasterHand
 
 class Nav3D:
     def __init__(self):
