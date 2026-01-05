@@ -50,7 +50,7 @@
 
 import numpy as np
 import asyncio
-from bloom import BloomFilter
+from KappashaOS.core.bloom import BloomFilter
 
 def generate_spiral(n_points=200, angle=2.39996322973):  # Golden angle in radians
     """Generate phyllotaxis points: x=cos(θ)√n, y=sin(θ)√n, in-memory."""
