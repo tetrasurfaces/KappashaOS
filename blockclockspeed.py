@@ -56,9 +56,12 @@ import time
 import asyncio
 import logging
 import numpy as np
-from kappasha.secure_hash_two import secure_hash_two
-from kappa import Kappa
-from master_hand import MasterHand
+from kappasha.src.hash.secure_hash_two import secure_hash_two
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'KappashaOS')))
+from KappashaOS.src.core.kappa_core import Kappa
+from KappashaOS.master_hand import MasterHand
 
 logging.basicConfig(level=logging.ERROR, filename='greenpaper.log', filemode='a',
                     format='%(asctime)s - %(levelname)s - %(message)s')
