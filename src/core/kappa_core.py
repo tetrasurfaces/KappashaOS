@@ -51,11 +51,12 @@ import os
 from datetime import datetime
 from scipy.spatial import Delaunay
 from tetra.solid import mesh  # Mock tetra surfaces
-from master_hand import MasterHand
-from proto.revocation_stub import check_revocation
+from KappashaOS.master_hand import MasterHand
+from KappashaOS.software.proto.revocation_stub import check_revocation
+from KappashaOS.src.core.kappa_factory import create_kappa
 from tetra.arch_utils import tetra_hash_surface
 
-def read_config(config_file="config/config.json"):
+def read_config(config_file="KappashaOS/config/config.json"):
     """Read intent and commercial use from config file with error handling."""
     config_dir = os.path.dirname(config_file)
     if not os.path.exists(config_dir):
