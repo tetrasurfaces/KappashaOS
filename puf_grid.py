@@ -55,10 +55,10 @@
 import numpy as np
 import asyncio
 import hashlib
-from temperature_salt import generate_temperature_salt
-from secure_hash2 import gather_entropy_channels
-from kappa_sim import KappaSim
-from kappa_wire import KappaWire
+from KappashaOS.src.hash.temp_hash import TempHash
+from KappashaOS.src.hash.secure_hash_two import secure_hash_two
+from KappashaOS.src.scripts.kappa_sim import KappaSim
+from KappashaOS.src.hash.kappa_wire import KappaWire
 
 class PufGrid:
     def __init__(self, size=10, curvature=0.5):
@@ -100,7 +100,7 @@ class PufGrid:
     async def navi_simulate_drift(self, piezo_noise_level=0.1):
         """Simulate drift on kappa grid with PUF key generation and Navi safety."""
         grid = await self.navi_generate_kappa_grid()
-        entropy_data = gather_entropy_channels()
+        entropy_data = secure_hash_two()
         salt = generate_temperature_salt(entropy_data['temperature'])
         noise = np.random.normal(0, piezo_noise_level, grid.shape) + salt[:grid.shape[0]]
         drifted_grid = grid + noise
