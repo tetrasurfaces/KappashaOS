@@ -54,10 +54,10 @@ from greenlet import greenlet
 import asyncio
 
 # Placeholder imports (assume Ribit modules exist)
-from ribit import TetraRibit
-from ribit_telemetry import RibitTelemetry
-from src.hash.spiral_hash import kappa_spiral_hash, proof_check
-from m53_collapse import m53_collapse
+from KappashaOS.ribit import TetraRibit
+from KappashaOS.ribit_telemetry import RibitTelemetry
+from KappashaOS.src.hash.spiral_hash import kappa_spiral_hash, proof_check
+from hashlet.m53_collapse import m53_collapse
 
 class Shuttle:
     def __init__(self, shape='trout', lane=0, comfort_vec=np.zeros(3)):
