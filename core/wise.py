@@ -49,8 +49,8 @@
 # Built by humans, for humans-born free.
 import numpy as np
 import mpmath
-from src.hash.kappa_utils import kappa_orbit, kappa_spiral_hash, proof_check  # Updated import
-from ribit import TetraRibit
+from KappashaOS.src.hash.kappa_utils import kappa_orbit, kappa_spiral_hash, proof_check  # Updated import
+from KappashaOS.ribit import TetraRibit
 import asyncio
 mpmath.mp.dps = 19
 
