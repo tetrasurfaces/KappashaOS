@@ -49,8 +49,8 @@
 
 import numpy as np
 import asyncio
-from ramp import RampCipher
-from kappa_wire import KappaWire
+from KappashaOS.src.hash.ramp import RampCipher
+from KappashaOS.src.hash.kappa_wire import KappaWire
 
 class LoomOS:
     def __init__(self):
@@ -60,7 +60,7 @@ class LoomOS:
         self.gaze_duration = 0.0
         print("LoomOS initialized - operator weave interface ready.")
 
-    async def navi_weave(self, pin: str, hash_str: str, vector: Tuple[int, int, int]) -> bool:
+    async def navi_weave(self, pin: str, hash_str: str, vector: tuple[int, int, int]) -> bool:
         """Weave pin, hash, vector onto kappa wire with Navi safety."""
         x, y, z = vector
         encoded = await self.ramp.navi_encode(hash_str)
