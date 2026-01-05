@@ -55,26 +55,28 @@
 import simpy
 import numpy as np
 import asyncio
-from interfaces.nav3d import Nav3D
-from kappa_sim import KappaSim
-from ghosthand import GhostHand
-from thought_curve import ThoughtCurve
-from arch_utils.render import render
-from dev_utils.lockout import lockout
-from dev_utils.hedge import hedge, multi_hedge
-from dev_utils.grep import grep
-from dev_utils.thought_arb import thought_arb
-from scale import left_weight, right_weight
-from phyllotaxis import generate_spiral, navi_check_petal_prompt
-from bloom import BloomFilter
-from puf_grid import PufGrid
-from dojos import Dojo
-from meditate import whisper
-from double_diamond_balance import double_diamond_balance
-from kappasha256 import kappasha256
-from mom import MoM
-from loom_driver import Loom
-import kappasha_os_cython
+import os
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'KappashaOS')))
+from KappashaOS.interfaces.nav3d import Nav3D
+from KappashaOS.src.scripts.kappa_sim import KappaSim
+from hashlet.ghost_hand import GhostHand
+from KappashaOS.thought_curve import ThoughtCurve
+from kappasha.arch_utils import render
+from KappashaOS.dev_utils.lockout import lockout
+from KappashaOS.dev_utils.hedge import hedge, multi_hedge
+from KappashaOS.dev_utils.grep import grep
+from KappashaOS.dev_utils.thought_arb import thought_arb
+from KappashaOS.scale.scale import left_weight, right_weight
+from KappashaOS.core.phyllotaxis import generate_spiral, navi_check_petal_prompt
+from KappashaOS.core.bloom import BloomFilter
+from KappashaOS.puf_grid import PufGrid
+from hashlet.core.dojos import Dojo
+from hashlet.core.meditate import whisper
+from hashlet.ethics.tacsi_core import double_diamond_balance
+from KappashaOS.src.hash.kappasha256 import kappasha256
+from KappashaOS.MoM import MoM
+from KappashaOS.loom_driver import Loom
 
 class KappaSynod:
     def __init__(self, grid_size=10):
@@ -92,7 +94,7 @@ class KappaSynod:
         self.green_book += amount
         print(f"Burned green: {amount}, total green {self.green_book}")
 
-    def summon_expert(self, pos, specialty):
+    async def summon_expert(self, pos, specialty):
         if self.red_book > 0:
             x, y, z = pos
             if await navi_check_petal_prompt(x, y, z, self.seraph):
@@ -109,14 +111,14 @@ class KappaSynod:
             return self.experts[pos]
         return None
 
-    def debate(self, new_thinking=True):
+    async def debate(self, new_thinking=True):
         if new_thinking:
             pos = (np.random.randint(self.grid_size), np.random.randint(self.grid_size), np.random.randint(self.grid_size))
-            self.summon_expert(pos, "ramp")
-            self.summon_expert(pos, "weave")
+            await self.summon_expert(pos, "ramp")
+            await self.summon_expert(pos, "weave")
         else:
             for pos in self.experts:
-                self.rehash_expert(pos)
+                await self.rehash_expert(pos)
         entropy = np.random.uniform(0.4, 0.8)
         if entropy > 0.7:
             print("Synod consensus unlocked")
@@ -131,7 +133,7 @@ class KappashaOS:
         self.nav = Nav3D()
         self.kappa_sim = KappaSim()
         self.puf_grid = PufGrid()
-        self.hand = GhostHand(kappa=0.2)
+        self.hand = GhostHand()
         self.curve = ThoughtCurve()
         self.synod = KappaSynod()
         self.dojo = Dojo()
@@ -200,6 +202,9 @@ class KappashaOS:
         print("Navi: Authentication failed")
         return False
 
+    async def start(self):
+        drifted_grid, puf_key = await self.puf_grid.navi_simulate_drift()
+
     def run_command(self, cmd):
         self.commands.append(cmd)
         if not self.authenticate(self.key, self.call_sign, self.pin):
@@ -210,7 +215,7 @@ class KappashaOS:
             self.synod.burn_green(1.0)
         self.synod.debate(new_thinking="new" in cmd or "program" in cmd)
         if cmd == "kappa ls":
-            front, right, top = kappasha_os_cython.project_third_angle(self.kappa_sim.grid, self.kappa_sim.kappa)
+            front, right, top = project_third_angle(self.kappa_sim.grid, self.kappa_sim.kappa)
             print("FRONT:\n", front[:3, :3])
             print("RIGHT:\n", right[:3, :3])
             print("TOP:\n", top[:3, :3])
@@ -252,7 +257,6 @@ class KappashaOS:
         elif cmd == "arch_utils render":
             x, y, _ = generate_spiral(100)
             self.kappa_sim.grid[:len(x), :len(y), 0] = np.stack((x, y), axis=-1)
-            drifted_grid, puf_key = await self.puf_grid.navi_simulate_drift()
             self.kappa_sim.grid = drifted_grid
             filename = render(self.kappa_sim.grid, self.kappa_sim.kappa)
             ribit = self.mom.Ribit("render", "blue")
@@ -301,7 +305,7 @@ class KappashaOS:
         elif cmd.startswith("kappa decide"):
             try:
                 intent = cmd.split()[2]
-                action = kappasha_os_cython.thought_arb_cython(self.curve, self.kappa_sim.history, intent)
+                action = thought_arb_cython(self.curve, self.kappa_sim.history, intent)
                 self.decisions.append((self.env.now, intent, action))
                 self.hand.pulse(2 if action == "unwind" else 1)
                 if action == "unwind":
@@ -372,11 +376,10 @@ class KappashaOS:
                     program = lambda x: self.nav.navi_navigate("test.txt", (5, 5, 5), "cone")
         return program
 
-    def run_day(self):
+    async def run_day(self):
         print(f"Day start - Situational Kappa = {self.kappa_sim.get_situational_kappa():.3f}")
         self.env.process(self.poll_sensor())
-        asyncio.run(self.navi_listen())
-        yield self.env.timeout(20)
+        await self.navi_listen()
         self.kappa_sim.trigger_emergency("gas_rupture")
         self.kappa_sim.register_kappa("gas_rupture")
         self.run_command("kappa cd weld")
@@ -388,7 +391,7 @@ class KappashaOS:
         self.move_skewed_volume(1.0, "normal")
         self.run_command("kappa program ramp;weave;walk")
         self.run_command("kappa meditate")
-        yield self.env.process(self.kappa_sim.auto_adjust("gas_line", adjust_time=5))
+        await self.kappa_sim.auto_adjust("gas_line", adjust_time=5)
         self.run_command("kappa ls")
         self.run_command("arch_utils render")
         print(f"Day end - Situational Kappa = {self.kappa_sim.get_situational_kappa():.3f}")
