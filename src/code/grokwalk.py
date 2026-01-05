@@ -49,10 +49,10 @@
 
 import numpy as np
 import asyncio
-from ramp import RampCipher
-from kappa_wire import KappaWire
-from loom_os import LoomOS
-from master_hand import MasterHand
+from KappashaOS.src.hash.ramp import RampCipher
+from KappashaOS.src.hash.kappa_wire import KappaWire
+from KappashaOS.src.hash.loom.loom_os import LoomOS
+from KappashaOS.master_hand import MasterHand
 
 class GrokWalk:
     def __init__(self):
@@ -66,7 +66,7 @@ class GrokWalk:
         self.gaze_duration = 0.0
         print("GrokWalk initialized - OS walk ready.")
 
-    async def navi_walk(self, file_path: str, target_pos: Tuple[int, int, int], call_sign: str):
+    async def navi_walk(self, file_path: str, target_pos: tuple[int, int, int], call_sign: str):
         """Walk file with ramp modulation and call sign gate."""
         if not self._gate_check(call_sign):
             print("Navi: Gate denied.")
