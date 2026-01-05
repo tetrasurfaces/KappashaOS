@@ -54,9 +54,9 @@
 import numpy as np
 import hashlib
 import asyncio
-import kappa
-import hal9001
-from porosity_hashing import porosity_hashing
+import KappashaOS.software.proto.kappa
+import KappashaOS.src.core.hal9001
+from KappashaOS.src.hash.porosity_hashing import porosity_hashing
 
 class RhombusVoxel:
     def __init__(self, grid_size=10, kappa=0.1, rhombus_angle=60):
