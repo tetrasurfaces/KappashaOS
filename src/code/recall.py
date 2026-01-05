@@ -78,7 +78,7 @@ class Plato369Vortex:
         halo = tf.math.pow(tensor, self.mersenne[2])  # Prime shadow
         return tf.concat([braid, halo], axis=-1) + tf.constant(self.brownian(1.0))
 
-    def domusha_hash(self, note: str, image: tf.Tensor) -> Tuple[np.ndarray, str]:
+    def domosha_hash(self, note: str, image: tf.Tensor) -> Tuple[np.ndarray, str]:
         """Watercolor hashlet with object detection, tilde-wavy."""
         tensor = self.fib_spiral(image)
         tensor = self.plato_tetra(tensor)
@@ -89,7 +89,7 @@ class Plato369Vortex:
 def main():
     vortex = Plato369Vortex()
     image = tf.random.uniform((1, 800, 600, 3))  # Mock webcam input
-    grid, note = vortex.domusha_hash("thank you", image)
+    grid, note = vortex.domosha_hash("thank you", image)
     print(f"Grid: {grid.shape}, Note: {note}")
 
 if __name__ == "__main__":
