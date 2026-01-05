@@ -48,7 +48,7 @@
 # Born free, feel good, have fun.
 import numpy as np
 from hashlib import sha256, blake2b
-from core.wise import diagonal_swap, bitwise_mirror
+from KappashaOS.core.wise import diagonal_swap, bitwise_mirror
 import math
 
 def kappa_orbit(t, freqs=[3, 5, 7], polarity_swap=True):
@@ -78,13 +78,16 @@ def kappa_spiral_hash(data: str, comfort_vec: np.ndarray, theta_base=100, laps=1
         full_hash = (~full_hash) & ((1 << 3328) - 1)  # Bitwise NOT with wrap
     # Step 4: Spiral mapping with tetrahedral recursion
     bits = np.array(list(bin(full_hash)[2:].zfill(3328)), dtype=np.int8)
-    swapped = diagonal_swap(bits)  # Tetrahedral twist
-    center_idx = 1664
-    theta_spiral = np.linspace(0, 2 * math.pi, 3328) * theta_base / 180 / laps  # Simplified theta per lap
-    r_spiral = np.abs(np.linspace(-1, 1, 3328))  # Normalized inward/outward
-    x = r_spiral * np.cos(theta_spiral)
-    y = r_spiral * np.sin(theta_spiral)
-    z = np.sin(x * 0.1) + np.cos(y * 0.1) + swapped * 0.01  # Tetrahedral recursion
+    swapped = diagonal_swap(bits)
+    theta = np.linspace(0, 2 * np.pi * laps, 3328)  # full laps
+    r = np.linspace(0, 1, 3328)  # normalized radius
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+    z = np.sin(x * 0.1) + np.cos(y * 0.1) + swapped * 0.01 # Tetrahedral recursion
+    # Normalize theta for proof (sum to 1)
+    theta_norm = theta / (2 * np.pi * laps)  # 0 to 1
+    theta_norm = theta_norm / np.sum(theta_norm)  # normalize sum to 1
+    spiral_vec = np.stack([theta_norm, r, z], axis=-1)  # use normalized theta as first coord
     # Cap magnitudes to prevent overflow
     x = np.clip(x, -1e3, 1e3)  # Reduced cap
     y = np.clip(y, -1e3, 1e3)
@@ -94,23 +97,22 @@ def kappa_spiral_hash(data: str, comfort_vec: np.ndarray, theta_base=100, laps=1
     light_raster = blake2b(swapped.tobytes()).hexdigest()[:64]  # Pack to light
     return {
         'root': full_hash,
-        'spiral_vec': np.stack([x, y, z], axis=-1),
+        'spiral_vec': spiral_vec,
         'topology_map': topology_map,
         'light_raster': light_raster,
         'kappa_orbit': k_orbit
     }
 
 def proof_check(spiral_vec: np.ndarray, theta_base=100, laps=18):
-    """Verify hash spiral: flattened theta sums to 1, full minus laps flattens."""
-    theta_full = np.abs(spiral_vec[:, 0]) / (theta_base / laps)  # Use abs for positivity
-    theta_flat = np.sin(theta_full)  # Collapse to unit sine
-    sum_flat = np.sum(theta_flat)
-    sum_expanded = np.sum(theta_full) - laps  # Adjusted for laps
-    print(f"Debug: sum_flat = {sum_flat}, sum_expanded = {sum_expanded}")  # Debug theta sums
+    theta_norm = spiral_vec[:, 0]
+    sum_flat = np.sum(theta_norm)
+    sum_expanded = np.sum(theta_norm * laps) - laps
+    print(f"Debug: sum_flat = {sum_flat}, sum_expanded = {sum_expanded}")
     assert abs(sum_flat - 1.0) < 1e-6, f"Proof failed: theta doesn't sum to one, sum={sum_flat}"
-    assert abs(sum_expanded - 0.0) < 1e-6, f"Proof failed: expansion doesn't flatten, sum={sum_expanded}"
+    assert abs(sum_expanded - 0.0) < 1e-6, f"Proof failed: expansion not flat, sum={sum_expanded}"
     print("Proof passed. Spiral breathes. Sum equals one.")
     return True
 
 # Whisper in log
 print("Clarity committed. Spiral hash live: 3328 bits, free from zero, built for wind.")
+
