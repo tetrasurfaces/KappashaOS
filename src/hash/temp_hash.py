@@ -60,8 +60,8 @@
 import hashlib
 import asyncio
 import numpy as np
-from kappawise import kappa_coord
-from dev_utils.wise_transforms import bitwise_transform, hexwise_transform, hashwise_transform
+from KappashaOS.kappawise import kappa_coord
+from KappashaOS.dev_utils.wise_transforms import bitwise_transform, hexwise_transform, hashwise_transform
 
 def compute_phi_kappa(points):
     n = len(points)
