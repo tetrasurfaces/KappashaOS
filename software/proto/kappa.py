@@ -51,9 +51,9 @@ import json
 import os
 from datetime import datetime
 from scipy.spatial import Delaunay
-from solid import mesh  # Mock tetra surfaces
-from software.proto.revocation_stub import check_revocation
-from arch_utils import tetra_hash_surface
+from KappashaOS.solid import mesh  # Mock tetra surfaces
+from KappashaOS.software.proto.revocation_stub import check_revocation
+from KappashaOS.hardware.proto.arch_utils import tetra_hash_surface
 
 def read_config(config_file="config/config.json"):
     """Read intent and commercial use from config file with error handling."""
