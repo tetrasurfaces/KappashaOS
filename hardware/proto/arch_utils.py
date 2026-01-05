@@ -49,8 +49,10 @@
 import numpy as np
 import json
 import os
+import sys
 from datetime import datetime
-from kappasha256 import hash_surface
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'KappashaOS')))
+from KappashaOS.src.hash.kappasha256 import hash_surface
 
 def read_config(config_file="config/config.json"):
     """Read intent and commercial use from config file with error handling."""
