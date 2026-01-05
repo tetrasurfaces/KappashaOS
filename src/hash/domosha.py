@@ -51,11 +51,12 @@
 #!/usr/bin/env python3
 # domosha.py - Dōmo secure hashing w/ eclipse/H-metric, FluxPad safety, daisy Muse lenses for KappashaOS.
 # Tensor in, thank you whisper, rhombus grid out—kappa-curved, no zeros.
+
 import numpy as np
 import tensorflow as tf
 import hashlib
 import matplotlib.pyplot as plt
-from lens.muse import mersenne_gaussian_packet, collapse_wavepacket, weave_kappa_blades, amusement_factor
+from KappashaOS.hardware.lens.muse import mersenne_gaussian_packet, collapse_wavepacket, weave_kappa_blades, amusement_factor
 from typing import Tuple
 
 class FluxPad:
@@ -90,7 +91,7 @@ class Domosha:
         self.entropy = np.random.uniform(0.4, 0.8)
         self.phi = 1.6180339887
         self.brownian = lambda t: np.cumsum(np.random.randn(int(t)))
-        print(f"Domosha up—{num_lenses} lenses, kappa={kappa:.2f}")
+        print(f"Domosha up—{num_lenses} lenses, kappa={float(self.kappa):.2f}")
 
     def clear_water(self, tensor: tf.Tensor, mood: str="gratitude") -> tf.Tensor:
         if mood == "gratitude":
