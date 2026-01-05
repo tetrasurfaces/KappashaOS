@@ -53,30 +53,31 @@
 
 import numpy as np
 import asyncio
-from ramp import RampCipher
-from kappa_wire import KappaWire
-from nav3d import Nav3D
-from master_hand import MasterHand
+import hashlib
+from KappashaOS.src.hash.ramp import RampCipher
+from KappashaOS.src.hash.kappa_wire import KappaWire
+from KappashaOS.master_hand import MasterHand
 
 class Oracle:
     def __init__(self):
         self.kappa_wire = KappaWire()
         self.ramp = RampCipher()
-        self.nav = Nav3D()
-        self.ghost_lap = {}  # Precomputed vector cache: hash -> predicted state
+        self.ghost_lap = {}
         self.hand = MasterHand()
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
+        self.nav = None  # lazy
         print("Oracle initialized - prophecy with ghost lap ready.")
 
-    async def navi_precompute_ghost_lap(self, file_path: str, target_pos: Tuple[int, int, int], pin: str):
-        """Precompute next state vector (ghost lap) with Navi safety."""
+    async def navi_precompute_ghost_lap(self, file_path: str, target_pos: tuple[int, int, int], pin: str):
+        if self.nav is None:
+            from KappashaOS.interfaces.nav3d import Nav3D  # lazy
+            self.nav = Nav3D()
         with open(file_path, 'r') as f:
             data = f.read()
         hash_str = hashlib.sha256(data.encode()).hexdigest()
         temp_ramp = RampCipher(pin)
         encoded = temp_ramp.encode(hash_str)
-        # Predict next position (simple forward step)
         next_pos = (target_pos[0] + 1, target_pos[1], target_pos[2])
         if 0 <= next_pos[0] < self.kappa_wire.grid_size:
             self.ghost_lap[hash_str] = (next_pos, encoded)
@@ -94,7 +95,9 @@ class Oracle:
         await asyncio.sleep(0)
 
     async def navi_prophecy(self, hash_str: str, call_sign: str):
-        """Predict and retrieve precomputed state with Navi safety."""
+        if self.nav is None:
+            from KappashaOS.interfaces.nav3d import Nav3D
+            self.nav = Nav3D()
         if hash_str not in self.ghost_lap or not self.nav.grok._gate_check(call_sign):
             print("Navi: Prophecy denied - no ghost lap or gate failed.")
             return None
@@ -122,5 +125,4 @@ if __name__ == "__main__":
         await oracle.navi_precompute_ghost_lap("test.txt", (5, 5, 5), "35701357")
         prophecy = await oracle.navi_prophecy(hashlib.sha256(b"test").hexdigest(), "cone")
         print(f"Navi: Prophecy result: {prophecy}")
-
     asyncio.run(navi_test())
