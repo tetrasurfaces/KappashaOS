@@ -73,7 +73,7 @@ def kappa_calc(n, round_idx, kappa, theta, chi):
     decay = (1 + kappa_base * num / denom) * (2 / 1.5) - 0.333 if 2 < n < 52 else max(0, 1.5 * math.exp(-((n - 60) ** 2) / 400.0) * math.cos(0.5 * (n - 316)))
     return (decay + kappa * math.sin(theta)) % MODULO
 
-def kappa_transform(state, key, round_idx, kappa, theta, chi):
+def kappa_transform(state, key, round_idx, kappa, its, chi):
     for x in range(GRID_DIM):
         for y in range(GRID_DIM):
             n = x * y
