@@ -48,7 +48,7 @@
 # Detects path drift, Navi-integrated.
 
 import asyncio
-from kappasha.thought_curve import ThoughtCurve  # Local mock
+from KappashaOS.thought_curve import ThoughtCurve  # Local mock
 
 def thought_arb(curve, history, intent):
     """Mock thought arbitrage to detect path drift."""
