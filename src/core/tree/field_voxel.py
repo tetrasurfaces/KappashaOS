@@ -2,6 +2,7 @@
 # !/usr/bin/env python3
 # field_voxel.py - Field voxels w/ kappa theta shear, miracle tree nodes, muse weave, Voronoi blobs for KappashaOS.
 # Baseline sphere (1,1), amorphous via Delaunay centers/vectors from gribits/miracle.
+# Inspired by Rupert Sheldrake's morphic fields: the grid remembers, the field breathes.
 # Copyright (C) 2025 Todd Macrae Hutchinson (69 Dollard Ave, Mannum SA 5238)
 # Licensed under GNU Affero General Public License v3.0 only
 # This program is free software: you can redistribute it and/or modify
