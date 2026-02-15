@@ -73,6 +73,10 @@ from src.hash.spiral_hash import kappa_spiral_hash, proof_check
 from master_hand import MasterHand
 from blossom_window import BlossomWindow
 from PyQt6.QtWidgets import QApplication
+from grid import Grid4D, run_curve_retrieve
+from ghost_hand import GhostHand  # Haptic feedback for kappa tilt
+from thought_curve import ThoughtCurve  # Path tangents and hedging
+from bloom_breath_cycle import helix_frog_field
 app = QApplication.instance() or QApplication(sys.argv)
 window = BlossomWindow()
 window.show()
@@ -145,6 +149,44 @@ class Nav3D:
             vol += flat.reshape((32,32,32))  # soft add  
         self.full_vol = vol  
         self.deltas.clear()  
+        
+    async def process_voxel_slice(self, voxel_slice: np.ndarray, data_type='generic'):
+        """
+        Take a recalled 32³ voxel from Grid4D, tilt rhombus-style, project third-angle,
+        check edges for unlock, pulse haptic if drift high.
+        """
+        if voxel_slice.shape != (32, 32, 32):
+            print("Nav3D: Got wrong shape voxel — skipping")
+            return
+
+        # Downsample to 8³ rhombus cube for speed (or keep 32³ if GPU later)
+        rhombus_grid = voxel_slice[::4, ::4, ::4]  # crude but fast → ~8³
+        rhombus_nav = RhombusNav(kappa=self.kappa_orbit + 0.1)  # tie to orbit for breathing
+        rhombus_nav.grid = rhombus_grid.astype(float) / 255.0  # normalize 0-1
+
+        # Project third-angle with current kappa
+        front, right, top = rhombus_nav.project_third_angle()
+
+        print("Nav3D — Third-angle projection (sample):")
+        print("FRONT scalar 3×3:\n", front[0][:3,:3].round(2))  # scalar intensity
+        print("RIGHT tilted points sample:\n", right[1][0,0].round(2))  # tilted [x,y,z]
+
+        # Check one interesting edge for unlock (mock coord for now)
+        test_coord = (7, 0, 0)  # right face top-left
+        if rhombus_nav.unlock_edge(test_coord):
+            self.hand.pulse(3)  # stronger pulse on unlock
+            print("Nav3D: Edge unlocked — haptic strong")
+        else:
+            self.hand.pulse(1)
+            print("Nav3D: Edge stable")
+
+        # Optional: plant a tree at centroid if density high
+        density = np.mean(voxel_slice > 100)
+        if density > 0.15:
+            cx, cy, cz = np.argwhere(voxel_slice > 180).mean(axis=0).astype(int)
+            cx, cy, cz = np.clip([cx, cy, cz], 0, 31)
+            await self.plant_tree(cx//4, cy//4, cz//4, entropy=density, breath=1)
+            print(f"Nav3D: Planted breath-tree near high-density centroid")
 
     async def deepen_o_b_e(self):
         data = "genesis"
@@ -165,6 +207,12 @@ class Nav3D:
         self.telemetry.raster_to_light(f"topo_{intensity}")
         hash_result = kappa_spiral_hash(f"topo_{data}", np.array([self.tendon_load, self.gaze_duration, 30.0]))
         print(f"hash_result type: {type(hash_result)}, keys: {list(hash_result.keys()) if isinstance(hash_result, dict) else 'not dict'}")
+        
+        if np.any(self.o_b_e):
+            # Mock "recall" from o_b_e for now (later use Grid4D)
+            slice_3d = (self.o_b_e > 0.1).astype(np.uint8) * 255
+        
+        await self.process_voxel_slice(slice_3d, data_type='obe')
         if isinstance(hash_result, dict) and 'spiral_vec' in hash_result:
             spiral_vec = hash_result['spiral_vec']
             print(f"spiral_vec shape: {spiral_vec.shape if hasattr(spiral_vec, 'shape') else 'no shape'}")
@@ -412,9 +460,145 @@ class Nav3D:
         self.kappa_orbit = 0.0
         self.phase_shift = 0.0
 
+class RhombusNav:
+    def __init__(self, kappa=0.1):
+        self.kappa = kappa  # Kappa for grid tilt
+        self.grid = np.zeros((8, 8, 8))  # 8x8x8 rhombus voxel cube
+        self.curve = ThoughtCurve()  # For path hedging
+        self.hand = MasterHand(kappa=self.kappa)  # Haptic interface
+        self.path = []  # Kappa trail for navigation
+        print("RhombusNav initialized - kappa-tilted 3D grid ready.")
+
+    def project_third_angle(self):
+        """Third-angle projection: front, right, top faces tilted by kappa.
+        Convert scalar grid to 3D coords first (voxel position + intensity as z-weight).
+        """
+        # Create coordinate grid (x,y,z positions for each voxel)
+        x, y, z = np.mgrid[0:self.grid.shape[0], 0:self.grid.shape[1], 0:self.grid.shape[2]]
+        coords = np.stack([x, y, z], axis=-1).astype(float)  # shape (8,8,8,3)
+
+        # Weight by intensity (optional: multiply z by grid value for "height")
+        intensity = self.grid[..., np.newaxis]  # (8,8,8,1)
+        weighted_coords = coords * (1 + intensity * 0.5)  # gentle lift where bright
+
+        # Extract faces as point clouds
+        front_points = weighted_coords[:, :, 0, :]   # z=0 face → (8,8,3)
+        right_points = weighted_coords[7, :, :, :]   # x=7 face → (8,8,3)
+        top_points  = weighted_coords[:, 7, :, :]    # y=7 face → (8,8,3)
+
+        # Flatten to (N,3) for matrix multiply
+        front_flat = front_points.reshape(-1, 3)
+        right_flat = right_points.reshape(-1, 3)
+        top_flat   = top_points.reshape(-1, 3)
+
+        # Tilt right and top faces
+        tilt_mat = np.array([[1, 0, -self.kappa],
+                             [0, 1, -self.kappa],
+                             [0, 0, 1]])
+
+        right_tilted = (tilt_mat @ right_flat.T).T  # (N,3)
+        top_tilted   = (tilt_mat @ top_flat.T).T
+
+        # Reshape back to original face shape (8,8,3)
+        right_tilted = right_tilted.reshape(right_points.shape)
+        top_tilted   = top_tilted.reshape(top_points.shape)
+
+        # Return scalar faces (average intensity or just keep coords if you want viz later)
+        # For now, return original scalar faces + tilted coords as tuple
+        front_scalar = self.grid[:, :, 0]
+        right_scalar = self.grid[7, :, :]
+        top_scalar   = self.grid[:, 7, :]
+
+        return (front_scalar, front_points), \
+               (right_scalar, right_tilted), \
+               (top_scalar, top_tilted)
+
+    def unlock_edge(self, coord):
+        """Check voxel hash for drift; unlock edge if kappa spikes."""
+        drift = np.random.rand()  # Mock hash drift
+        if drift < self.kappa + 0.1:  # Threshold for edge unlock
+            self.hand.pulse(2)  # Haptic alert for drift
+            print(f"Edge unlocked: {coord} - kappa tilt {self.kappa:.3f}")
+            return True
+        else:
+            self.hand.pulse(1)  # Stable signal
+            print(f"Stable edge: {coord} - no drift")
+            return False
+
+    def nav(self, cmd):
+        """CLI navigator with kappa-tilted verbs."""
+        # In RhombusNav.nav() for "ls"
+        if cmd == "ls":
+            (front_s, front_p), (right_s, right_p), (top_s, top_p) = self.project_third_angle()
+            print("FRONT scalar (3x3):\n", front_s[:3,:3])
+            print("FRONT points sample:\n", front_p[0,0])  # one point [x,y,z]
+            print("RIGHT tilted (3x3 scalar):\n", right_s[:3,:3])
+            print("RIGHT tilted points sample:\n", right_p[0,0])
+            print("TOP tilted (3x3 scalar):\n", top_s[:3,:3])
+        elif cmd.startswith("tilt"):
+            try:
+                dk = float(cmd.split()[1])
+                self.kappa += dk
+                self.hand.pulse(2)  # Haptic feedback
+                print(f"Kappa now {self.kappa:.3f}")
+            except:
+                print("usage: tilt 0.05")
+        elif cmd.startswith("cd"):
+            try:
+                path = cmd.split()[1]
+                self.path.append(path)
+                if len(self.path) > 1:
+                    tangent, _ = self.curve.spiral_tangent(self.path[-2], self.path[-1])
+                    if tangent:
+                        self.hand.pulse(3)  # Hedge alert
+                        print("Path hedge: unwind")
+                print(f"Curved to /{path}")
+            except:
+                print("usage: cd logs")
+        elif cmd.startswith("unlock"):
+            try:
+                coord = tuple(map(int, cmd.split()[1].strip("()").split(",")))
+                self.unlock_edge(coord)
+            except:
+                print("usage: unlock (7,0,0)")
+        else:
+            print("nav: ls | tilt 0.05 | cd logs | unlock (7,0,0)")
+
 if __name__ == "__main__":
     async def navi_test():
         nav = Nav3D()
+        grid4d = Grid4D(time_slices=5)
+
+        # Real chain start
+        voxel, density, poem, regrets = run_curve_retrieve()  # calls curve.exe
+        grid4d.add_stratum_from_voxel(voxel, data_type='real_curve')  # add helper below
+
+        query = np.array([16, 16, 16])
+        slice_3d = grid4d.recall(query)
+        await nav.process_voxel_slice(slice_3d, data_type='real_curve')
+
+        # 1. Simulate raw input (like "i love you" or candlestick vec)
+        message = "i love you"
+        data = message.encode()
+
+        # 2. frog entry → voxel_idx
+        idx, _ = helix_frog_field(data)
+
+        # 3. pretend curve.exe gave us a voxel (we'll replace with real call later)
+        mock_voxel = np.zeros((32,32,32), dtype=np.uint8)
+        mock_voxel[10:22, 10:22, 10:22] = 200  # simple cube to test
+
+        # 4. add to Grid4D as stratum
+        grid4d.add_stratum(data_type='test')  # replace with real run_curve_retrieve() later
+
+        # 5. recall a slice (weighted random)
+        query = np.array([16, 16, 16])
+        slice_3d = grid4d.recall(query, data_type='test')
+
+        # 6. process in Nav3D (tilt, project, unlock, plant if dense)
+        await nav.process_voxel_slice(slice_3d, data_type='test')
+
+        # Rest of your original test...
         await nav.deepen_o_b_e()
         await nav.deepen_geology()
         await nav.interstellar_kappa_signaling()
@@ -433,5 +617,12 @@ if __name__ == "__main__":
         # Remove: for ribit in nav.ribits: ...
         print(f"Telemetry last intensity: {nav.telemetry.last_intensity if hasattr(nav.telemetry, 'last_intensity') else 'N/A'}")
         print("Navi: Test complete — planted + mounted SSD.")
+
+
+    nav = RhombusNav(kappa=0.2)
+    commands = ["cd gate", "cd weld", "tilt 0.1", "ls", "unlock (7,0,0)"]
+    for c in commands:
+        print(f"\n> {c}")
+        nav.nav(c)
 
     asyncio.run(navi_test())
