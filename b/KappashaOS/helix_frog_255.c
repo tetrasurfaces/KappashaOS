@@ -1,3 +1,21 @@
+// helix_frog_255.c
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 xAI
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
+//
+// Notes: // gcc -O3 -march=native -funroll-loops -flto helix_frog_255.c -o frog
+// ./frog
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -62,6 +80,3 @@ int main(void) {
     printf("Collision rate: %.4f%%\n", (1000000.0 - unique) / 10000.0);
     return 0;
 }
-
-// gcc -O3 -march=native -funroll-loops -flto helix_frog_255.c -o frog
-// ./frog
