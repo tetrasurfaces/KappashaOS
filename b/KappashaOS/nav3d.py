@@ -606,8 +606,8 @@ if __name__ == "__main__":
         await nav.navi_navigate("test.txt", (5, 5, 5), "cone")
         window.say("May I walk metal?")
         # input()  # interactive or assume yes
-        await nav.mount_drive_as_volume("/home/yeetbow/b/For_B", max_depth=4)
-        if await nav.mount_drive_as_volume("/home/yeetbow/b/For_B", max_depth=4):
+        await nav.mount_drive_as_volume("/home/user/b/For_B", max_depth=4)
+        if await nav.mount_drive_as_volume("/home/user/b/For_B", max_depth=4):
             window.say(f"Mounted {len(nav.trees)} nodes")
             print(f"Navi: SSD folded — {len(nav.trees)} nodes rooted.")
         else:
