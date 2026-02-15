@@ -1,4 +1,6 @@
-# Born free, feel good, have fun.
+# grid.py
+
+#Born free, feel good, have fun.
 
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
@@ -226,7 +228,9 @@ def run_curve_retrieve():
     
     except Exception as e:
         print(f"Curve flinched: {e}")
-        return np.zeros((32,32,32), dtype=np.uint8), 0.0, "", []
+        voxel = np.random.randint(100, 256, (32, 32, 32), dtype=np.uint8)  # non-zero mock
+        density = np.mean(voxel > 180)
+        return voxel, density, "Mock poem from flinch", []
 
 class Grid4D:
     def __init__(self, time_slices=10):
@@ -239,11 +243,25 @@ class Grid4D:
         self.entropy_threshold = 0.12
         self.strata_types = [] # list[str] parallel to strata
 
+    def add_stratum_from_voxel(self, voxel, data_type='generic'):
+        entropy = np.std(voxel) / 255.0 if np.any(voxel) else 0.0
+        alive = np.mean(voxel > 0) if np.any(voxel) else 0.0  # simple density
+
+        self.strata.append(voxel)
+        self.alive_scores.append(alive)
+        if len(self.strata) > self.max_slices:
+            self.strata.pop(0)
+            self.alive_scores.pop(0)
+
     def add_stratum(self, data_type='generic'):
         voxel, density, poem_text, regrets_list = run_curve_retrieve()
         entropy = np.std(voxel) / 255.0 if np.any(voxel) else 0.0
         alive = density if density > 1e-6 else entropy + 1e-6
-        
+
+        # Prune FIRST (old quiet ones)
+        self._prune_low_entropy()
+
+        # Then add new
         self.strata.append(voxel)
         self.alive_scores.append(alive)
         if len(self.strata) > self.max_slices:
@@ -328,23 +346,37 @@ class Grid4D:
         self.alive_scores = to_keep_alive
 
     def recall(self, query_coord, data_type=None):
-        candidates = [...]
+        if not self.strata:
+            print("Grid4D: No strata yet — returning zero voxel")
+            return np.zeros((32,32,32), dtype=np.uint8)
         if data_type:
             candidates = [i for i, t in enumerate(self.strata_types) if t == data_type]
-            if not candidates:
-                return np.zeros((32,32,32), dtype=np.uint8)
+        else:
+            candidates = list(range(len(self.strata)))  # default: all strata
+
+        if not candidates:
+            print("Grid4D: No matching strata — returning zero voxel")
+            return np.zeros((32,32,32), dtype=np.uint8)
+
         alive_scores_safe = [self.alive_scores[i] for i in candidates if i < len(self.alive_scores)]
-        weights = np.array(self.alive_scores)
-        densities = np.array([np.sum(s == 255) / (32*32*32) for s in self.strata])
+        if not alive_scores_safe:
+            alive_scores_safe = [0.0] * len(candidates)
+
+        weights = np.array(alive_scores_safe)
+        densities = np.array([np.sum(s == 255) / (32*32*32) for s in [self.strata[i] for i in candidates]])
         bias = densities ** 1.5 + 0.1
         weights *= bias
-        weights = np.array(alive_scores_safe) if alive_scores_safe else np.array([0.0])
+
         if weights.sum() <= 0:
             weights = np.ones(len(weights)) / len(weights)
         else:
             weights /= weights.sum()
-        slice_idx = candidates[np.random.choice(len(candidates), p=weights/weights.sum())]
-        print(f"Recalled slice {slice_idx} (alive {self.alive_scores[slice_idx]:.4f}, density bias {bias[slice_idx]:.4f})")
+
+        # Safe choice
+        chosen_idx = np.random.choice(len(candidates), p=weights)
+        slice_idx = candidates[chosen_idx]
+
+        print(f"Recalled slice {slice_idx} (alive {self.alive_scores[slice_idx]:.4f}, density bias {bias[chosen_idx]:.4f})")
         return self.strata[slice_idx]
 
     @staticmethod
