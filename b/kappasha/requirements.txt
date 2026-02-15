@@ -1,0 +1,8 @@
+numpy
+matplotlib
+scipy
+mpmath
+pillow
+pytz
+cython
+pytest

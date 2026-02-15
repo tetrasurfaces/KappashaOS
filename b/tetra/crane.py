@@ -1,0 +1,108 @@
+# crane.py
+# Copyright 2025 Beau Ayres
+# Proprietary Software - All Rights Reserved
+#
+# This software is proprietary and confidential. Unauthorized copying,
+# distribution, modification, or use is strictly prohibited without
+# express written permission from Beau Ayres.
+#
+# AGPL-3.0-or-later licensed
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+import numpy as np
+from weather import Wind
+from gravity import simulate_gravity
+
+class Crane:
+    """Simulate crane dynamics with control, stability, wind, and gravity features."""
+    def __init__(self, beam_length, load_weight=1000.0, damping=0.1):
+        self.beam_length = beam_length
+        self.load_weight = load_weight  # in kg
+        self.damping = damping
+        self.motor_speed = 0.0  # Initial motor speed (m/s)
+        self.control_mode = "manual"  # Default control mode
+        self.wind = Wind(base_speed=5.0, base_direction=0.0)  # Initialize wind object
+
+    def apply_control(self, motor_speed, mode="manual"):
+        """Apply motor control and switch mode."""
+        self.motor_speed = np.clip(motor_speed, -5.0, 5.0)  # Limit motor speed
+        self.control_mode = mode
+        print(f"Applied control: Motor speed = {self.motor_speed} m/s, Mode = {self.control_mode}")
+
+    def set_wind_direction(self, direction):
+        """Set wind direction in degrees (0-360) via Wind object."""
+        self.wind.base_direction = np.mod(direction, 360.0)
+        print(f"Wind direction set to {self.wind.base_direction} degrees")
+
+    def simulate_crane_sway(self, steps):
+        """
+        Simulate crane sway displacement with wind and gravity effects.
+        
+        Args:
+            steps (int): Number of simulation steps.
+        
+        Returns:
+            list: List of total displacement values (in meters) for each step.
+        """
+        amplitude = 0.1 * self.beam_length + 0.001 * self.load_weight  # Load increases sway
+        frequency = 0.5 / self.beam_length  # Frequency inversely proportional to length
+        control_factor = 0.1 * self.motor_speed if self.control_mode == "manual" else 0.05 * self.motor_speed  # Automated reduces sway
+        wind_speed, wind_direction = self.wind.get_wind()  # Get dynamic wind from Weather
+        
+        # Simulate gravity displacement
+        gravity_displacements = simulate_gravity(mass=self.load_weight, steps=steps)
+        
+        displacements = []
+        for i in range(steps):
+            time = i * 0.1  # Time step of 0.1 seconds
+            # Harmonic oscillation with damping
+            sway = amplitude * np.sin(2 * np.pi * frequency * time) * np.exp(-self.damping * time)
+            # Wind effect with directional phase shift
+            wind_phase = np.deg2rad(wind_direction)
+            wind_effect = wind_speed * 0.02 * np.sin(2 * np.pi * 0.1 * time + wind_phase)
+            # Control effect
+            control_effect = control_factor * np.cos(2 * np.pi * 0.2 * time)
+            # Total lateral sway
+            lateral_displacement = sway + wind_effect + control_effect
+            # Add downward gravity displacement
+            total_displacement = lateral_displacement + gravity_displacements[i]
+            displacements.append(total_displacement)
+        
+        return displacements
+
+    def get_stability(self):
+        """Assess crane stability based on load and sway amplitude."""
+        max_sway = 0.1 * self.beam_length + 0.001 * self.load_weight
+        stability = 1.0 / (1.0 + max_sway * self.damping)
+        return np.clip(stability, 0.0, 1.0)
+
+    def switch_control_mode(self, mode):
+        """Switch between manual and automated control modes."""
+        if mode in ["manual", "auto"]:
+            self.control_mode = mode
+            print(f"Switched to {mode} mode")
+        else:
+            print(f"Invalid mode: {mode}. Use 'manual' or 'auto'")
+
+if __name__ == "__main__":
+    # Example usage
+    crane = Crane(beam_length=384, load_weight=2000.0)
+    crane.apply_control(motor_speed=2.0, mode="auto")
+    crane.set_wind_direction(45.0)  # Northeast wind
+    sway = crane.simulate_crane_sway(steps=5)
+    print(f"Crane total displacements: {sway}")
+    stability = crane.get_stability()
+    print(f"Crane stability: {stability:.2f}")
+    crane.switch_control_mode("manual")

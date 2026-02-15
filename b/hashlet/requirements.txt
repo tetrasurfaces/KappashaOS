@@ -1,0 +1,42 @@
+# Copyright (C) 2025 Anonymous and Coneing
+# This file is part of Hashlet.
+#
+# Hashlet is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Hashlet is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with Hashlet. If not, see <https://www.gnu.org/licenses/>.
+greenlet
+numpy
+matplotlib
+cryptography
+flask
+flask-socketio
+python-dotenv
+networkx
+smbus2
+pillow
+pygame
+paramiko # for SSH tunneling
+speechrecognition # for mic input
+RPi.GPIO
+pyaudio # for audio modulation
+ray # for LLM grids
+scipy # for hybrid grader, vectors
+mpmath
+pytz
+gpiozero # for modern Pi GPIO handling (e.g., sensors, LEDs, servos) with Pi 5+ support
+# Note: whisper.cpp installed via brew/clone, not pip
+# Note: On Debian and Ubuntu:
+# sudo apt update
+# sudo apt install portaudio19-dev
+# Then retry:
+# pip install pyaudio
+# Additional Notes (Oct 2025): gpiozero added for enhanced hardware integrations in new PUF/kappa modules; it's backward-compatible with RPi.GPIO but simpler for mocks and multi-pin ops. Run `pip install -r requirements.txt` in your env. If conflicts arise (e.g., with ray/scipy), pin versions like numpy==2.1.1.

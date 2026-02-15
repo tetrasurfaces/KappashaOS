@@ -1,0 +1,70 @@
+Copyright 2025 Beau Ayres
+
+This software is licensed under a custom license based on the Apache License, Version 2.0, with additional terms from the GNU Affero General Public License (AGPL-3.0-or-later) and a proprietary End-User Software License Agreement for Educational Institutions. The full terms are as follows:
+
+---
+
+### Custom License for Tetra Surfaces and Kappasha Software
+
+#### 1. Definitions
+- **"License"**: The terms and conditions for use, reproduction, and distribution as defined herein.
+- **"Licensor"**: Beau Ayres, the copyright owner, contactable via GitHub issues at github.com/tetrasurfaces/issues.
+- **"Work"**: The tetra and kappasha software, including source code, object code, and documentation for fractal surface generation and hashing.
+- **"Educational Institution"**: Any tertiary education institute, university, technical college, or similar entity engaged in teaching or research.
+- **"Commercial Use"**: Any use of the Work for profit, including but not limited to branding, molding, or integration into commercial products.
+
+#### 2. Grant of Copyright License
+Subject to the terms of this License, Licensor grants a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license to reproduce, prepare derivative works of, publicly display, perform, sublicense, and distribute the Work in Source or Object form, provided:
+- For Educational Institutions: Use is restricted to educational, research, or institutional purposes, and requires a negotiated agreement via a GitHub issue at github.com/tetrasurfaces/issues.
+- For non-commercial use: Compliance with Apache 2.0 and AGPL-3.0 terms, including source code sharing for modifications.
+- For Commercial Use: Requires prior written approval from Licensor, requested via a GitHub issue at github.com/tetrasurfaces/issues.
+
+#### 3. Grant of Patent License
+Licensor grants a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable patent license to make, use, sell, import, and transfer the Work, applicable only to patent claims licensable by Licensor. Patent licenses terminate if You initiate patent litigation against the Work.
+
+#### 4. Redistribution
+You may reproduce and distribute the Work or Derivative Works in any medium, provided:
+- You include a copy of this License.
+- Modified files carry prominent notices of changes.
+- All copyright, patent, trademark, and attribution notices are retained.
+- For Educational Institutions: Redistribution requires a negotiated agreement via GitHub issue.
+- For AGPL-3.0 compliance: Source code of modifications must be made available.
+
+#### 5. Educational Institution Licensing Requirement
+Educational Institutions must negotiate a separate license for any use, reproduction, or distribution of the Work by opening a GitHub issue at github.com/tetrasurfaces/issues. Use without such agreement is a breach of this License. Do not include proprietary details in public issues—request private communication if needed.
+
+#### 6. Proprietary Restrictions
+The Work includes proprietary components. Unauthorized copying, distribution, modification, or commercial use without Licensor’s written permission is prohibited. Request approval by opening a GitHub issue at github.com/tetrasurfaces/issues.
+
+#### 7. Cryptographic Export Controls
+The Work includes cryptographic functionality (kappasha256). Use, distribution, or export must comply with applicable regulations (e.g., US EAR, Category 5 Part 2). Commercial redistribution in restricted jurisdictions requires Licensor approval via GitHub issue.
+
+#### 8. Safety and Environmental Compliance
+For physical applications (e.g., molding, etching), comply with safety standards (e.g., UL 1642, IEC 62133) and environmental regulations (e.g., EU Battery Directive 2023/1542). Provide recycling instructions for end-of-life components.
+
+#### 9. Disclaimer of Warranty
+The Work is provided "AS IS" without warranties of any kind, including TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+
+#### 10. Limitation of Liability
+Licensor is not liable for any direct, indirect, special, incidental, or consequential damages arising from the use or inability to use the Work.
+
+#### 11. General Provisions
+- **Governing Law**: Laws of South Australia.
+- **Entire Agreement**: This License constitutes the entire agreement.
+- **Severability**: Invalid provisions do not affect the remainder.
+
+#### Appendix: How to Apply This License
+Include the following notice in your work:
+```
+Copyright 2025 Beau Ayres
+Licensed under the Custom License for Tetra Surfaces and Kappasha Software (based on Apache 2.0 and AGPL-3.0-or-later).
+Open a GitHub issue at github.com/tetrasurfaces/issues for educational or commercial licensing.
+See the License for specific permissions and limitations.
+```
+
+For full Apache 2.0 terms, see http://www.apache.org/licenses/LICENSE-2.0.
+For full AGPL-3.0 terms, see https://www.gnu.org/licenses/.
+
+---
+
+This software is proprietary and confidential. Unauthorized use is prohibited without express written permission from Beau Ayres, requested via github.com/tetrasurfaces/issues.

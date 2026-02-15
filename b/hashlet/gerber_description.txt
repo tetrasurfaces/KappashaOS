@@ -1,0 +1,53 @@
+# Copyright 2025 xAI. Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and limitations under the License.
+
+# gerber_description.txt - Description of Gerber Files for Blossom Pi Hat
+# This describes the hardware design for a Raspberry Pi hat integrating LEDs (entropy blinks), 
+# photodiodes (interference read), piezos (cymatics tones), servo (lens tilt), MCP4725 DAC (voltage for diodes),
+# and aspheric lens mount. Fab via JLCPCB or similar (~$12/unit).
+# Actual Gerbers: Generate via KiCad/Eagle; files include:
+# - Top/Bottom Copper (.gbr)
+# - Solder Mask/Paste (.gbr)
+# - Silkscreen (.gbr)
+# - Drill (.drl)
+# - Outline (.gm1)
+# Zip as gerber.zip and upload to /hardware.
+
+## Schematic Overview
+- Pins: 4 GPIO (LED pin 18, piezo 13, servo 17, photodiode 27 via ADC).
+- Components:
+  - LED: Red 3mm, resistor 330Ω (for low/high entropy blinks).
+  - Photodiode: BPW34 or similar, with op-amp (e.g., LM358) for analog read.
+  - Piezo: Buzzer/speaker, driven PWM.
+  - Servo: SG90 mini, for 45° third-angle tilt.
+  - DAC: MCP4725 I2C (addr 0x60), for 0-5V diode control.
+  - Lens Mount: 3D-printable holder for 2mm aspheric (diamond-turned, 650nm coat).
+- Power: 5V from Pi header; sips <100mA.
+- Dimensions: Standard Pi hat (65x56mm), stackable.
+
+## Fabrication Specs
+- Layers: 2 (top/bottom copper).
+- Thickness: 1.6mm PCB.
+- Material: FR4.
+- Surface: HASL or ENIG.
+- Min Trace: 0.15mm.
+- Min Hole: 0.3mm.
+- Tolerances: Sub-micron for optics alignment (post-fab calibration).
+- Cost: ~$12/unit (small run); comply with safety (UL) for batteries if added.
+
+## Assembly Notes
+1. Solder components: Start with SMD (DAC, resistors), then through-hole (LED, piezo).
+2. Mount lens: Align with diode/photodiode for beam overlap (45° offset).
+3. Test: Run gpio_interface.py/optics_view.py; check blinks/readings.
+4. Optics: Diamond-turn lens (fused silica, multi-layer coat for red/blue bounce).
+
+## Integration
+- In blocsym.py: Import gpio_interface/cymatics_tone/optics_view; call on entropy (e.g., gpio_on_entropy(0.75)).
+- Gerber Generation: Use KiCad: Import schematic, route traces (GND plane), export Plot (Gerber) + Drill.
+
+For full fab, download tools from kicad.org. Questions? PR enhancements.

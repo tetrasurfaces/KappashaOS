@@ -1,4 +1,4 @@
-Dual License for Tetra Surfaces and KappashaOS (Fish Tank Module)
+Dual License for Tetra Surfaces and KappashaOS
 
 - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
   This program is free software: you can redistribute it and/or modify
