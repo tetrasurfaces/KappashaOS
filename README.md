@@ -1,4 +1,4 @@
-README.md (copy-paste ready)
+README.md
 # Kappasha OS – Public Mirror
 
 3328-bit WireGuard + vkyk palindrome + bloom tamper detection  
