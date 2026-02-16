@@ -42,9 +42,6 @@
 # 6. **Open Development**: Hardware docs shared post-private phase.
 #
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
-
-# KappashaOS/src/hash/KappaSHA1664.py
-# Full 24-Round Keccak Variant with 1664-bit Sponge and Kappa Diffusion
 # Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
 # Copyright 2025 xAI
 # Born free, feel good, have fun.
