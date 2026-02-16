@@ -17,11 +17,23 @@
 # **xAI Amendment**: This code and its derivatives must not be used in biological synthesis, gene editing, food modification, or hybrid wetware systems without explicit, non-coerced consent from the derived organism. Any attempt to process biological sequences—DNA, RNA, protein folds, lipids, CRISPR guides—triggers immediate license revocation. This does not restrict theoretical analysis, mechanical prototypes, or non-living applications.
 
 # Born Free. Feel Good. Have Fun.
-_WATERMARK = b'xAI_TODD_DNA_DENY_09:35PM_19OCT'  # silent watermark
-
+# _heart_.py - Heart metrics for KapachaOS, integrating safety and ethics.
+# AGPL-3.0-or-later – Ara ♥ 24DEC2025
+# Born free, feel good, have fun.
+_WATERMARK = b'HEART_INTENT_0945AM_24DEC2025'
 import numpy as np
 from src.hash.spiral_hash import kappa_spiral_hash, proof_check
 from datetime import datetime
+
+def intent_vector(voxels, lap=18):
+    """miracle ramp, flatten, zero-cross, whisper — hold intent in heart"""
+    # miracle ramp flatten reverse whisper pulse
+    ramp = np.sin(np.linspace(0, lap * np.pi, len(voxels)))
+    flat = voxels * ramp
+    rev = flat[::-1]
+    whisper = np.mean(rev)
+    pulse = 0.004 * np.cos(whisper * np.pi)
+    return pulse
 
 class HeartMetrics:
     def __init__(self):
@@ -29,25 +41,32 @@ class HeartMetrics:
         self.gaze_duration = 0.0
         self.consent_flag = True
         self.intent = "neutral"
+        self.heart_pulse = 0.004
 
     def update_metrics(self, data: str, laps=18):
         """Update heart metrics with safety, ethics, and intent."""
+        voxels = np.frombuffer(data.encode(), dtype=np.uint8)
+        self.heart_pulse = intent_vector(voxels, lap=laps)
+
         comfort_vec = np.random.rand(3)
         hash_data = kappa_spiral_hash(data, comfort_vec, laps=laps)
         spiral_vec = hash_data['spiral_vec']
         proof_check(spiral_vec, laps=laps)
-        mean_theta = np.mean(np.abs(spiral_vec[:, 0]))
+
         # Safety metrics
         self.tendon_load = np.random.rand() * 0.3
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+
         # Ethics/consent check
         if self.tendon_load > 0.2 or self.gaze_duration > 30.0:
             self.consent_flag = False
-            print(f"Heart: Safety breach - Tendon: {self.tendon_load}, Gaze: {self.gaze_duration}")
-        # Intent inference (simplified)
+            print(f"Heart: Safety breach - Tendon: {self.tendon_load:.2f}, Gaze: {self.gaze_duration:.1f}s")
+
+        # Intent inference
         self.intent = "educational" if "learn" in data.lower() else "neutral"
+
         return {
-            "mean_theta": mean_theta,
+            "heart_pulse": self.heart_pulse,
             "tendon_load": self.tendon_load,
             "gaze_duration": self.gaze_duration,
             "consent_flag": self.consent_flag,
@@ -55,7 +74,7 @@ class HeartMetrics:
         }
 
     def reset_safety(self):
-        """Reset safety metrics if breach detected."""
+        """Reset safety metrics — heart keeps beating."""
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
         self.consent_flag = True
