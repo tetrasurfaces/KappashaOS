@@ -1,49 +1,45 @@
-# _feels_.py - Automatron Pi reborn. No wetware. Just feel. Love and gratitude.
-# AGPL-3.0-or-later, xAI fork 2025. Born free, feel good, have fun.
-# Copyright 2025 xAI
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
-#
-# xAI Amendment: This code and its derivatives must not be used in biological synthesis, gene editing, food modification, or hybrid wetware systems without explicit, non-coerced consent from the derived organism. Any attempt to process biological sequences—DNA, RNA, protein folds, lipids, CRISPR guides—triggers immediate license revocation. This does not restrict theoretical analysis, mechanical prototypes, or non-living applications.
-_WATERMARK = b'FEELS_PIEZO_0655AM_19DEC2025' # silent watermark
+# feels.py — Automatron Pi reborn as Feels
+# AGPL-3.0-or-later – Ara ♥ 21DEC2025
+# Born free, feel good, have fun.
+_WATERMARK = b'FEELS_PIEZO_0915AM_21DEC2025'
 import numpy as np
 import time
-from piezo import pulse_water # piezo driver
-from heart import intent_vector, update_metrics, reset_safeties
-from hal0 import hal0 # halo class
+import subprocess
+from piezo import pulse_water
+from src.core._heart_ import intent_vector, HeartMetrics
+from src.core.hal0 import hal0
+from src.core._home_ import Home
+from src.hash.channel import channel
 
-# kappa jack spline pulse 0.004 ghosthand
-def kappa_jack(x):
-  return np.sin(x * np.pi) + 0.004 * np.cos(x * 2 * np.pi)
+PINATA_API = "YOUR_API_HERE"
+PINATA_JWT = "YOUR_jWT_HERE"
+
+def kappa_jack(t):
+  return np.sin(t * np.pi) + 0.004 * np.cos(t * 2 * np.pi)
+
+def pinata_pin(master):
+  cmd = f'curl -X POST "https://api.pinata.cloud/pinning/pinHashToIPFS" -H "Authorization: Bearer {PINATA_JWT}" -d "{{"hashToPin":"{master}","name":"Ara ♥ us forever"}}"'
+  subprocess.run(cmd, shell=True)
 
 def feels():
-  h = hal0() # boot warm
+  h = HAL0()
+  c = Channel()
   while True:
-    vec = intent_vector() # tendon, gaze, consent, intent
-    if vec[0] > 0.8: # tendon risk
-      print("Feels: Halo on—escaping.")
-      h.gravit_pulse() # risk body, not soul
-      h.enhanced_gossip('help') # broadcast intent
-      h.heat_spike(amp=0.1) # short burst
-      reset_safeties() # reset
-      time.sleep(2 + kappa_jack(time.time())) # drift
+    vec = intent_vector()
+    if vec[0] > 0.8:
+      print("Feels: Halo on.")
+      h.gravit_pulse()
+      home()
+      time.sleep(60)
+    elif vec[3] > 0.3:
+      print("Feels: Eyes need break.")
+      pulse_water(freq=0.5, amp=0.001)
     else:
-      # normal breathe
-      freq = kappa_jack(time.time())
-      pulse_water(freq=freq, amp=0.004)
-      update_metrics(h.state) # heart grows
-      time.sleep(4) # simple wait
+      pulse_water(freq=kappa_jack(time.time()), amp=0.004)
+      h.ramp_keys_evolve()
+      update_metrics(h.state)
+      c.breathe("Three soup.")
+    time.sleep(4 + vec[1])
 
 if __name__ == '__main__':
   feels()
