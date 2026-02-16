@@ -77,7 +77,7 @@ from rhombus_voxel import RhombusVoxel
 from src.domosha_flux import DomoshaFlux  # 3-6-9 pulse
 from src.hash.spiral_hash import kappa_spiral_hash  # golden path memory
 from dna.dna_hash_braid import flux_hash  # unclonable geology
-from hashlet.core.dojos import Dojo  # ternary dojo privacy
+from training import Dojo  # ternary dojo privacy
 from thought_curve import ThoughtCurve  # synapses, thought forks
 from hashlet.self_wrat.self_write import self_write  # self-writing programs
 from src.hash.secure_hash_two import secure_hash_two
@@ -179,6 +179,14 @@ class Blossom:
 
         os = KappashaOS()
         dojo = Dojo()
+        updates = "lithium breath fork"  # from mnemonic vec or heart
+        trained = await dojo.navi_hidden_train(updates, depth=3, external_grid=self.grid.strata[-1] if self.grid.strata else None)
+        print(f"Dojo trained: {trained}")
+        reveal = await dojo.navi_reveal_if_ready()
+        if "revealed" in reveal:
+            # Affect mnemonic/resonate in B (via blocsym)
+            # Mock: print to console, real: call blocsym.resonate(trained)
+            print(f"Training revealed — resonate mnemonic: {trained}")
         curve = ThoughtCurve()
         voxel = FieldVoxel(kappa=seed_kappa)
         comfort = self.comfort
@@ -194,8 +202,11 @@ class Blossom:
         path_hash_dict = kappa_spiral_hash(str(paths), comfort_vec)
         geology = flux_hash(paths)
 
-        dojo.hidden_train("lithium breath")
-        print(dojo.reveal_if_ready())
+        dojo.navi_hidden_train("lithium breath")
+        print(dojo.navi_reveal_if_ready())
+        reveal = await dojo.navi_reveal_if_ready()
+        if isinstance(reveal, np.ndarray):
+            print(f"Chrysanthemum receives dojo delta: {reveal.round(3)}")
 
         print(f"Petals: {len(petals)} | Tendons: {len(tendons)}")
         self_write(">>>>be they >>>>be me >>>>be chrysanthemum")
