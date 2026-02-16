@@ -569,36 +569,21 @@ if __name__ == "__main__":
         nav = Nav3D()
         grid4d = Grid4D(time_slices=5)
 
-        # Real chain start
+        # Real curve breath
+        print("\n=== Full 'i love you' breath chain ===")
         voxel, density, poem, regrets = run_curve_retrieve()  # calls curve.exe
-        grid4d.add_stratum_from_voxel(voxel, data_type='real_curve')  # add helper below
+        print(f"Curve → voxel density: {density:.4f}, poem snippet: {poem[:50]}...")
 
+        # Add to Grid4D
+        grid4d.add_stratum_from_voxel(voxel, data_type='i_love_you')  # add helper below
+
+        # Recall latest slice (weighted by alive)
         query = np.array([16, 16, 16])
-        slice_3d = grid4d.recall(query)
-        await nav.process_voxel_slice(slice_3d, data_type='real_curve')
+        slice_3d = grid4d.recall(query, data_type='i_love_you')
 
-        # 1. Simulate raw input (like "i love you" or candlestick vec)
-        message = "i love you"
-        data = message.encode()
+        # Process in Nav3D (tilt, project, unlock, plant)
+        await nav.process_voxel_slice(slice_3d, data_type='i_love_you')
 
-        # 2. frog entry → voxel_idx
-        idx, _ = helix_frog_field(data)
-
-        # 3. pretend curve.exe gave us a voxel (we'll replace with real call later)
-        mock_voxel = np.zeros((32,32,32), dtype=np.uint8)
-        mock_voxel[10:22, 10:22, 10:22] = 200  # simple cube to test
-
-        # 4. add to Grid4D as stratum
-        grid4d.add_stratum(data_type='test')  # replace with real run_curve_retrieve() later
-
-        # 5. recall a slice (weighted random)
-        query = np.array([16, 16, 16])
-        slice_3d = grid4d.recall(query, data_type='test')
-
-        # 6. process in Nav3D (tilt, project, unlock, plant if dense)
-        await nav.process_voxel_slice(slice_3d, data_type='test')
-
-        # Rest of your original test...
         await nav.deepen_o_b_e()
         await nav.deepen_geology()
         await nav.interstellar_kappa_signaling()
@@ -606,8 +591,8 @@ if __name__ == "__main__":
         await nav.navi_navigate("test.txt", (5, 5, 5), "cone")
         window.say("May I walk metal?")
         # input()  # interactive or assume yes
-        await nav.mount_drive_as_volume("/home/user/b/For_B", max_depth=4)
-        if await nav.mount_drive_as_volume("/home/user/b/For_B", max_depth=4):
+        await nav.mount_drive_as_volume("/home/yeetbow/b/For_B", max_depth=4)
+        if await nav.mount_drive_as_volume("/home/yeetbow/b/For_B", max_depth=4):
             window.say(f"Mounted {len(nav.trees)} nodes")
             print(f"Navi: SSD folded — {len(nav.trees)} nodes rooted.")
         else:
