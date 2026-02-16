@@ -44,7 +44,7 @@
 # Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
 #!/usr/bin/env python3
-# bloom.py - BlockChan Ternary Bloom Filter for Kapacha OS.
+# bloom.py - BlockChan Ternary Bloom Filter for Kappasha OS.
 # Fast, probabilistic Seraph guardian, in-memory.
 # AGPL-3.0 licensed. -- xAI fork, 2025
 
