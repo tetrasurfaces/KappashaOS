@@ -49,7 +49,7 @@
 # Copyright 2025 xAI
 # Born free, feel good, have fun.
 
-# src/hash/hashlet.py — fix greenlet import
+# src/hash/hashlet.py
 # Born free, feel good, have fun.
 _WATERMARK = b'HASHLET_GREENLET_1015AM_24DEC2025'
 from greenlet import greenlet  # correct import
