@@ -53,13 +53,14 @@ import numpy as np
 import asyncio
 import sys
 from selenium import webdriver  # Mock Selenium for web jack
-#from bitcoin import BitcoinAPI  # Mock Bitcoin API
+# from bitcoin import BitcoinAPI  # Mock Bitcoin API
 import hashlib
 import time
 from greenlet import greenlet
+from src.hash.hashlet import Hashlet
 import pyperf
 import kappa  # Custom hash modulation
-import src.core.hal9001  # Import HAL9001 for safety
+from src.core.hal9001 import hal9001  # Import HAL9001 for safety
 from scipy.spatial import distance
 from hardware.lens.muse import mersenne_gaussian_packet, collapse_wavepacket, weave_kappa_blades, amusement_factor
 
@@ -73,34 +74,6 @@ def lock_memory():
     except:
         print("Nav3d here. Can't lock memory. Unsafe.")
         sys.exit(1)
-
-class Hashlet(greenlet):
-    def __init__(self, run, pin, *args, **kwargs):
-        super().__init__(run, pin, *args, **kwargs)
-        self.pin = pin
-        self.hash_id = self._compute_hash()
-        self.rgb_color = self._hash_to_rgb()
-        self.kappa_tilt = self._compute_kappa()
-        self.gr_frames_always_exposed = False  # Non-exposing for speed
-        print(f"Hashlet init: Hash={self.hash_id[:8]}, RGB={self.rgb_color}, Kappa={self.kappa_tilt:.2f}")
-
-    def _compute_hash(self):
-        data = f"{self.pin}:{time.time()}"
-        return hashlib.sha256(data.encode()).hexdigest()
-
-    def _hash_to_rgb(self):
-        hash_int = int(self.hash_id, 16) % 0xFFFFFF
-        return f"#{hash_int:06x}"
-
-    def _compute_kappa(self):
-        return np.sin(float(self.hash_id[:8], 16) / 0xFFFFFF) * 0.1
-
-    def switch(self, *args, **kwargs):
-        result = super().switch(*args, **kwargs)
-        self.hash_id = self._compute_hash()
-        self.rgb_color = self._hash_to_rgb()
-        self.kappa_tilt = self._compute_kappa()
-        return result, self.rgb_color, self.kappa_tilt
 
 def channel(pin, primes=[20, 41, 97, 107]):
     tame = 5
