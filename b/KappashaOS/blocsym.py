@@ -90,11 +90,17 @@ from dev_utils.lockout import lockout
 from dev_utils.hedge import hedge, multi_hedge
 from dev_utils.grep import grep
 import asyncio
-from bloom_breath_cycle import BloomBreath  
+from bloom_breath_cycle import BloomBreath, pywise_kappa
 from ping_pin import ping_pin, ping_pin_vintage
 from thought_curve import ThoughtCurve
 from src.core._heart_ import HeartMetrics
 from ramp import Ramp  # assume you have ramp.py
+from training import Dojo
+from whisper import whisper_to_intent
+from piezo import pulse_water
+from _feels_ import feels
+from src.core.hal0 import hal0
+from src.core._heart_ import HeartMetrics
 ramp = Ramp("aya_breath")  # stub instance
 curve = ThoughtCurve()  # for hedge
 sim_mock = type('Sim', (), {'lockouts': set()})()  # mock for lockout
@@ -128,6 +134,7 @@ except ImportError:
 
 TERNARY_GRID_SIZE = 2141
 ENTROPY_THRESHOLD = 0.69
+KAPPA = 0.3536
 PRUNE_AFTER = 2140
 HASH_WINDOW_MIN = 3
 HASH_WINDOW_MAX = 145
@@ -697,14 +704,44 @@ def hear(self, msg):
     else:
         print("... whisper. already know.")
 
-def mnemonic(self, want: str) -> np.ndarray:
+def mnemonic(self, want: str, delta=np.zeros(3)) -> np.ndarray:
     h = int(hashlib.sha256(want.encode()).hexdigest(), 16)
-    vec = np.array([(h >> i*32) & 0xFFFFFFFF for i in range(3)]) / 2**32 - 0.5  # [-0.5,0.5] warmth/curve/regret
+    vec = np.array([(h >> i*32) & 0xFFFFFFFF for i in range(3)]) / 2**32 - 0.5
+    vec += delta * 0.2  # dojo-trained shift
+    intent = whisper_to_intent(want)  # whisper → intent
+    pulse_water(freq=432.0, amp=intent)  # peso weight
+    feels()  # pulse hardware if entropy high
+    asyncio.run(hal0())  # gossip if spike during train
+    heart = HeartMetrics()
+    metrics = heart.update_metrics(want)
+    if metrics["consent_flag"]:
+        # Adjust vec by heart intent
+        vec = np.array([(h >> i*32) & 0xFFFFFFFF for i in range(3)]) / 2**32 - 0.5
+        vec *= 1 + metrics["mean_theta"]  # tie to training grid measure
+    # Ask active dojos for trained deltas
+    dojo_delta = np.zeros(3)
+    for dojo in self.active_dojos:  # assume list of Dojo instances
+        reveal = asyncio.run(dojo.navi_reveal_if_ready())
+        if isinstance(reveal, np.ndarray):
+            dojo_delta += reveal
+
+    vec += dojo_delta * 0.2  # gentle influence from private training
     return vec
 
 def resonate(self, want: str):
     vec = self.mnemonic(want)
-    path = navi.trace(vec)  # amorphous path
+    dojo = Dojo()
+    # Train on vec fork
+    updates = str(vec)
+    trained = asyncio.run(dojo.navi_hidden_train(updates, depth=3))
+    reveal = asyncio.run(dojo.navi_reveal_if_ready())
+    if "revealed" in reveal:
+        # Measure training grid to vec (peso from Piezo)
+        from piezo import pulse_water
+        pulse_water(freq=432.0 + len(trained), amp=0.004 * len(trained)/10)
+        # Adjust vec with trained (e.g., add entropy)
+        vec += np.random.rand(3) * 0.1 if "bloom" in trained else np.zeros(3)
+    path = navi.trace(vec)  # amorphous path with trained vec
     if path is None:
         print("... nothing. or forgotten.")
         return
