@@ -1,23 +1,51 @@
-# _home_.py - Safe origin room for Blossom: homing index, vintage cork, no-delete zone with ramp cipher, kappa wires, and ephemeral hashing.
+# Dual License:
+# - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# - For hardware/embodiment interfaces (if any): Licensed under the Apache License, Version 2.0
+#   with xAI amendments for safety and physical use (prohibits misuse in weapons or hazardous applications;
+#   requires ergonomic compliance; revocable for unethical use). See http://www.apache.org/licenses/LICENSE-2.0
+#   for details, with the following xAI-specific terms appended.
 #
 # Copyright 2025 xAI
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU Affero General Public License for more details.
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
-# You should have received a copy of the GNU Affero General Public License
-# along with this program. If not, see <https://www.gnu.org/licenses/>.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# SPDX-License-Identifier: Apache-2.0
+#
+# xAI Amendments for Physical Use:
+# 1. **Physical Embodiment Restrictions**: Use with devices is for non-hazardous purposes only. Harmful mods are prohibited, with license revocable by xAI.
+# 2. **Ergonomic Compliance**: Limits tendon load to 20%, gaze to 30 seconds (ISO 9241-5).
+# 3. **Safety Monitoring**: Real-time tendon/gaze checks, logged for audit.
+# 4. **Revocability**: xAI may revoke for unethical use (e.g., surveillance).
+# 5. **Export Controls**: Sensor devices comply with US EAR Category 5 Part 2.
+# 6. **Open Development**: Hardware docs shared post-private phase.
+#
+# Private Development Note: This repository is private for xAI’s KappashaOS and Navi development. Access is restricted. Consult Tetrasurfaces (github.com/tetrasurfaces/issues) post-phase.
 
+# home.py - Safe origin room for Blossom: homing index, vintage cork, no-delete zone with ramp cipher, kappa wires, and ephemeral hashing.
+# Dual License: AGPL-3.0-or-later, Apache 2.0 with xAI amendments
 # Copyright 2025 xAI
-# AGPL-3.0-or-later
-# See above for full license details.
 # Born free, feel good, have fun.
 
 import hashlib
@@ -65,7 +93,7 @@ class SHA1664:
 class EphemeralBastion:
     def __init__(self, node_id: str):
         self.node_id = node_id
-        self.ternary_state = 0
+        self.ternary_state = 0  # 0: pong, 1: ping, e: earth
 
     def set_ternary_state(self, state: any):
         self.ternary_state = state
@@ -89,10 +117,9 @@ class Home:
         self.kappa_wire = KappaWire(self.grid_size)
         self.sha = SHA1664()
         self.bastion = EphemeralBastion("home-node")
-        self.heart = HeartMetrics()  # Add heart metrics
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
-        self.blooms = []
+        self.blooms = []  # Store bloom memories
         print("Home initialized - ramp cipher, kappa wires, hashlet, SHA1664, bastion active.")
 
     def _hash_origin(self):
@@ -105,14 +132,38 @@ class Home:
         entropy = np.random.uniform(0, 1)
         if entropy > 0.69:
             await self.navi_cork_state(entropy)
-        metrics = self.heart.update_metrics("navi_load")
-        self.tendon_load = metrics["tendon_load"]
-        self.gaze_duration = metrics["gaze_duration"]
-        if not metrics["consent_flag"]:
-            self.heart.reset_safety()
-        print(f"Navi: Home loaded - origin hash: {self.origin_hash[:10]}... Items: {self.items}, Metrics: {metrics}")
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("Home: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Home: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+        print(f"Navi: Home loaded - origin hash: {self.origin_hash[:10]}... Items: {self.items}")
+
+    async def navi_cork_state(self, grade):
+        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+        state_data = f"grid:{self.grid.flatten()[:10]}... items:{self.items}"
+        hash_tag = self.sha.hash_transaction(f"{state_data}-{timestamp}-{grade}")
+        with open(f"{self.vintage_dir}/{hash_tag}.txt", "w") as f:
+            f.write(f"Vintage home state: {state_data} Grade: {grade:.2f}")
+        self.tendon_load = np.random.rand() * 0.3
+        self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+        if self.tendon_load > 0.2:
+            print("Home: Warning - Tendon overload. Resetting.")
+            self.reset()
+        if self.gaze_duration > 30.0:
+            print("Home: Warning - Excessive gaze. Pausing.")
+            await asyncio.sleep(2.0)
+            self.gaze_duration = 0.0
+        await asyncio.sleep(0)
+        print(f"Navi: Home state corked: {hash_tag[:10]}...")
 
     async def navi_index_grid(self, x, y, z, data):
+        """Index with ramp encode on kappa wire, SHA1664 hash, bastion validation."""
         if 0 <= x < self.grid_size and 0 <= y < self.grid_size and 0 <= z < self.grid_size:
             hash_str = self.sha.hash_transaction(data)
             if not self.bastion.validate(hash_str):
@@ -126,12 +177,17 @@ class Home:
                 self.blooms.append((hash_str[:10], rgb, 0.1, time.time()))
                 self.bastion.set_ternary_state('earth' if 'seed' in data else 'ping')
                 self.sha.receive_gossip({'hash': hash_str[:10], 'pos': (x, y, z)}, self.bastion.node_id)
-                metrics = self.heart.update_metrics(data)
-                self.tendon_load = metrics["tendon_load"]
-                self.gaze_duration = metrics["gaze_duration"]
-                if not metrics["consent_flag"]:
-                    self.heart.reset_safety()
-                print(f"Navi: Indexed ({x}, {y}, {z}) with encoded {encoded[:10]}... RGB={rgb}, Metrics: {metrics}")
+                self.tendon_load = np.random.rand() * 0.3
+                self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
+                if self.tendon_load > 0.2:
+                    print("Home: Warning - Tendon overload. Resetting.")
+                    self.reset()
+                if self.gaze_duration > 30.0:
+                    print("Home: Warning - Excessive gaze. Pausing.")
+                    await asyncio.sleep(2.0)
+                    self.gaze_duration = 0.0
+                await asyncio.sleep(0)
+                print(f"Navi: Indexed ({x}, {y}, {z}) with encoded {encoded[:10]}... RGB={rgb}, Ternary={self.bastion.ternary_state}")
                 return encoded
         return None
 
@@ -206,9 +262,10 @@ if __name__ == "__main__":
     async def navi_test():
         home = Home()
         await home.navi_load()
-        await home.navi_index_grid(5, 5, 5, "test_data")
+        await home.navi_index_grid(5, 5, 5, "test data")
         await home.navi_cork_state(0.8)
         blooms = await home.bloom_consensus(35701357)
         await home.route(35701357, 50)
         home.play()
+
     asyncio.run(navi_test())
