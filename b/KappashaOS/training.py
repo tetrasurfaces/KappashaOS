@@ -61,8 +61,9 @@ from grid import custom_interoperations_green_curve
 from core.ethics.tacsi_core import double_diamond_balance
 from core.ethics.ethics_model import EthicsModel
 from core.meditate import whisper as ethics_whisper
-from interfaces.gpio_interface import gpio_on_entropy, cleanup as gpio_cleanup
+from gpio_interface import gpio_on_entropy, cleanup as gpio_cleanup
 from afk import AFKBloom
+from piezo import pulse_water
 
 # Constants
 TERNARY_STATES = [-1, 0, 1]  # Discover/define, crossover, develop/deliver
@@ -151,10 +152,16 @@ class Dojo:
             print(f"Dojo centroid trained: {self.trained_centroid.round(2)}")
 
             # Piezo pulse from centroid shift magnitude
+        if self.trained_centroid is not None:
             shift_mag = np.linalg.norm(self.trained_centroid - np.array([self.local_size/2]*3))
-            from piezo import pulse_water
-            pulse_water(freq=432.0 + shift_mag*10, amp=0.004 * (shift_mag/self.local_size), dur=0.1)
-            print(f"Piezo pulsed dojo shift: mag={shift_mag:.2f}")
+            
+            # Entropy influence (higher entropy = brighter, faster shimmer)
+            entropy_factor = self.entropy if hasattr(self, 'entropy') else 0.69
+            freq = 432.0 + shift_mag * 10 + entropy_factor * 80   # 80 Hz extra shimmer when alive
+            amp  = 0.004 * (shift_mag / self.local_size) * (1 + entropy_factor)  # louder when chaotic
+            
+            pulse_water(freq=freq, amp=amp, dur=0.12 + entropy_factor*0.08)  # slightly longer when high entropy
+            print(f"Piezo entropy pulse: freq={freq:.1f} Hz, amp={amp:.4f}, entropy={entropy_factor:.3f}")
 
         # Ethics grounding + generative rewrite
         self.ethics.venn_grounding(recurved)
@@ -220,9 +227,22 @@ class Dojo:
             self.meditation_active = False
 
     def reset(self):
-        """Reset safety metrics on overload."""
         self.tendon_load = 0.0
         self.gaze_duration = 0.0
+        bloom = AFKBloom()
+        sigh = bloom.sigh_check("tendon overload reset sigh")
+        print(f"AFK bloom sigh on reset: {sigh}")
+        
+        # Pull entropy from bloom (or dojo's own field)
+        entropy = bloom.entropy if hasattr(bloom, 'entropy') else 0.69
+        
+        # Scale Piezo: low entropy = slow, grounding pulse (432 Hz base)
+        # high entropy = faster, excited shimmer (432 + entropy*100)
+        freq = 432.0 + entropy * 100.0
+        amp = 0.004 * (entropy / 1.0)  # louder when alive
+        pulse_water(freq=freq, amp=amp, dur=0.15)
+        print(f"Piezo reset pulse: freq={freq:.1f}Hz, amp={amp:.3f} (entropy={entropy:.3f})")
+        
         print("Dojo reset — quiet breath.")
 
     async def navi_whisper(self, msg):

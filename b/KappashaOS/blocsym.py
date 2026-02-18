@@ -66,7 +66,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from friction_vibe import TetraVibe
 from tetra.ribit_telemetry import RibitTelemetry
-from hashlet.ghost_hand import GhostHand
+from ghost_hand import GhostHand
 from src.hash.secure_hash_two import secure_hash_two
 from wise_transforms import bitwise_transform, hexwise_transform, hashwise_transform
 from ping_pin import ping_pin, ping_pin_vintage, ping_pin_conversations
@@ -74,11 +74,11 @@ from kappawise import kappa_coord
 from src.code.hybrid import HybridGreenText
 from src.hash.binary_hash_smallest import binary_hash_smallest, ribit_trit_hash
 from src.hash.advanced_hash import advanced_hash
-from hashlet.left_weighted_scale import left_weighted_scale, balanced_ternary_coeffs, get_weighing_placements
+from scale.scale import left_weight, balanced_ternary_coeffs, get_weighing_placements
 from hardware.bastion_hardware import Bastion
-from hashlet.eye_mouse import EyeMouse
+from interfaces.eye_mouse import EyeMouse
 from core.bloom import BloomFilter
-from hashlet.ethics.core.ethics_model import EthicsModel
+from core.ethics.ethics_model import EthicsModel
 from comfort_tracker import ComfortTracker
 from hash_func import porosity_hashing, flux_knot_to_func, exec_void_func
 from msdos3d import MSDOS3D

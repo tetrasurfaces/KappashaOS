@@ -11,7 +11,7 @@ import hashlib  # For hashing in deliver phase
 from math import sin  # For crossover grad
 import numpy as np  # For venn simulation
 from core.meditate import whisper  # For veto/meditation whispers (Apache import)
-from interfaces.gpio_interface import gpio_on_entropy  # For color overrides (simulate red via blink) (Apache import)
+from gpio_interface import gpio_on_entropy  # For color overrides (simulate red via blink) (Apache import)
 
 # Constants
 TERNARY_CYCLES = [-1, 0, 1]  # - discover/define, 0 crossover, + develop/deliver

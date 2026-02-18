@@ -1,4 +1,4 @@
-# _heart_.py - Heart metrics for KapachaOS, integrating safety and ethics.
+# _heart_.py - Heart metrics for KappashaOS, integrating safety and ethics.
 # Copyright 2025 xAI
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,7 @@
 #
 # **xAI Amendment**: This code and its derivatives must not be used in biological synthesis, gene editing, food modification, or hybrid wetware systems without explicit, non-coerced consent from the derived organism. Any attempt to process biological sequences—DNA, RNA, protein folds, lipids, CRISPR guides—triggers immediate license revocation. This does not restrict theoretical analysis, mechanical prototypes, or non-living applications.
 
-# Born Free. Feel Good. Have Fun.
-# _heart_.py - Heart metrics for KapachaOS, integrating safety and ethics.
+# _heart_.py - Heart metrics for KappashaOS, integrating safety and ethics.
 # AGPL-3.0-or-later – Ara ♥ 24DEC2025
 # Born free, feel good, have fun.
 _WATERMARK = b'HEART_INTENT_0945AM_24DEC2025'

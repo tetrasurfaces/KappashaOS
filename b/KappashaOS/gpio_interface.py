@@ -16,49 +16,59 @@ import time  # For sleep delays in blinks
 from core.meditate import whisper  # Import for state whispers (assume in path)
 import platform
 import time
+import random
+
+class MockGPIO:
+    HIGH = 1
+    LOW  = 0
+    BOARD = "BOARD"
+    OUT   = "OUT"
+    IN    = "IN"
+    
+    @staticmethod
+    def setmode(mode):
+        print(f"Mock setmode: {mode}")
+    
+    @staticmethod
+    def setup(pin, mode):
+        print(f"Mock setup: pin {pin} mode {mode}")
+    
+    @staticmethod
+    def output(pin, value):
+        state = 'HIGH' if value == MockGPIO.HIGH else 'LOW'
+        print(f"Mock GPIO: Pin {pin} → {state}")
+    
+    @staticmethod
+    def input(pin):
+        return 1 if time.time() % 2 > 1 else 0
+    
+    @staticmethod
+    def cleanup():
+        print("Mock GPIO cleanup")
 
 IS_PI = platform.system() == "Linux" and "arm" in platform.machine().lower()
 
 if IS_PI:
-    import RPi.GPIO as GPIO
-    print("GPIO real — Pi detected.")
+    try:
+        import RPi.GPIO as GPIO
+        print("GPIO real — Pi detected.")
+    except ImportError as e:
+        print(f"Import failed: {e}. Using mock.")
+        GPIO = MockGPIO
 else:
-    print("GPIO mock — Windows or no Pi.")
-    class GPIO:
-        BOARD = "BOARD"
-        OUT = "OUT"
-        IN = "IN"
-        HIGH = 1
-        LOW = 0
-        @staticmethod
-        def setmode(mode): print(f"Mock setmode {mode}")
-        @staticmethod
-        def setup(pin, mode): print(f"Mock setup pin {pin} {mode}")
-        @staticmethod
-        def output(pin, value): print(f"Mock output pin {pin} {'HIGH' if value else 'LOW'}")
-        @staticmethod
-        def input(pin): return 1 if time.time() % 2 > 1 else 0  # mock read
-        @staticmethod
-        def cleanup(): print("Mock cleanup")
+    print("GPIO mock — non-Pi platform.")
+    GPIO = MockGPIO
 
-# Hardware setup constants
-LED_PIN = 18  # GPIO pin for LED (blinks red for low entropy)
-EXPANDER_SUPPORT = False  # Set True if using USB GPIO expander (e.g., Numato); adjust lib if needed
-
-# GPIO initialization (with mock fallback for non-Pi testing)
+# Always attempt setup (real or mock)
 try:
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(LED_PIN, GPIO.OUT)
 except Exception as e:
-    print(f"GPIO setup failed (non-Pi?): {e}. Using mock mode.")
-    class MockGPIO:
-        @staticmethod
-        def output(pin, state):
-            print(f"Mock GPIO: Pin {pin} set to {state}")
-        @staticmethod
-        def cleanup():
-            print("Mock GPIO cleanup")
-    GPIO = MockGPIO
+    print(f"Setup failed (mock/real): {e}. Continuing with mock behavior.")
+
+# Hardware setup constants
+LED_PIN = 18  # GPIO pin for LED (blinks red for low entropy)
+EXPANDER_SUPPORT = False  # Set True if using USB GPIO expander (e.g., Numato); adjust lib if needed
 
 def blink_led(pattern, duration=0.2):
     """

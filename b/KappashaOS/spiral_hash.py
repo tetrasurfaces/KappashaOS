@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 # spiral_hash.py - Kappa Spiral Hashing for KappachaOS with 1664/3328-bit quantum-resistant hash.
 # Dual License:
 # - For core software: AGPL-3.0-or-later licensed. -- xAI fork, 2025

@@ -453,6 +453,14 @@ class Nav3D:
         child_pos = (np.array(parent_pos) + delta) % self.grid.shape
         self.trees[child_name] = {'pos': child_pos, 'parent': parent_pos}
         return child_pos
+        
+    def blind_spot_curve(t):
+        # Upside-down fib M: parametric (t from 0 to 1)
+        phase = t * np.pi * 2
+        x = np.sin(phase) * (1 + 0.618 * np.cos(3*phase))  # serifs
+        y = -np.cos(phase) * (1 + 0.382 * np.sin(4*phase))  # upside-down
+        z = np.sin(phase * 1.618) * 0.5                     # polarity depth
+        return x, y, z
   
     def reset(self):
         self.tendon_load = 0.0

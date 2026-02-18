@@ -47,6 +47,7 @@
 # ramp.py - Ramp cipher for hash modulation in KappashaOS.
 # Async, Navi-integrated.
 
+import hashlib
 import numpy as np
 import asyncio
 from scipy.interpolate import CubicSpline  # pip install scipy
@@ -70,13 +71,14 @@ class RampCipher:
                 h[knot_pos:knot_pos+4] *= (1 + int(d) / 9)
         return h
 
-    async def navi_encode(self, hash_str: str, index: int = 0) -> str:
+    async def navi_encode(self, input_str: str, index: int = 0) -> str:
         """Encode hash with ramp modulation and Navi safety."""
         encoded = ''
-        for j, char in enumerate(hash_str):
+        for j, char in enumerate(input_str):
             idx = (index + j) % len(self.heights)
-            delta = int(char, 16) + self.heights[idx] * 10
-            encoded += chr(int(delta) % 256)
+            # Use ord() for any char (0-255 range)
+            delta = ord(char) + int(self.heights[idx] * 10)
+            encoded += chr(delta % 256)
         self.tendon_load = np.random.rand() * 0.15  # Lower to avoid constant warnings
         self.gaze_duration += 1.0 / 60 if np.random.rand() > 0.7 else 0.0
         if self.tendon_load > 0.2:
